@@ -7,3 +7,6 @@
 [submodule "glxw"]
 	path = glxw
 	url = https://github.com/rikusalminen/glxw
+[submodule "ut"]
+	path = ut
+	url = https://github.com/nshcat/ut
