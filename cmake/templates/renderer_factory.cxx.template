@@ -1,0 +1,42 @@
+#include <string>
+#include <renderer_base.hxx>
+#include <ut/array_view.hxx>
+
+{% for plugin in plugins %}
+#include <renderer_{{ plugin }}.hxx>
+#include <input_{{ plugin }}.hxx>
+{% endfor %}
+
+namespace ascii
+{
+	const char* plugins[] =
+	{
+		{% for plugin in plugins %}
+			{% if loop.last %}
+				"{{ plugin }}"
+			{% else %}
+				"{{ plugin }}",
+			{% endif %}
+		{% endfor %}
+	};
+
+	auto create_instance(const ::std::string& p_str)
+		-> ::std::pair<renderer_base*, input_base*>
+	{
+		{% for plugin in plugins %}
+		if(p_str == "{{ plugin }}")
+		{
+			return { 	new renderer_{{ plugin }}(),
+						new input_{{ plugin }}()
+			};
+		}
+		{% endfor %}
+
+		return { nullptr, nullptr };
+	}
+	
+	ut::array_view<const char*> list_plugins()
+	{
+		return ut::make_view(plugins);
+	}
+}
