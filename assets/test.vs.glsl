@@ -66,13 +66,6 @@ void get_glyph(out vec2 p_glyph)
 // |    v
 // +--->
 const vec2 textureCoords[] = vec2[6](
-	/*vec2(1, 0),	// BR
-	vec2(1, 1),	// TR
-	vec2(0, 1),	// TL
-	
-	vec2(1, 0),	// BR
-	vec2(0, 1),	// TL
-	vec2(0, 0)	// BL*/
 	vec2(1, 1),	// BR
 	vec2(1, 0),	// TR
 	vec2(0, 0),	// TL
@@ -110,6 +103,9 @@ void calc_tex_coords(in vec2 p_glyph, out vec2 p_texcoords)
 
 void main()
 {
+	// Since we use an inverted ortho projection (y axis flipped) we can work with coordinates the 
+	// same way we would do on a 2d window, with (0,0) being the top left corner, and y increasing downwards.
+	
 	// Compute coordinate of top left vertex. All other vertex coordinates can be derived from this.
 	vec2 coords = vec2(
 		gl_InstanceID % glyph_count.x,
@@ -118,7 +114,7 @@ void main()
 	
 	vec2 t_bl = coords * vec2(glyph_dimensions);
 
-	// Transform BL coordinates into matching coordinates by doing a look-up based on the local index
+	// Transform TL coordinates into matching coordinates by doing a look-up based on the local index
 	vec2 t_vertex = (positions[gl_VertexID] * vec2(glyph_dimensions)) + t_bl;
 
 
@@ -130,11 +126,9 @@ void main()
 	// Set texture coordinates
 	vec2 t_glyph = vec2(0.f);
 	get_glyph(t_glyph);
-	calc_tex_coords(t_glyph,texCoords);
+	calc_tex_coords(t_glyph, texCoords);
 
 	// Assign a color
-	//frontColor = colors[(gl_InstanceID / 16 ) %6];
-	//backColor = vec4(0.0f, 0.0f, 0.0f, 1.f);
 	get_front(frontColor);
 	get_back(backColor);
 }

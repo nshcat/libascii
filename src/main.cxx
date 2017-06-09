@@ -137,6 +137,9 @@ int main()
 		const auto t_glyphCountPos = glGetUniformLocation(program.handle(), "glyph_count");
 		const auto t_projMatPos = glGetUniformLocation(program.handle(), "projection_mat");
 
+		// We use an inverted ortho projection here (flipped y axis) to enable us to use cordinates the
+		// same way they would be used on a 2d screen (with (0,0) in top left corner, and y increasing
+		// downwards)
 		const auto t_proj = glm::ortho(0.f, (float)t_width, (float)t_height, 0.f, -1.f, 1.f);	
 		glUniformMatrix4fv(t_projMatPos, 1, GL_FALSE, glm::value_ptr(t_proj));
 		
