@@ -1,2 +1,0 @@
-/usr/bin/ar qc libglxw_es2.a  CMakeFiles/glxw_es2.dir/src/glxw_es2.c.o
-/usr/bin/ranlib libglxw_es2.a
