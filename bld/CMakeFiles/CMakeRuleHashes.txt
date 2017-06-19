@@ -1,0 +1,10 @@
+# Hashes of file build rules.
+9aa194059c3b9aaa59b66112990bfc91 glxw/include/EGL/egl.h
+6930ba353e825f345df1d8beebcb2db8 glxw/include/GL/glcorearb.h
+44ed279b2d5391f478af790ad626826f glxw/include/GL/glxext.h
+c0fcdeed631acbefbdbd46c69b7a6e25 glxw/include/GLES2/gl2.h
+0c47ea8f4630294f335a8e781b465ddc glxw/include/KHR/khrplatform.h
+fecd694a53fff60579bfaceb71ee3f3e glxw/src/glxw.c
+a15075daebc49c0ea91ed347d6d10d72 glxw/src/glxw_egl.c
+2d34766c5f87e23103bdf4f75dd8622f glxw/src/glxw_es2.c
+2b9676bc875cf971276afa83c6f52578 glxw/src/glxw_glx.c

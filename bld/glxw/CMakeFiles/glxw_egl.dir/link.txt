@@ -1,0 +1,2 @@
+/usr/bin/ar qc libglxw_egl.a  CMakeFiles/glxw_egl.dir/src/glxw_egl.c.o
+/usr/bin/ranlib libglxw_egl.a

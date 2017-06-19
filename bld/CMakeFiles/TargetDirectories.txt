@@ -1,0 +1,17 @@
+/home/kitty/git/gl_app/bld/CMakeFiles/rebuild_cache.dir
+/home/kitty/git/gl_app/bld/CMakeFiles/gl_app.dir
+/home/kitty/git/gl_app/bld/CMakeFiles/edit_cache.dir
+/home/kitty/git/gl_app/bld/glfw/CMakeFiles/rebuild_cache.dir
+/home/kitty/git/gl_app/bld/glfw/CMakeFiles/edit_cache.dir
+/home/kitty/git/gl_app/bld/glfw/src/CMakeFiles/rebuild_cache.dir
+/home/kitty/git/gl_app/bld/glfw/src/CMakeFiles/glfw.dir
+/home/kitty/git/gl_app/bld/glfw/src/CMakeFiles/edit_cache.dir
+/home/kitty/git/gl_app/bld/glxw/CMakeFiles/rebuild_cache.dir
+/home/kitty/git/gl_app/bld/glxw/CMakeFiles/edit_cache.dir
+/home/kitty/git/gl_app/bld/glxw/CMakeFiles/glxw_es2.dir
+/home/kitty/git/gl_app/bld/glxw/CMakeFiles/glxw.dir
+/home/kitty/git/gl_app/bld/glxw/CMakeFiles/glxw_egl.dir
+/home/kitty/git/gl_app/bld/glxw/CMakeFiles/glxw_glx.dir
+/home/kitty/git/gl_app/bld/ut/CMakeFiles/rebuild_cache.dir
+/home/kitty/git/gl_app/bld/ut/CMakeFiles/ut.dir
+/home/kitty/git/gl_app/bld/ut/CMakeFiles/edit_cache.dir

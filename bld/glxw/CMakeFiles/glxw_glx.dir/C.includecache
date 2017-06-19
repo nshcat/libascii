@@ -1,0 +1,36 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/kitty/git/gl_app/bld/glxw/src/glxw_glx.c
+GLXW/glxw_glx.h
+-
+windows.h
+-
+dlfcn.h
+-
+
+glxw/include/GL/glxext.h
+inttypes.h
+-
+inttypes.h
+-
+inttypes.h
+-
+stdint.h
+-
+stdint.h
+-
+inttypes.h
+-
+
+glxw/include/GLXW/glxw_glx.h
+GL/glx.h
+-
+GL/glxext.h
+-
+

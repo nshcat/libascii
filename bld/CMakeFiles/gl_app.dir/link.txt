@@ -1,0 +1,1 @@
+/usr/bin/clang++    -rdynamic CMakeFiles/gl_app.dir/src/main.cxx.o CMakeFiles/gl_app.dir/src/shadow_texture.cxx.o CMakeFiles/gl_app.dir/src/texture.cxx.o  -o gl_app glfw/src/libglfw3.a glxw/libglxw.a -lGLU -lGL ut/libut.a -Wl,-Bstatic -lSDL2main -Wl,-Bdynamic -lSDL2 -lpthread -lSDL2_image -lrt -lm -lX11 -lXrandr -lXinerama -lXcursor -lpthread -ldl -lpthread 
