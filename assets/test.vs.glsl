@@ -10,6 +10,8 @@
 #define SHADOW_BL 0x1 << 14
 #define SHADOW_BR 0x1 << 15
 
+#define CURSOR 0x1 << 16
+
 #define FOG_MASK 0xFF
 #define SHADOW_MASK 0xFF00
 
@@ -23,6 +25,9 @@ flat out float fogFactor;
 // Texture coordinates
 smooth out vec2 texCoords;
 smooth out vec2 shadowCoords;
+smooth out vec2 cursorCoords;
+
+flat out int hasCursor;
 
 flat out uint[8] shadowTypes;
 
@@ -31,15 +36,17 @@ uniform ivec2 sheet_dimensions;
 uniform ivec2 glyph_count;
 uniform mat4 projection_mat;
 uniform float fog_density;
+uniform ivec2 cursor_pos;
+
 
 
 // Format: (r,g,b,glyph)(r,g,b,data)
 // With data:
 //
-// FF FF 0  0  0  0  0 0 0 0 FF
-//       ^  ^  ^  ^  ^ ^ ^ ^ ^
-//       BR BL TR TL E S W N fog
-//		 \__Drop Shadows__/
+// FF FF   0  0  0  0  0 0 0 0 FF
+//         ^  ^  ^  ^  ^ ^ ^ ^ ^
+//         BR BL TR TL E S W N fog
+//		   \__Drop Shadows__/
 //
 // Uses uvec4.
 // Cursor field is unused for now.
@@ -60,6 +67,13 @@ uint get_shadow_data()
 	const uvec4 t_entry = texelFetch(input_buffer, (gl_InstanceID*2)+1);
 	
 	return t_entry.a & SHADOW_MASK;
+}
+
+uint get_data()
+{
+	const uvec4 t_entry = texelFetch(input_buffer, (gl_InstanceID*2)+1);
+	
+	return t_entry.a;
 }
 
 void get_front(out vec4 p_front)
@@ -218,6 +232,19 @@ void main()
 		shadowData & SHADOW_TL,
 		shadowData & SHADOW_TR
 	);
+	
+	// Cursor
+	vec2 t_cursorPos = vec2(cursor_pos);
+	if(t_cursorPos == coords)
+	{
+		hasCursor = 1;
+		
+		calc_tex_coords(vec2(15.f, 15.f), cursorCoords); 
+	}
+	else
+	{
+		hasCursor = 0;
+	}
 }
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------

@@ -6,15 +6,20 @@ layout (location = 0) out vec4 fragmentColor;
 uniform sampler2D sheet_texture;
 uniform sampler2D shadow_texture;
 uniform vec4 fog_color;
+uniform vec4 cursor_default; // Default cursor front color
 
 flat in vec4 frontColor;
 flat in vec4 backColor;
 flat in float fogFactor;
+flat in int hasCursor;
 
 smooth in vec2 texCoords;
 smooth in vec2 shadowCoords;
+smooth in vec2 cursorCoords;
 
 flat in uint[8] shadowTypes;
+
+
 
 void draw_shadow(inout vec4 color, in uint index)
 {
@@ -75,6 +80,24 @@ void main()
 	// and THEN alpha blend it like usual (see shader cookbook: applying multiple textures)
 	// cursorPixel = mix(vec4(0.f, 0.f, 0.f, 0.f), cursorColor, cursorTex.a)
 	// fragmentColor = mix(fragmentColor, cursorPixel, cursorPixel.a);
+	if(hasCursor > 0)
+	{
+		// Fetch cursor texel
+		vec4 cursorTexel = texture2D(sheet_texture, cursorCoords);
+		
+		// Determine cursor color to use
+		vec4 cursorClr = cursor_default;
+		
+		//if(backColor != frontColor)
+		//	cursorClr = frontColor;
+			
+		// Colorize texel
+		cursorTexel = mix(vec4(0.f, 0.f, 0.f, 0.f), cursorClr * cursorTexel, cursorTexel.a);
+		
+		// Use alpha blending to put it OVER current fragmentColor	
+		fragmentColor = mix(fragmentColor, cursorTexel, cursorTexel.a);
+	}
+	
 	
 }
 
