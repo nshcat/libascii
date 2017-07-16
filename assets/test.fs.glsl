@@ -12,25 +12,21 @@ flat in vec4 frontColor;
 flat in vec4 backColor;
 flat in float fogFactor;
 flat in int hasCursor;
-flat in uint lightingMode;
 
 smooth in vec2 texCoords;
 smooth in vec2 shadowCoords;
 smooth in vec2 cursorCoords;
-smooth in vec2 cellCoords;
 
 flat in uint[8] shadowTypes;
+flat in float lightIntensity;
+flat in uint lightingMode;
 
 // Light data
 uniform bool use_lighting;
 uniform bool use_dynamic_lighting;
 uniform vec4 ambient_light;
-uniform vec2 top_left_pos;
-uniform vec2 light_pos;
 uniform vec4 light_clr;
-uniform float light_intensity; // [0, 1]
-
-uniform bool debugMode;
+uniform bool debug_mode;
 // --
 
 #define LIGHT_NONE 0
@@ -61,7 +57,7 @@ void main()
 	
 	vec4 texColor = texture2D(sheet_texture, texCoords);
 
-	if(debugMode)
+	if(debug_mode)
 	{
 		switch(lightingMode)
 		{
@@ -154,8 +150,13 @@ void main()
 		// Dynamic lighting
 		if(use_dynamic_lighting)
 		{
-			// Calculate distance to light source
-			const vec2 cellpos = floor(top_left_pos + cellCoords);
+			/*// Calculate distance to light source
+			vec2 cellpos = top_left_pos + cellCoords;
+			
+			if(!use_smooth_lighting)
+			{
+				cellpos = floor(cellpos);
+			}
 			
 			const float dist = length(cellpos - light_pos);
 			
@@ -172,6 +173,8 @@ void main()
 				dynamic_color *= 0.7f;
 			
 			shaded_color = shaded_color * dynamic_color;*/
+			
+			float intensity = lightIntensity;
 			
 			if(lightingMode == LIGHT_DIM)
 				intensity *= 0.0f;

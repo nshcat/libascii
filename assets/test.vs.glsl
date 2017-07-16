@@ -32,11 +32,11 @@ flat out float fogFactor;
 smooth out vec2 texCoords;
 smooth out vec2 shadowCoords;
 smooth out vec2 cursorCoords;
-smooth out vec2 cellCoords;
 
+flat out float lightIntensity;
 flat out int hasCursor;
-
 flat out uint[8] shadowTypes;
+flat out uint lightingMode;
 
 uniform ivec2 glyph_dimensions;
 uniform ivec2 sheet_dimensions;
@@ -45,8 +45,19 @@ uniform mat4 projection_mat;
 uniform float fog_density;
 uniform ivec2 cursor_pos;
 
-// Lighting mode
-flat out uint lightingMode;
+
+// Light data
+uniform bool use_lighting;
+uniform bool use_dynamic_lighting;
+uniform bool use_smooth_lighting;
+uniform vec4 ambient_light;
+uniform vec2 top_left_pos;
+uniform vec2 light_pos;
+uniform vec4 light_clr;
+uniform float light_intensity; // [0, 1]
+uniform bool debug_mode;
+// --
+
 
 
 // Format: (r,g,b,glyph)(r,g,b,data)
@@ -81,6 +92,14 @@ uint get_shadow_data()
 uint get_lighting_mode()
 {
 	const uvec4 t_entry = texelFetch(input_buffer, (gl_InstanceID*2)+1);
+	return (t_entry.a & LIGHT_MASK) >> LIGHT_SHIFT;
+}
+
+uint get_lighting_mode(in uvec2 pos)
+{
+	const int index = int((pos.y * glyph_count.x) + pos.x);
+
+	const uvec4 t_entry = texelFetch(input_buffer, (index*2)+1);
 	return (t_entry.a & LIGHT_MASK) >> LIGHT_SHIFT;
 }
 
@@ -196,6 +215,130 @@ void calc_tex_coords(in vec2 p_glyph, out vec2 p_texcoords)
 	p_texcoords = t_base_bl + (t_dimTex * textureCoords[gl_VertexID]);
 }
 
+bool can_see_light(in ivec2 start_pos, in ivec2 end_pos)
+{
+	const int len = max(abs(end_pos.x - start_pos.x), abs(end_pos.y - start_pos.y));
+	const float dx = (end_pos.x - start_pos.x)/len;
+	const float dy = (end_pos.y - start_pos.y)/len;
+	
+	for(int i = 0; i <= len; ++i)
+	{
+		const ivec2 point = ivec2(int(floor(start_pos.x + i*dx)), int(floor(start_pos.y + i*dy)));
+		
+		const uint mode = get_lighting_mode(uvec2(point));
+		
+		if(mode == LIGHT_NONE || mode == LIGHT_DIM)
+			return false;
+	}
+	
+	return true;
+}
+
+bool check_point(in uvec2 point)
+{
+	const uint mode = get_lighting_mode(uvec2(point));
+	
+	return !(mode == LIGHT_NONE || mode == LIGHT_DIM);
+}
+
+bool can_see_light2(in ivec2 start_pos, in ivec2 end_pos)
+{
+	ivec2 start = start_pos;
+
+	int delta_x = end_pos.x - start_pos.x;
+	int ix = 0;
+	{
+		if(delta_x > 0)
+			ix = 1;
+		else if(delta_x < 0)
+			ix = -1;
+	}
+	delta_x = abs(delta_x) << 1;
+	
+	
+	int delta_y = end_pos.y - start_pos.y;
+	int iy = 0;
+	{
+		if(delta_y > 0)
+			iy = 1;
+		else if(delta_y < 0)
+			iy = -1;
+	}
+	delta_y = abs(delta_y) << 1;
+	
+	if(!check_point(uvec2(start)))
+		return false;
+		
+	if(delta_x >= delta_y)
+	{
+		int error = (delta_y - (delta_x >> 1));
+		
+		while(start.x != end_pos.x)
+		{
+			if( (error >= 0) && ( (error != 0) || (ix > 0)) )
+			{
+				error -= delta_x;
+				start.y += iy;
+			}
+			
+			error += delta_y;
+			start.x += ix;
+			
+			if(!check_point(uvec2(start)))
+				return false;
+		}
+	}
+	else
+	{
+		int error = (delta_x - (delta_y >> 1));
+		
+		while(start.y != end_pos.y)
+		{
+			if( (error >= 0) && ( (error != 0) || (iy > 0)) )
+			{
+				error -= delta_y;
+				start.x += ix;
+			}
+			
+			error += delta_x;
+			start.y += iy;
+			
+			if(!check_point(uvec2(start)))
+				return false;
+		}
+	}
+	
+	return true;
+}
+
+void lighting()
+{
+	lightingMode = get_lighting_mode();
+
+	if(use_dynamic_lighting && (lightingMode != LIGHT_NONE))
+	{
+		// --- Cell position (we only need to care about top left, since we 
+		// are doing flat shading anyways)
+		vec2 cellCoords = vec2(	gl_InstanceID % glyph_count.x,
+								gl_InstanceID / glyph_count.x );
+								
+		cellCoords += top_left_pos;
+		
+		// TODO needed?
+		cellCoords = floor(cellCoords);
+			
+		// Check if we can even see the light from here
+		if(!can_see_light2(ivec2(cellCoords), ivec2(light_pos)))
+			return;
+			
+		// -- Distance to light
+		const float dist = length(cellCoords - light_pos);
+		
+		// -- Calculate intensity
+		lightIntensity = min(1.f / (1. + 0.4*dist + 0.01*pow(dist, 2.0f)), 1.f) * light_intensity;		
+	}
+}
+
 
 void main()
 {
@@ -262,12 +405,8 @@ void main()
 	}
 	
 	
-	// Retrieve light data
-	lightingMode = get_lighting_mode();
-	
-	// Output cell position
-	// Top left + tex offset
-	cellCoords = coords + textureCoords[gl_VertexID];
+	// Do lighting work
+	lighting();
 }
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------

@@ -175,6 +175,20 @@ int main()
 			}
 		}
 		
+		for(::std::size_t iy = 6; iy < 15; ++iy)
+		{
+			if(iy == 9) continue;
+		
+			t_Data[t_pos(9, iy)] = glm::uvec4{187, 187, 187, 61};
+			t_Data[t_pos(9, iy)+1] = glm::uvec4{187, 187, 187, 0};
+			t_Data[t_pos(9, iy)+1].a |= (LIGHT_DIM << LIGHT_SHIFT);
+			t_Data[t_pos(10, iy)] = glm::uvec4{187, 187, 187, 61};
+			t_Data[t_pos(10, iy)+1] = glm::uvec4{187, 187, 187, 0};
+			t_Data[t_pos(10, iy)+1].a |= (LIGHT_DIM << LIGHT_SHIFT);
+		}
+		
+		
+		
 		
 		//t_Data[t_pos(10, 7)] = glm::uvec4{255, 255, 0, 15};
 		
@@ -306,12 +320,11 @@ int main()
 		//const glm::vec4 t_lightClr{1.000f, 0.1f, 0.9f, 1.f };
 		glUniform4fv(t_lightColorPos, 1, glm::value_ptr(t_lightClr));
 		
-		const auto t_lightModeDebugPos = glGetUniformLocation(program.handle(), "debugMode");
+		const auto t_lightModeDebugPos = glGetUniformLocation(program.handle(), "debug_mode");
 		glUniform1i(t_lightModeDebugPos, lightModeDebug);
 		
 		const auto t_useDynamicPos = glGetUniformLocation(program.handle(), "use_dynamic_lighting");
 		glUniform1i(t_useDynamicPos, useDynamicLighting);
-		
 		
 
 		::std::size_t inputCounter = 0;
@@ -321,6 +334,17 @@ int main()
 		const ::std::size_t animPeriod = 6;
 		//const ::std::size_t animPeriod = 7;
 
+		/*::std::size_t clrCounter = 0;
+		::std::size_t numClr = 3;
+		bool latch = false;
+		
+		glm::vec4 t_clrs[3] =
+		{
+			{1.000f, 0.647f, 0.000f, 1.f },
+			{0.000f, 1.0f, 0.000f, 1.f },
+			{1.000f, 0.0f, 0.000f, 1.f }
+		};*/
+
 		while (!glfwWindowShouldClose(window))
 		{
 			if(animCounter >= animPeriod)
@@ -329,6 +353,22 @@ int main()
 			
 				const float t_intensityMod = t_intensityDistrib(t_gen);
 				glUniform1f(t_lightIntensityPos, t_intensity * t_intensityMod);
+				
+				/*const double t_mod = glm::abs(glm::cos(glfwGetTime()*2.));
+				
+				if(t_mod <= 0.1f && !latch)
+				{
+					latch = true;
+					clrCounter = (clrCounter + 1) % numClr;
+					
+					glUniform4fv(t_lightColorPos, 1, glm::value_ptr(t_clrs[clrCounter]));
+				}
+				
+				if(t_mod >= 0.95f && latch)
+					latch = false;		
+				
+				glUniform1f(t_lightIntensityPos, t_intensity * t_mod);*/
+				
 			}
 			else ++animCounter;
 		
@@ -346,7 +386,7 @@ int main()
 				{
 					lightModeDebug = !lightModeDebug;
 					glUniform1i(t_lightModeDebugPos, lightModeDebug);
-				}
+				}			
 				
 				if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 				{
