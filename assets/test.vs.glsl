@@ -14,6 +14,12 @@
 
 #define FOG_MASK 0xFF
 #define SHADOW_MASK 0xFF00
+#define LIGHT_MASK 0xF0000
+#define LIGHT_SHIFT 16
+
+#define LIGHT_NONE 0
+#define LIGHT_DIM 1
+#define LIGHT_FULL 2
 
 // Front an Background color
 flat out vec4 frontColor;
@@ -26,6 +32,7 @@ flat out float fogFactor;
 smooth out vec2 texCoords;
 smooth out vec2 shadowCoords;
 smooth out vec2 cursorCoords;
+smooth out vec2 cellCoords;
 
 flat out int hasCursor;
 
@@ -38,6 +45,8 @@ uniform mat4 projection_mat;
 uniform float fog_density;
 uniform ivec2 cursor_pos;
 
+// Lighting mode
+flat out uint lightingMode;
 
 
 // Format: (r,g,b,glyph)(r,g,b,data)
@@ -67,6 +76,12 @@ uint get_shadow_data()
 	const uvec4 t_entry = texelFetch(input_buffer, (gl_InstanceID*2)+1);
 	
 	return t_entry.a & SHADOW_MASK;
+}
+
+uint get_lighting_mode()
+{
+	const uvec4 t_entry = texelFetch(input_buffer, (gl_InstanceID*2)+1);
+	return (t_entry.a & LIGHT_MASK) >> LIGHT_SHIFT;
 }
 
 uint get_data()
@@ -188,7 +203,7 @@ void main()
 	// same way we would do on a 2d window, with (0,0) being the top left corner, and y increasing downwards.
 	
 	// Compute coordinate of top left vertex. All other vertex coordinates can be derived from this.
-	vec2 coords = vec2(
+	const vec2 coords = vec2(
 		gl_InstanceID % glyph_count.x,
 		gl_InstanceID / glyph_count.x
 	);
@@ -245,6 +260,14 @@ void main()
 	{
 		hasCursor = 0;
 	}
+	
+	
+	// Retrieve light data
+	lightingMode = get_lighting_mode();
+	
+	// Output cell position
+	// Top left + tex offset
+	cellCoords = coords + textureCoords[gl_VertexID];
 }
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------

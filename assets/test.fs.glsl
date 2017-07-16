@@ -12,14 +12,30 @@ flat in vec4 frontColor;
 flat in vec4 backColor;
 flat in float fogFactor;
 flat in int hasCursor;
+flat in uint lightingMode;
 
 smooth in vec2 texCoords;
 smooth in vec2 shadowCoords;
 smooth in vec2 cursorCoords;
+smooth in vec2 cellCoords;
 
 flat in uint[8] shadowTypes;
 
+// Light data
+uniform bool use_lighting;
+uniform bool use_dynamic_lighting;
+uniform vec4 ambient_light;
+uniform vec2 top_left_pos;
+uniform vec2 light_pos;
+uniform vec4 light_clr;
+uniform float light_intensity; // [0, 1]
 
+uniform bool debugMode;
+// --
+
+#define LIGHT_NONE 0
+#define LIGHT_DIM 1
+#define LIGHT_FULL 2
 
 void draw_shadow(inout vec4 color, in uint index)
 {
@@ -40,7 +56,35 @@ void draw_shadow(inout vec4 color, in uint index)
 
 void main()
 {
+	vec4 t_frontColor = frontColor;
+	vec4 t_backColor = backColor;
+	
 	vec4 texColor = texture2D(sheet_texture, texCoords);
+
+	if(debugMode)
+	{
+		switch(lightingMode)
+		{
+			case LIGHT_DIM:
+				t_frontColor = t_backColor = vec4(0.92f, 0.5216f, 0.1255f, 1.f);
+				texColor = vec4(0.f);
+				break;
+			
+			case LIGHT_NONE:
+				t_frontColor = t_backColor = vec4(1.f, 0.f, 0.f, 1.f);
+				texColor = vec4(0.f);
+				break;
+			
+			case LIGHT_FULL:
+				t_frontColor = t_backColor = vec4(0.f, 1.f, 0.f, 1.f);
+				texColor = vec4(0.f);
+				break;
+			
+			default:
+				break;	
+		}
+	}
+	
 
 	// Mix back and front color together: (1-a)*bg + a*fg
 	// We multiply the front color by texColor here to allow textures to
@@ -52,7 +96,7 @@ void main()
 	// Yes, it will result in alpha != 1.f. Maybe thats bad.
 	// FIXME maybe just multiply with texcolor.rgb, with a being 1.f, to only
 	// scale the colors.
-	fragmentColor = mix(backColor, frontColor * texColor, texColor.a);
+	fragmentColor = mix(t_backColor, t_frontColor * texColor, texColor.a);
 	
 	
 	// Mix in shadows, if requested
@@ -99,5 +143,44 @@ void main()
 	}
 	
 	
+	if(use_lighting && (lightingMode != LIGHT_NONE))
+	{	
+		vec4 shaded_color = fragmentColor;
+		
+		// Ambient lighting
+		shaded_color = mix(vec4(0.f, 0.f, 0.f, 1.f), shaded_color, ambient_light);
+		
+		
+		// Dynamic lighting
+		if(use_dynamic_lighting)
+		{
+			// Calculate distance to light source
+			const vec2 cellpos = floor(top_left_pos + cellCoords);
+			
+			const float dist = length(cellpos - light_pos);
+			
+			
+			// Calculate intensity
+			//float intensity = min(1.f / (0.1 + 0.5*dist + 0.15*pow(dist, 2.0f)), 1.f) * light_intensity;
+			//float intensity = min(1.f / (1. + 0.1*dist + 0.01*pow(dist, 2.0f)), 1.f) * light_intensity;
+			float intensity = min(1.f / (1. + 0.4*dist + 0.01*pow(dist, 2.0f)), 1.f) * light_intensity;
+			
+			// FOR ALL LIGHTS
+			/*vec4 dynamic_color = light_clr * intensity;
+			
+			if(lightingMode == LIGHT_DIM)
+				dynamic_color *= 0.7f;
+			
+			shaded_color = shaded_color * dynamic_color;*/
+			
+			if(lightingMode == LIGHT_DIM)
+				intensity *= 0.0f;
+			shaded_color = mix(shaded_color, light_clr, intensity);
+		}
+		
+		
+		
+		fragmentColor = shaded_color;
+	}
 }
 

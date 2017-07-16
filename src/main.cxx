@@ -31,6 +31,11 @@ constexpr ::std::uint32_t SHADOW_BR = 0x1 << 15;
 
 constexpr ::std::uint32_t FOG_MASK = 0xFF;
 
+constexpr ::std::uint32_t LIGHT_SHIFT = 16;
+constexpr ::std::uint32_t LIGHT_NONE = 0;
+constexpr ::std::uint32_t LIGHT_DIM = 1;
+constexpr ::std::uint32_t LIGHT_FULL = 2;
+
 void error_callback(int error, const char* description)
 {
 	std::cerr << "glfw error: " << description << std::endl;
@@ -44,7 +49,10 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 }
 
 int main()
-{	
+{
+	bool useLighting{true};
+	bool lightModeDebug{false};
+	bool useDynamicLighting{true};
 	GLFWwindow* window;
 
 	try
@@ -87,8 +95,8 @@ int main()
 		
 		// Load texture
 		glEnable(GL_TEXTURE_2D);
-		//texture t_tex{ "assets/CLA.png" };
-		texture t_tex{ "assets/tex4.png" };
+		texture t_tex{ "assets/CLA.png" };
+		//texture t_tex{ "assets/tex4.png" };
 		shadow_texture t_shadow{ "assets/shadows.png" };
 		
 		// Resize window
@@ -108,42 +116,81 @@ int main()
 		std::random_device rd;
 		std::mt19937 t_gen(rd());
     	std::uniform_int_distribution<unsigned> t_distrib(0, 16);
+    	std::uniform_real_distribution<float> t_intensityDistrib(0.4f, 1.0f); 
 		
 		weighted_collection<glm::uvec3> t_groundClr{
-			{ { 0, 102, 43 }, 0.2f },
-			{ { 68, 102, 41 }, 0.2f },
-			{ { 0, 62, 26 }, 0.2f },
-			{ { 107, 107, 54 }, 0.15f },		
-			{ { 51, 77, 31 }, 0.1f },		
-			{ { 85, 128, 51 }, 0.06f },
-			{ { 0, 92, 38 }, 0.06f },
-			{ { 94, 94, 94 }, 0.03f }
+			{ { 84, 84, 84 }, 0.3f },		
+			{ { 94, 94, 94 }, 0.3f },		
+			{ { 56, 56, 56 }, 0.2f },		
+			{ { 75, 75, 75 }, 0.2f }
 		};
 						
 		t_groundClr.shuffle(t_gen);
 		
-		for(::std::size_t ix = 0; ix < t_Data.size(); ix+=2)
-		{
-			const auto t_clr = t_groundClr(t_gen);
 		
-			t_Data[ix] = glm::uvec4{t_clr.r, t_clr.g, t_clr.b, 219};
-			//t_Data[ix+1] = glm::uvec4{t_clr.r, t_clr.g, t_clr.b, 0};
+		for(::std::size_t ix = 0; ix < t_Data.size(); ix+=2)
+		{		
+			t_Data[ix] = glm::uvec4{0, 0, 0, 0};
 			t_Data[ix+1] = glm::uvec4{0, 0, 0, 0};
 		}
 		
-		const unsigned t_levelIncrement = 13;//25;
 		
 		const auto t_pos = [&t_glyphCount](int x, int y) -> int
 		{
 			return ((t_glyphCount.x * y) + x) * 2;
 		};
 		
-		for(int i = 0; i <= 9; ++i)
+		for(::std::size_t iy = 5; iy < 20-5; ++iy)
 		{
-			const glm::uvec2 t_tl = { i, i };
-			const glm::uvec2 t_br = { 19-i, 19-i };
-			
-			for(int ix = t_tl.x; ix <= t_br.x; ix++)
+			if(iy == 5 || iy == 20-6)
+			{
+				for(::std::size_t ix = 5; ix < 20-5; ++ix)
+				{
+					t_Data[t_pos(ix, iy)] = glm::uvec4{187, 187, 187, 61};
+					t_Data[t_pos(ix, iy)+1] = glm::uvec4{187, 187, 187, 0};
+					
+					t_Data[t_pos(ix, iy)+1].a |= (LIGHT_DIM << LIGHT_SHIFT);
+				}
+			}
+			else
+			{
+				t_Data[t_pos(5, iy)] = glm::uvec4{187, 187, 187, 61};
+				t_Data[t_pos(5, iy)+1] = glm::uvec4{187, 187, 187, 0};
+				t_Data[t_pos(5, iy)+1].a |= (LIGHT_DIM << LIGHT_SHIFT);
+				
+				t_Data[t_pos(20-6, iy)] = glm::uvec4{187, 187, 187, 61};
+				t_Data[t_pos(20-6, iy)+1] = glm::uvec4{187, 187, 187, 0};
+				t_Data[t_pos(20-6, iy)+1].a |= (LIGHT_DIM << LIGHT_SHIFT);
+			}
+		}
+		
+		for(::std::size_t iy = 6; iy < 20-6; ++iy)
+		{
+			for(::std::size_t ix = 6; ix < 20-6; ++ix)
+			{
+				auto t_clr = t_groundClr(t_gen);
+				t_Data[t_pos(ix, iy)] = glm::uvec4{0, 0, 0, 0};
+				t_Data[t_pos(ix, iy)+1] = glm::uvec4{t_clr.r, t_clr.g, t_clr.b, 0};
+				t_Data[t_pos(ix, iy)+1].a |= (LIGHT_FULL << LIGHT_SHIFT);
+			}
+		}
+		
+		
+		//t_Data[t_pos(10, 7)] = glm::uvec4{255, 255, 0, 15};
+		
+		/*for(::std::size_t ix = 0; ix < t_Data.size(); ix+=2)
+		{
+			const auto t_clr = t_groundClr(t_gen);
+		
+			t_Data[ix] = glm::uvec4{t_clr.r, t_clr.g, t_clr.b, 219};
+			t_Data[ix+1] = glm::uvec4{0, 0, 0, 0};
+		}*/
+		
+		const unsigned t_levelIncrement = 13;//25;
+		
+		
+		
+			/*for(int ix = t_tl.x; ix <= t_br.x; ix++)
 			{		
 				t_Data[t_pos(ix, i)+1].a |= (t_levelIncrement * ((i % 2 == 0 && i != 0) ? (i-1)/2 : i/2));
 				
@@ -151,38 +198,8 @@ int main()
 				{
 					t_Data[t_pos(ix, i)+1].a |= SHADOW_N;
 				}
-			}
-			
-			for(int ix = t_tl.x; ix <= t_br.x; ix++)
-			{
-				t_Data[t_pos(ix, t_br.y)+1].a |= (t_levelIncrement * ((i % 2 == 0 && i != 0) ? (i-1)/2 : i/2));
-				
-				if(i > 1 && (i % 2 != 0))
-				{
-					t_Data[t_pos(ix, t_br.y)+1].a |= SHADOW_S;
-				}
-			}
-			
-			for(int iy = t_tl.y; iy <= t_br.y; iy++)
-			{
-				t_Data[t_pos(i, iy)+1].a |= (t_levelIncrement * ((i % 2 == 0 && i != 0) ? (i-1)/2 : i/2));
-				
-				if(i > 1 && (i % 2 != 0))
-				{
-					t_Data[t_pos(i, iy)+1].a |= SHADOW_W;
-				}
-			}
-			
-			for(int iy = t_tl.y; iy <= t_br.y; iy++)
-			{
-				t_Data[t_pos(t_br.x, iy)+1].a |= (t_levelIncrement * ((i % 2 == 0 && i != 0) ? (i-1)/2 : i/2));
-				
-				if(i > 1 && (i % 2 != 0))
-				{
-					t_Data[t_pos(t_br.x, iy)+1].a |= SHADOW_E;
-				}
-			}
-		}
+			}*/
+		
 		
 		
 		// Create buffer
@@ -212,7 +229,7 @@ int main()
 		
 		program.use();
 		
-		// Set uniforms
+		// Set uniforms	
 		const auto t_cursorPosPos = glGetUniformLocation(program.handle(), "cursor_pos");
 		const auto t_sheetDimPos = glGetUniformLocation(program.handle(), "sheet_dimensions");
 		const auto t_glyphDimPos = glGetUniformLocation(program.handle(), "glyph_dimensions");
@@ -221,7 +238,7 @@ int main()
 		
 		const auto t_cursorColorPos = glGetUniformLocation(program.handle(), "cursor_default");
 		
-		glm::ivec2 t_cursorPos{ 1, 1 };
+		glm::ivec2 t_cursorPos{ -1, -1 };
 		glUniform2iv(t_cursorPosPos, 1, glm::value_ptr(t_cursorPos));
 		
 		
@@ -256,18 +273,114 @@ int main()
 
 		const auto t_samplerShadowPos = glGetUniformLocation(program.handle(), "shadow_texture");
 		glUniform1i(t_samplerShadowPos, 2);
+		
+		const auto t_lightIntensityPos = glGetUniformLocation(program.handle(), "light_intensity");
+		const float t_intensity = 0.7f;
+		glUniform1f(t_lightIntensityPos, t_intensity);
+		
+		
+		const auto t_useLightingPos = glGetUniformLocation(program.handle(), "use_lighting");
+		glUniform1i(t_useLightingPos, useLighting);
+		
+		const auto t_ambientLightPos = glGetUniformLocation(program.handle(), "ambient_light");
+		//const glm::vec4 t_ambient{ 0.2f, 0.2f, 0.2f, 1.f };
+		const glm::vec4 t_ambient{ 0.5f, 0.5f, 0.5f, 1.f };
+		glUniform4fv(t_ambientLightPos, 1, glm::value_ptr(t_ambient));
+		
+		
+		const auto t_topleftPos = glGetUniformLocation(program.handle(), "top_left_pos");
+		const glm::vec2 t_topleft{ 0.f, 0.f };
+		glUniform2fv(t_topleftPos, 1, glm::value_ptr(t_topleft));
+		
+		const auto t_lightPos = glGetUniformLocation(program.handle(), "light_pos");
+		glm::vec2 t_light{ 10.f, 7.f };
+		glUniform2fv(t_lightPos, 1, glm::value_ptr(t_light));
+		
+		
+		const auto t_lightColorPos = glGetUniformLocation(program.handle(), "light_clr");
+		//const glm::vec4 t_lightClr{ 0.92f, 0.5216f, 0.1255f, 1.f };
+		//const glm::vec4 t_lightClr{ 0.96f, 0.81f, 0.4549f, 1.f }; 
+		
+		const glm::vec4 t_lightClr{1.000f, 0.647f, 0.000f, 1.f };
+		
+		//const glm::vec4 t_lightClr{1.000f, 0.1f, 0.9f, 1.f };
+		glUniform4fv(t_lightColorPos, 1, glm::value_ptr(t_lightClr));
+		
+		const auto t_lightModeDebugPos = glGetUniformLocation(program.handle(), "debugMode");
+		glUniform1i(t_lightModeDebugPos, lightModeDebug);
+		
+		const auto t_useDynamicPos = glGetUniformLocation(program.handle(), "use_dynamic_lighting");
+		glUniform1i(t_useDynamicPos, useDynamicLighting);
+		
+		
+
+		::std::size_t inputCounter = 0;
+		const ::std::size_t inputPeriod = 4;
+
+		::std::size_t animCounter = 0;
+		const ::std::size_t animPeriod = 6;
+		//const ::std::size_t animPeriod = 7;
 
 		while (!glfwWindowShouldClose(window))
 		{
-			if(glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+			if(animCounter >= animPeriod)
 			{
-				t_cursorPos.y = (t_cursorPos.y == 0 ? 0 : t_cursorPos.y-1);
-			}
+				animCounter = 0;
 			
-			if(glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-			{
-				t_cursorPos.y = (t_cursorPos.y == t_glyphCount.y-1 ? t_glyphCount.y-1 : t_cursorPos.y+1);
+				const float t_intensityMod = t_intensityDistrib(t_gen);
+				glUniform1f(t_lightIntensityPos, t_intensity * t_intensityMod);
 			}
+			else ++animCounter;
+		
+			if(inputCounter >= inputPeriod)
+			{			
+				inputCounter = 0;
+				
+				if(glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
+				{
+					useLighting = !useLighting;
+					glUniform1i(t_useLightingPos, useLighting);
+				}
+			
+				if(glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS)
+				{
+					lightModeDebug = !lightModeDebug;
+					glUniform1i(t_lightModeDebugPos, lightModeDebug);
+				}
+				
+				if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+				{
+					useDynamicLighting = !useDynamicLighting;
+					glUniform1i(t_useDynamicPos, useDynamicLighting);
+				}
+				
+				
+				if(glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+				{
+					t_light.y = glm::max(t_light.y - 1.f, 6.f); 
+					glUniform2fv(t_lightPos, 1, glm::value_ptr(t_light));
+				}
+				
+				if(glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+				{
+					t_light.y = glm::min(t_light.y + 1.f, 20.f-7.f); 
+					glUniform2fv(t_lightPos, 1, glm::value_ptr(t_light));
+				}
+				
+				if(glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+				{
+					t_light.x = glm::max(t_light.x - 1.f, 6.f); 
+					glUniform2fv(t_lightPos, 1, glm::value_ptr(t_light));
+				}
+				
+				if(glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+				{
+					t_light.x = glm::min(t_light.x + 1.f, 20.f-7.f); 
+					glUniform2fv(t_lightPos, 1, glm::value_ptr(t_light));
+				}
+				
+			}
+			else ++inputCounter;
 			
 			glUniform2iv(t_cursorPosPos, 1, glm::value_ptr(t_cursorPos));
 		
