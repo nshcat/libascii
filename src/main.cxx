@@ -140,11 +140,11 @@ int main()
 			return ((t_glyphCount.x * y) + x) * 2;
 		};
 		
-		for(::std::size_t iy = 5; iy < 20-5; ++iy)
+		for(::std::size_t iy = 2; iy < 20-2; ++iy)
 		{
-			if(iy == 5 || iy == 20-6)
+			if(iy == 2 || iy == 20-3)
 			{
-				for(::std::size_t ix = 5; ix < 20-5; ++ix)
+				for(::std::size_t ix = 2; ix < 20-2; ++ix)
 				{
 					t_Data[t_pos(ix, iy)] = glm::uvec4{187, 187, 187, 61};
 					t_Data[t_pos(ix, iy)+1] = glm::uvec4{187, 187, 187, 0};
@@ -154,19 +154,19 @@ int main()
 			}
 			else
 			{
-				t_Data[t_pos(5, iy)] = glm::uvec4{187, 187, 187, 61};
-				t_Data[t_pos(5, iy)+1] = glm::uvec4{187, 187, 187, 0};
-				t_Data[t_pos(5, iy)+1].a |= (LIGHT_DIM << LIGHT_SHIFT);
+				t_Data[t_pos(2, iy)] = glm::uvec4{187, 187, 187, 61};
+				t_Data[t_pos(2, iy)+1] = glm::uvec4{187, 187, 187, 0};
+				t_Data[t_pos(2, iy)+1].a |= (LIGHT_DIM << LIGHT_SHIFT);
 				
-				t_Data[t_pos(20-6, iy)] = glm::uvec4{187, 187, 187, 61};
-				t_Data[t_pos(20-6, iy)+1] = glm::uvec4{187, 187, 187, 0};
-				t_Data[t_pos(20-6, iy)+1].a |= (LIGHT_DIM << LIGHT_SHIFT);
+				t_Data[t_pos(20-3, iy)] = glm::uvec4{187, 187, 187, 61};
+				t_Data[t_pos(20-3, iy)+1] = glm::uvec4{187, 187, 187, 0};
+				t_Data[t_pos(20-3, iy)+1].a |= (LIGHT_DIM << LIGHT_SHIFT);
 			}
-		}
+		}		
 		
-		for(::std::size_t iy = 6; iy < 20-6; ++iy)
+		for(::std::size_t iy = 3; iy < 20-3; ++iy)
 		{
-			for(::std::size_t ix = 6; ix < 20-6; ++ix)
+			for(::std::size_t ix = 3; ix < 20-3; ++ix)
 			{
 				auto t_clr = t_groundClr(t_gen);
 				t_Data[t_pos(ix, iy)] = glm::uvec4{0, 0, 0, 0};
@@ -175,18 +175,42 @@ int main()
 			}
 		}
 		
-		for(::std::size_t iy = 6; iy < 15; ++iy)
+		for(::std::size_t iy = 6; iy < 20-6; ++iy)
+		{
+			if(iy == 6 || iy == 20-7)
+			{
+				for(::std::size_t ix = 6; ix < 20-6; ++ix)
+				{
+					if((ix % 2) != 0)
+						continue;
+				
+					t_Data[t_pos(ix, iy)] = glm::uvec4{187, 187, 187, 61};
+					t_Data[t_pos(ix, iy)+1] = glm::uvec4{187, 187, 187, 0};
+					
+					t_Data[t_pos(ix, iy)+1].a = (LIGHT_DIM << LIGHT_SHIFT);
+				}
+			}
+			else
+			{
+				t_Data[t_pos(6, iy)] = glm::uvec4{187, 187, 187, 61};
+				t_Data[t_pos(6, iy)+1] = glm::uvec4{187, 187, 187, 0};
+				t_Data[t_pos(6, iy)+1].a = (LIGHT_DIM << LIGHT_SHIFT);
+				
+				t_Data[t_pos(20-7, iy)] = glm::uvec4{187, 187, 187, 61};
+				t_Data[t_pos(20-7, iy)+1] = glm::uvec4{187, 187, 187, 0};
+				t_Data[t_pos(20-7, iy)+1].a = (LIGHT_DIM << LIGHT_SHIFT);
+			}
+		}
+		
+		/*for(::std::size_t iy = 6; iy < 15; ++iy)
 		{
 			if(iy == 9) continue;
 		
 			t_Data[t_pos(9, iy)] = glm::uvec4{187, 187, 187, 61};
 			t_Data[t_pos(9, iy)+1] = glm::uvec4{187, 187, 187, 0};
 			t_Data[t_pos(9, iy)+1].a |= (LIGHT_DIM << LIGHT_SHIFT);
-			t_Data[t_pos(10, iy)] = glm::uvec4{187, 187, 187, 61};
-			t_Data[t_pos(10, iy)+1] = glm::uvec4{187, 187, 187, 0};
-			t_Data[t_pos(10, iy)+1].a |= (LIGHT_DIM << LIGHT_SHIFT);
 		}
-		
+		*/
 		
 		
 		
@@ -316,6 +340,7 @@ int main()
 		//const glm::vec4 t_lightClr{ 0.96f, 0.81f, 0.4549f, 1.f }; 
 		
 		const glm::vec4 t_lightClr{1.000f, 0.647f, 0.000f, 1.f };
+		//const glm::vec4 t_lightClr{1.000f, 0.0f, 1.000f, 1.f };
 		
 		//const glm::vec4 t_lightClr{1.000f, 0.1f, 0.9f, 1.f };
 		glUniform4fv(t_lightColorPos, 1, glm::value_ptr(t_lightClr));
@@ -397,25 +422,25 @@ int main()
 				
 				if(glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
 				{
-					t_light.y = glm::max(t_light.y - 1.f, 6.f); 
+					t_light.y = glm::max(t_light.y - 1.f, 3.f); 
 					glUniform2fv(t_lightPos, 1, glm::value_ptr(t_light));
 				}
 				
 				if(glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
 				{
-					t_light.y = glm::min(t_light.y + 1.f, 20.f-7.f); 
+					t_light.y = glm::min(t_light.y + 1.f, 20.f-4.f); 
 					glUniform2fv(t_lightPos, 1, glm::value_ptr(t_light));
 				}
 				
 				if(glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
 				{
-					t_light.x = glm::max(t_light.x - 1.f, 6.f); 
+					t_light.x = glm::max(t_light.x - 1.f, 3.f); 
 					glUniform2fv(t_lightPos, 1, glm::value_ptr(t_light));
 				}
 				
 				if(glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
 				{
-					t_light.x = glm::min(t_light.x + 1.f, 20.f-7.f); 
+					t_light.x = glm::min(t_light.x + 1.f, 20.f-4.f); 
 					glUniform2fv(t_lightPos, 1, glm::value_ptr(t_light));
 				}
 				
