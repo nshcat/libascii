@@ -18,7 +18,7 @@ smooth in vec2 shadowCoords;
 smooth in vec2 cursorCoords;
 
 flat in uint[8] shadowTypes;
-flat in float lightIntensity;
+flat in vec4 lightColor;
 flat in uint lightingMode;
 
 // Light data
@@ -144,45 +144,19 @@ void main()
 		vec4 shaded_color = fragmentColor;
 		
 		// Ambient lighting
-		shaded_color = mix(vec4(0.f, 0.f, 0.f, 1.f), shaded_color, ambient_light);
-		
+		shaded_color = mix(vec4(0.f, 0.f, 0.f, 1.f), shaded_color, ambient_light);	
 		
 		// Dynamic lighting
 		if(use_dynamic_lighting)
-		{
-			/*// Calculate distance to light source
-			vec2 cellpos = top_left_pos + cellCoords;
-			
-			if(!use_smooth_lighting)
+		{		
+			if(lightingMode != LIGHT_DIM)
 			{
-				cellpos = floor(cellpos);
+				//shaded_color = mix(shaded_color, lightColor, lightColor.a);
+				//shaded_color.a = 1.f;
+				shaded_color += lightColor;
 			}
-			
-			const float dist = length(cellpos - light_pos);
-			
-			
-			// Calculate intensity
-			//float intensity = min(1.f / (0.1 + 0.5*dist + 0.15*pow(dist, 2.0f)), 1.f) * light_intensity;
-			//float intensity = min(1.f / (1. + 0.1*dist + 0.01*pow(dist, 2.0f)), 1.f) * light_intensity;
-			float intensity = min(1.f / (1. + 0.4*dist + 0.01*pow(dist, 2.0f)), 1.f) * light_intensity;
-			
-			// FOR ALL LIGHTS
-			/*vec4 dynamic_color = light_clr * intensity;
-			
-			if(lightingMode == LIGHT_DIM)
-				dynamic_color *= 0.7f;
-			
-			shaded_color = shaded_color * dynamic_color;*/
-			
-			float intensity = lightIntensity;
-			
-			if(lightingMode == LIGHT_DIM)
-				intensity *= 0.0f;
-			shaded_color = mix(shaded_color, light_clr, intensity);
 		}
-		
-		
-		
+				
 		fragmentColor = shaded_color;
 	}
 }

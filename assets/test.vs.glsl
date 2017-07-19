@@ -33,10 +33,11 @@ smooth out vec2 texCoords;
 smooth out vec2 shadowCoords;
 smooth out vec2 cursorCoords;
 
-flat out float lightIntensity;
 flat out int hasCursor;
 flat out uint[8] shadowTypes;
 flat out uint lightingMode;
+
+flat out vec4 lightColor;	// The transparent result color that resembles accumulated influence of light sources.
 
 uniform ivec2 glyph_dimensions;
 uniform ivec2 sheet_dimensions;
@@ -55,6 +56,7 @@ uniform vec2 top_left_pos;
 uniform vec2 light_pos;
 uniform vec4 light_clr;
 uniform float light_intensity; // [0, 1]
+uniform float light_intensity2; // [0, 1]
 uniform bool debug_mode;
 // --
 
@@ -311,6 +313,78 @@ bool can_see_light2(in ivec2 start_pos, in ivec2 end_pos)
 	return true;
 }
 
+// Calculate light color of single light source
+/*void light(in ivec2 p_cellPos, in ivec2 p_lightPos, in float p_lightIntensity, in vec4 p_lightColor, inout vec4 p_shadeColor)
+{
+	// TODO: Cutoff. If distance is greater than a value N, stop right away.
+
+	// --- Check if light is visible
+	if(!can_see_light2(p_cellPos, p_lightPos))
+		return;
+		
+	// --- Calculate distance to light
+	const float dist = length(p_cellPos - p_lightPos);
+	
+	// --- Calculate intensity TODO custom a, b and c as vec3 in light data
+	const float intensity = min(1.f / (1. + 0.4*dist + 0.01*pow(dist, 2.0f)), 1.f) * p_lightIntensity;
+	
+	// --- Create light color vector
+	const vec4 tmpColor = vec4(p_lightColor.rgb, intensity);
+	
+	// --- Use alpha blending to create new intermediate color
+	p_shadeColor.a = tmpColor.a + p_shadeColor.a*(1.f - tmpColor.a);
+	p_shadeColor.rgb = (tmpColor.rgb*tmpColor.a + p_shadeColor.rgb*p_shadeColor.a*(1.f-tmpColor.a)) / p_shadeColor.a;
+	
+	if(p_shadeColor.a == 0.f)
+		p_shadeColor.rgb = vec3(0.f);
+}*/
+
+
+/*void light(in ivec2 p_cellPos, in ivec2 p_lightPos, in float p_lightIntensity, in vec4 p_lightColor, inout vec4 p_shadeColor)
+{
+	// TODO: Cutoff. If distance is greater than a value N, stop right away.
+
+	// --- Check if light is visible
+	if(!can_see_light2(p_cellPos, p_lightPos))
+		return;
+		
+	// --- Calculate distance to light
+	const float dist = length(p_cellPos - p_lightPos);
+	
+	// --- Calculate intensity TODO custom a, b and c as vec3 in light data
+	const float intensity = min(1.f / (1. + 0.4*dist + 0.01*pow(dist, 2.0f)), 1.f);
+	
+	p_shadeColor += intensity*p_lightColor;//*p_lightIntensity;
+	p_shadeColor.a = 1.f;
+}*/
+
+void light(in ivec2 p_cellPos, in ivec2 p_lightPos, in float p_lightIntensity, in vec4 p_lightColor, in float p_radius, in float p_constAttFact, inout vec4 p_shadeColor)
+{
+	// TODO: Cutoff. If distance is greater than a value N, stop right away.
+
+	// --- Check if light is visible
+	if(!can_see_light2(p_cellPos, p_lightPos))
+		return;
+		
+	// --- Calculate distance to light
+	const float dist = length(p_cellPos - p_lightPos);
+	
+	// --- Calculate intensity
+	// THIS USES THE LIGHT RADIUS
+	// => TODO: Expose const_att_factor and radius
+	const float const_att_factor = p_constAttFact;
+	float intensity = min(1.f / (const_att_factor + ((2.f/p_radius)*dist) + (1.f/pow(p_radius, 2.f))*pow(dist, 2.0f)), 1.f);
+	
+	// Calc max distance
+	/*const float max_dist = p_radius * ( sqrt(p_lightIntensity/0.01f) - 1.f );
+	
+	if(dist >= max_dist)
+		intensity = 0.f;*/
+	
+	p_shadeColor += intensity * p_lightColor * p_lightIntensity;
+	p_shadeColor.a = 1.f;
+}
+
 void lighting()
 {
 	lightingMode = get_lighting_mode();
@@ -325,17 +399,15 @@ void lighting()
 		cellCoords += top_left_pos;
 		
 		// TODO needed?
-		cellCoords = floor(cellCoords);
-			
-		// Check if we can even see the light from here
-		if(!can_see_light2(ivec2(cellCoords), ivec2(light_pos)))
-			return;
-			
-		// -- Distance to light
-		const float dist = length(cellCoords - light_pos);
+		//cellCoords = floor(cellCoords);
 		
-		// -- Calculate intensity
-		lightIntensity = min(1.f / (1. + 0.4*dist + 0.01*pow(dist, 2.0f)), 1.f) * light_intensity;		
+		// Initialize destination color
+		lightColor = vec4(0.f);
+		
+		// Handle lights
+		light(ivec2(cellCoords), ivec2(light_pos), light_intensity, light_clr, 1.5f, 1.f, lightColor);
+		
+		light(ivec2(cellCoords), ivec2(3, 3), light_intensity2, light_clr, 10.f, 1.f, lightColor);
 	}
 }
 

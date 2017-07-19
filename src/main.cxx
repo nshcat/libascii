@@ -101,7 +101,7 @@ int main()
 		
 		// Resize window
 		const glm::ivec2 t_glyphDim = t_tex.glyph_size();
-		const glm::ivec2 t_glyphCount = /*{ 20, 20 };//*/ { 20, 20 };
+		const glm::ivec2 t_glyphCount = /*{ 20, 20 };//*/ { 60, 30 };
 		
 		const auto t_width = t_glyphDim.x * t_glyphCount.x;
 		const auto t_height = t_glyphDim.y * t_glyphCount.y;
@@ -140,11 +140,11 @@ int main()
 			return ((t_glyphCount.x * y) + x) * 2;
 		};
 		
-		for(::std::size_t iy = 2; iy < 20-2; ++iy)
+		for(::std::size_t iy = 2; iy < 30-2; ++iy)
 		{
-			if(iy == 2 || iy == 20-3)
+			if(iy == 2 || iy == 30-3)
 			{
-				for(::std::size_t ix = 2; ix < 20-2; ++ix)
+				for(::std::size_t ix = 2; ix < 50-2; ++ix)
 				{
 					t_Data[t_pos(ix, iy)] = glm::uvec4{187, 187, 187, 61};
 					t_Data[t_pos(ix, iy)+1] = glm::uvec4{187, 187, 187, 0};
@@ -158,15 +158,15 @@ int main()
 				t_Data[t_pos(2, iy)+1] = glm::uvec4{187, 187, 187, 0};
 				t_Data[t_pos(2, iy)+1].a |= (LIGHT_DIM << LIGHT_SHIFT);
 				
-				t_Data[t_pos(20-3, iy)] = glm::uvec4{187, 187, 187, 61};
-				t_Data[t_pos(20-3, iy)+1] = glm::uvec4{187, 187, 187, 0};
-				t_Data[t_pos(20-3, iy)+1].a |= (LIGHT_DIM << LIGHT_SHIFT);
+				t_Data[t_pos(50-3, iy)] = glm::uvec4{187, 187, 187, 61};
+				t_Data[t_pos(50-3, iy)+1] = glm::uvec4{187, 187, 187, 0};
+				t_Data[t_pos(50-3, iy)+1].a |= (LIGHT_DIM << LIGHT_SHIFT);
 			}
 		}		
 		
-		for(::std::size_t iy = 3; iy < 20-3; ++iy)
+		for(::std::size_t iy = 3; iy < 30-3; ++iy)
 		{
-			for(::std::size_t ix = 3; ix < 20-3; ++ix)
+			for(::std::size_t ix = 3; ix < 50-3; ++ix)
 			{
 				auto t_clr = t_groundClr(t_gen);
 				t_Data[t_pos(ix, iy)] = glm::uvec4{0, 0, 0, 0};
@@ -317,6 +317,11 @@ int main()
 		glUniform1f(t_lightIntensityPos, t_intensity);
 		
 		
+		const auto t_lightIntensity2Pos = glGetUniformLocation(program.handle(), "light_intensity2");
+		glUniform1f(t_lightIntensity2Pos, t_intensity);
+		
+		
+		
 		const auto t_useLightingPos = glGetUniformLocation(program.handle(), "use_lighting");
 		glUniform1i(t_useLightingPos, useLighting);
 		
@@ -379,6 +384,14 @@ int main()
 				const float t_intensityMod = t_intensityDistrib(t_gen);
 				glUniform1f(t_lightIntensityPos, t_intensity * t_intensityMod);
 				
+				const float t_intensityMod2 = t_intensityDistrib(t_gen);
+				glUniform1f(t_lightIntensity2Pos, t_intensity * t_intensityMod2);
+				
+				const glm::vec4 t_light = t_lightClr * t_intensityMod;
+				
+				glUniform4fv(t_lightColorPos, 1, glm::value_ptr(t_light));
+		
+				
 				/*const double t_mod = glm::abs(glm::cos(glfwGetTime()*2.));
 				
 				if(t_mod <= 0.1f && !latch)
@@ -428,7 +441,7 @@ int main()
 				
 				if(glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
 				{
-					t_light.y = glm::min(t_light.y + 1.f, 20.f-4.f); 
+					t_light.y = glm::min(t_light.y + 1.f, 30.f-4.f); 
 					glUniform2fv(t_lightPos, 1, glm::value_ptr(t_light));
 				}
 				
@@ -440,7 +453,7 @@ int main()
 				
 				if(glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
 				{
-					t_light.x = glm::min(t_light.x + 1.f, 20.f-4.f); 
+					t_light.x = glm::min(t_light.x + 1.f, 50.f-4.f); 
 					glUniform2fv(t_lightPos, 1, glm::value_ptr(t_light));
 				}
 				
