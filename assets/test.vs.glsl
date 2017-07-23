@@ -1,5 +1,10 @@
 #version 450
 
+// TODO: ONE parsing routine that populates a CellData structure
+// TODO: Use a CellData instance as global value that can be accessed by all functions
+// TODO: Create two interface blocks: FlatOutData and SmoothOutData
+
+
 #define SHADOW_N 0x1 << 8
 #define SHADOW_W 0x1 << 9
 #define SHADOW_S 0x1 << 10
@@ -21,6 +26,8 @@
 #define LIGHT_DIM 1
 #define LIGHT_FULL 2
 
+
+
 // Front an Background color
 flat out vec4 frontColor;
 flat out vec4 backColor;
@@ -32,11 +39,10 @@ flat out float fogFactor;
 smooth out vec2 texCoords;
 smooth out vec2 shadowCoords;
 smooth out vec2 cursorCoords;
-
 flat out int hasCursor;
 flat out uint[8] shadowTypes;
-flat out uint lightingMode;
 
+flat out uint lightingMode;
 flat out vec4 lightColor;	// The transparent result color that resembles accumulated influence of light sources.
 
 uniform ivec2 glyph_dimensions;
@@ -58,9 +64,33 @@ uniform vec4 light_clr;
 uniform float light_intensity; // [0, 1]
 uniform float light_intensity2; // [0, 1]
 uniform bool debug_mode;
-// --
 
 
+#define MAX_LIGHTS 25
+struct Light
+{
+	vec2  position;		// ┐
+	float intensity;	// │
+	bool  use_radius;	// ┘
+	vec4  color;		// 
+	vec3  att_factors;	// ┐
+	float radius;		// ┘
+};
+
+struct LightingState
+{
+	bool use_lighting;	// ┐
+	bool use_dynamic;	// │
+	vec2 tl_position;	// ┘
+	vec4 ambient;		//
+};
+
+layout (std140, binding = 0) uniform Lights
+{
+	LightingState state;
+	Light lights[MAX_LIGHTS];
+	uint num_lights;
+};
 
 // Format: (r,g,b,glyph)(r,g,b,data)
 // With data:
@@ -73,6 +103,34 @@ uniform bool debug_mode;
 // Uses uvec4.
 // Cursor field is unused for now.
 uniform usamplerBuffer input_buffer;
+
+
+// All data that can be extracted from the input buffer
+struct CellData
+{
+	vec4 front_color;
+	vec4 back_color;
+	vec2 glyph;
+	float fog_percentage;
+	uint shadows[8];
+	uint light_mode;
+	bool gui_mode;			// Acts like a normal tile for light calculations (using light_mode), but is drawn at 100% intensity
+};
+
+// Calculation results
+
+// TODO interface block
+struct FlatOutData
+{
+	vec4 lighting_result;
+	bool has_cursor;
+	float fog_factor;		// Factor ready for fog blending
+};
+
+struct SmoothOutData
+{
+
+};
 
 const vec2 positions[] = vec2[6](
 	vec2(1, 1),	// BR
