@@ -105,32 +105,11 @@ layout (std140, binding = 0) uniform Lights
 uniform usamplerBuffer input_buffer;
 
 
-// All data that can be extracted from the input buffer
-struct CellData
-{
-	vec4 front_color;
-	vec4 back_color;
-	vec2 glyph;
-	float fog_percentage;
-	uint shadows[8];
-	uint light_mode;
-	bool gui_mode;			// Acts like a normal tile for light calculations (using light_mode), but is drawn at 100% intensity
-};
 
 // Calculation results
 
 // TODO interface block
-struct FlatOutData
-{
-	vec4 lighting_result;
-	bool has_cursor;
-	float fog_factor;		// Factor ready for fog blending
-};
 
-struct SmoothOutData
-{
-
-};
 
 const vec2 positions[] = vec2[6](
 	vec2(1, 1),	// BR

@@ -4,7 +4,7 @@
 #include <utility>
 #include <random>
 #include <cstdlib>
-
+#include <fstream>
 #include <vector>
 #include <cstdint>
 #include <GLXW/glxw.h>
@@ -264,6 +264,7 @@ int main()
 		};
 
 		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		
 		
 		program.use();
 		
