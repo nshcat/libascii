@@ -30,6 +30,8 @@
 //    like a "normal" cell for lighting calculations
 //  - Add two ambient light values: inside and outside. This would require a bit
 //    to indicate whether a certain cell is inside or outside.
+//  - Maybe add materials that let light through but color it (stained glass).
+//    This could be implemented using new light modes.
 //
 //===----------------------------------------------------------------------===//
 
@@ -367,6 +369,109 @@ void calc_fog()
 	flat_out.fog_factor = clamp(t_fogFactor, 0.f, 1.f);
 }
 
+
+// Checks whether the screen cell lets light through
+bool check_point(in ivec2 p_point)
+{
+	// Since p_point is actually in absolute game world coordinates,
+	// we have to substract the absolute position of top left
+	const ivec2 t_relPoint = p_point - light_data.state.tl_position;
+	
+	// Check if it is in screen bounds
+	const ivec2 t_clamped = ivec2(
+		clamp(t_relPoint.x, 0, glyph_count.x-1),
+		clamp(t_relPoint.y, 0, glyph_count.y-1)
+	);
+	
+	if(t_relPoint != t_clamped)
+		return false; // Assume that the light is not visible anymore.
+		// This COULD be problematic (lights suddenly disappearing even though
+		// they should still be in range), but we can't do any better here
+		// since the only data we have is the screen. No data of the
+		// surroundings is available. The game could focus the screen on the
+		// player to make this limitation less obvious.
+		
+	// Fetch entry containg the lighting mode (low word)
+	const int t_index = int((t_relPoint.y * glyph_count.x) + t_relPoint.x);
+	const uint t_word = texelFetch(input_buffer, (index*2)+1).a;
+	
+	const  uint t_lm = read_lm(t_word);
+	
+	return !(t_lm == LIGHT_NONE || t_lm == LIGHT_DIM);
+}
+
+// Calculates whether a light source can be seen from given cell
+bool visible(in ivec2 p_cellPos, in ivec2 p_lightPos)
+{
+	// The following code is an implementation of Bresenham's algorithm.
+	ivec2 start = p_cellPos;
+
+	int delta_x = p_lightPos.x - p_cellPos.x;
+	int ix = 0;
+	{
+		if(delta_x > 0)
+			ix = 1;
+		else if(delta_x < 0)
+			ix = -1;
+	}
+	delta_x = abs(delta_x) << 1;
+	
+	
+	int delta_y = p_lightPos.y - p_cellPos.y;
+	int iy = 0;
+	{
+		if(delta_y > 0)
+			iy = 1;
+		else if(delta_y < 0)
+			iy = -1;
+	}
+	delta_y = abs(delta_y) << 1;
+	
+	if(!check_point(uvec2(start)))
+		return false;
+		
+	if(delta_x >= delta_y)
+	{
+		int error = (delta_y - (delta_x >> 1));
+		
+		while(start.x != p_lightPos.x)
+		{
+			if( (error >= 0) && ( (error != 0) || (ix > 0)) )
+			{
+				error -= delta_x;
+				start.y += iy;
+			}
+			
+			error += delta_y;
+			start.x += ix;
+			
+			if(!check_point(uvec2(start)))
+				return false;
+		}
+	}
+	else
+	{
+		int error = (delta_x - (delta_y >> 1));
+		
+		while(start.y != p_lightPos.y)
+		{
+			if( (error >= 0) && ( (error != 0) || (iy > 0)) )
+			{
+				error -= delta_y;
+				start.x += ix;
+			}
+			
+			error += delta_x;
+			start.y += iy;
+			
+			if(!check_point(uvec2(start)))
+				return false;
+		}
+	}
+	
+	return true;
+}
+
 void calc_lighting()
 {
 	if(light_data.state.use_lighting && light_data.state.use_dynamic 
@@ -386,6 +491,9 @@ void calc_lighting()
 			Light t_light = light_data.lights[t_index];
 			
 			// Check if light is visible
+			// Note that we ALLOW the light to be outside of the screen.
+			// Its important though that the routine does not access out of
+			// screen bounds
 			if(!visible(t_cellPos, t_light.position))
 				continue;
 				
@@ -421,6 +529,17 @@ void calc_lighting()
 		// Output calculated light color
 		flat_out.lighting_result = t_lightColor;
 	}
+}
+
+// Writes remaining data to the fragment shader input
+void write_data()
+{
+	flat_out.front_color = this_cell.front_color;
+	flat_out.back_color = this_cell.back_color;
+	flat_out.shadows = this_cell.shadows;
+	flat_out.has_cursor = false; // TODO Implement cursor
+	flat_out.light_mode = this_cell.light_mode;
+	flat_out.gui_mode = this_cell.gui_mode;
 }
 //===----------------------------------------------------------------------===//
 
