@@ -36,6 +36,7 @@ constexpr ::std::uint32_t LIGHT_NONE = 0;
 constexpr ::std::uint32_t LIGHT_DIM = 1;
 constexpr ::std::uint32_t LIGHT_FULL = 2;
 
+
 void error_callback(int error, const char* description)
 {
 	std::cerr << "glfw error: " << description << std::endl;

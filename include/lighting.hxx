@@ -1,3 +1,6 @@
+// TODO: light_wrapper: On construction creates light and stores handle. When dereferenced, calls modify_light.
+//		   				On destruction calls destroy_light.
+
 #pragma once
 
 #include <type_traits>
@@ -7,16 +10,25 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <glm/gtx/transform.hpp>
 
+using gpu_bool = ::std::uint32_t;
 
 struct lighting_state
 {
-	
+	gpu_bool m_UseLighting{true};
+	gpu_bool m_UseDynamic{true};		
+	glm::vec2 m_TlPositon{0.f, 0.f};
+	glm::vec4 m_AmbientLight{1.f};
 };
 
 struct light
 {
+	glm::ivec2 m_Position;
+	float m_Intensity;
+	gpu_bool m_UseRadius;
+	glm::vec4 m_Color;
+	glm::vec3 m_AttFactors;
+	float m_Radius;
 };
 
 
@@ -33,8 +45,12 @@ class light_manager
 	static constexpr ::std::size_t state_size = 16 + 16;
 	static constexpr ::std::size_t buffer_size = state_size + (max_lights * light_size) + count_size;
 	
+	static_assert(sizeof(light) == light_size, "size of struct light does not match light_size");
+	static_assert(sizeof(lighting_state) == state_size, "size of struct lighting_state does not match state_size");
+	
 	public:
 		using handle_type = ::std::size_t;
+		using size_type = ::std::uint32_t;
 	
 	public:
 		light_manager();
@@ -76,7 +92,8 @@ class light_manager
 		bool m_Dirty{true}; 						//< Whether the data was modified this frame
 		unsigned m_GPUBuffer;						//< Handle of GPU Buffer
 		
-		::std::array<bool, max_lights> m_Used;		//< Contains info about which entries are used
-		::std::array<light, max_lights> m_Lights; 	//< Light data
-		lighting_state m_State;						//< Lighting state
+		size_type m_LightCount{0U};					//< Current number of lights
+		::std::array<bool, max_lights> m_Used{false};	//< Contains info about which entries are used
+		::std::array<light, max_lights> m_Lights; 		//< Light data
+		lighting_state m_State;							//< Lighting state
 };
