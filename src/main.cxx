@@ -254,7 +254,7 @@ int main()
 		
 		
 		
-		
+		// Empty vertex buffer
 		glGenBuffers(1, &vertex_buffer);
 		glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
 		
