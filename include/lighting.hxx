@@ -86,7 +86,11 @@ class light_manager
 		lighting_state& modify_state();
 		
 		// Checks if there is enough space left for N lights
-		bool has_space(::std::size_t p_amount = 1U);
+		bool has_space(::std::size_t p_amount = 1U) const;
+		
+	private:
+		// Check if handle is in bounds
+		bool check_handle(handle_type) const;
 	
 	private:
 		bool m_Dirty{true}; 						//< Whether the data was modified this frame
