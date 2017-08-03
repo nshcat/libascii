@@ -18,6 +18,7 @@
 #include <texture.hxx>
 #include <shadow_texture.hxx>
 #include <weighted_collection.hxx>
+#include <lighting.hxx>
 
 constexpr ::std::uint32_t SHADOW_N = 0x1 << 8;
 constexpr ::std::uint32_t SHADOW_W = 0x1 << 9;
@@ -260,14 +261,17 @@ int main()
 		glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
 		
 		ut::gl::program program{
-			ut::gl::vertex_shader{ ut::gl::from_file, "assets/test.vs.glsl" },
-			ut::gl::fragment_shader{ ut::gl::from_file, "assets/test.fs.glsl" },
+			ut::gl::vertex_shader{ ut::gl::from_file, "assets/ascii.vs.glsl" },
+			ut::gl::fragment_shader{ ut::gl::from_file, "assets/ascii.fs.glsl" },
 		};
 
 		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		
 		
 		program.use();
+		
+		// Create light manager
+		light_manager t_lightManager{ };
 		
 		// Set uniforms	
 		const auto t_cursorPosPos = glGetUniformLocation(program.handle(), "cursor_pos");
@@ -314,35 +318,35 @@ int main()
 		const auto t_samplerShadowPos = glGetUniformLocation(program.handle(), "shadow_texture");
 		glUniform1i(t_samplerShadowPos, 2);
 		
-		const auto t_lightIntensityPos = glGetUniformLocation(program.handle(), "light_intensity");
+		/*const auto t_lightIntensityPos = glGetUniformLocation(program.handle(), "light_intensity");
 		const float t_intensity = 0.7f;
 		glUniform1f(t_lightIntensityPos, t_intensity);
 		
 		
 		const auto t_lightIntensity2Pos = glGetUniformLocation(program.handle(), "light_intensity2");
-		glUniform1f(t_lightIntensity2Pos, t_intensity);
+		glUniform1f(t_lightIntensity2Pos, t_intensity);*/
 		
 		
 		
-		const auto t_useLightingPos = glGetUniformLocation(program.handle(), "use_lighting");
+		/*const auto t_useLightingPos = glGetUniformLocation(program.handle(), "use_lighting");
 		glUniform1i(t_useLightingPos, useLighting);
 		
 		const auto t_ambientLightPos = glGetUniformLocation(program.handle(), "ambient_light");
 		//const glm::vec4 t_ambient{ 0.2f, 0.2f, 0.2f, 1.f };
 		const glm::vec4 t_ambient{ 0.5f, 0.5f, 0.5f, 1.f };
-		glUniform4fv(t_ambientLightPos, 1, glm::value_ptr(t_ambient));
+		glUniform4fv(t_ambientLightPos, 1, glm::value_ptr(t_ambient));*/
 		
 		
-		const auto t_topleftPos = glGetUniformLocation(program.handle(), "top_left_pos");
+		/*const auto t_topleftPos = glGetUniformLocation(program.handle(), "top_left_pos");
 		const glm::vec2 t_topleft{ 0.f, 0.f };
 		glUniform2fv(t_topleftPos, 1, glm::value_ptr(t_topleft));
 		
 		const auto t_lightPos = glGetUniformLocation(program.handle(), "light_pos");
 		glm::vec2 t_light{ 10.f, 7.f };
-		glUniform2fv(t_lightPos, 1, glm::value_ptr(t_light));
+		glUniform2fv(t_lightPos, 1, glm::value_ptr(t_light));*/
 		
 		
-		const auto t_lightColorPos = glGetUniformLocation(program.handle(), "light_clr");
+		/*const auto t_lightColorPos = glGetUniformLocation(program.handle(), "light_clr");
 		//const glm::vec4 t_lightClr{ 0.92f, 0.5216f, 0.1255f, 1.f };
 		//const glm::vec4 t_lightClr{ 0.96f, 0.81f, 0.4549f, 1.f }; 
 		
@@ -350,32 +354,27 @@ int main()
 		//const glm::vec4 t_lightClr{1.000f, 0.0f, 1.000f, 1.f };
 		
 		//const glm::vec4 t_lightClr{1.000f, 0.1f, 0.9f, 1.f };
-		glUniform4fv(t_lightColorPos, 1, glm::value_ptr(t_lightClr));
+		glUniform4fv(t_lightColorPos, 1, glm::value_ptr(t_lightClr));*/
 		
-		const auto t_lightModeDebugPos = glGetUniformLocation(program.handle(), "debug_mode");
-		glUniform1i(t_lightModeDebugPos, lightModeDebug);
 		
-		const auto t_useDynamicPos = glGetUniformLocation(program.handle(), "use_dynamic_lighting");
-		glUniform1i(t_useDynamicPos, useDynamicLighting);
+		// Create one light
+		light t_light{
+			glm::ivec2{10.f, 7.f},
+			0.7f,
+			gpu_bool(true),
+			glm::vec4{ 1.f, .647f, 0.f, 1.f },
+			glm::vec3{ 0.f },
+			3.f
+		};
 		
+		// Register it and save handle
+		const auto t_lightHandle = t_lightManager.create_light(t_light);	
 
 		::std::size_t inputCounter = 0;
 		const ::std::size_t inputPeriod = 4;
 
 		::std::size_t animCounter = 0;
 		const ::std::size_t animPeriod = 6;
-		//const ::std::size_t animPeriod = 7;
-
-		/*::std::size_t clrCounter = 0;
-		::std::size_t numClr = 3;
-		bool latch = false;
-		
-		glm::vec4 t_clrs[3] =
-		{
-			{1.000f, 0.647f, 0.000f, 1.f },
-			{0.000f, 1.0f, 0.000f, 1.f },
-			{1.000f, 0.0f, 0.000f, 1.f }
-		};*/
 
 		while (!glfwWindowShouldClose(window))
 		{
@@ -384,6 +383,14 @@ int main()
 				animCounter = 0;
 			
 				const float t_intensityMod = t_intensityDistrib(t_gen);
+				
+				// We can use the intensity of the t_light object here, since
+				// that will never change
+				t_lightManager.modify_light(t_lightHandle).m_Intensity = 
+					t_light.m_Intensity * t_intensityMod;
+			
+			
+				/*const float t_intensityMod = t_intensityDistrib(t_gen);
 				glUniform1f(t_lightIntensityPos, t_intensity * t_intensityMod);
 				
 				const float t_intensityMod2 = t_intensityDistrib(t_gen);
@@ -391,7 +398,7 @@ int main()
 				
 				const glm::vec4 t_light = t_lightClr * t_intensityMod;
 				
-				glUniform4fv(t_lightColorPos, 1, glm::value_ptr(t_light));
+				glUniform4fv(t_lightColorPos, 1, glm::value_ptr(t_light));*/
 		
 				
 				/*const double t_mod = glm::abs(glm::cos(glfwGetTime()*2.));
@@ -417,52 +424,46 @@ int main()
 				inputCounter = 0;
 				
 				if(glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
-				{
-					useLighting = !useLighting;
-					glUniform1i(t_useLightingPos, useLighting);
-				}
-			
-				if(glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS)
-				{
-					lightModeDebug = !lightModeDebug;
-					glUniform1i(t_lightModeDebugPos, lightModeDebug);
-				}			
+				{			
+					auto t_ref = t_lightManager.modify_state();
+					t_ref.m_UseLighting = !t_ref.m_UseLighting;
+				}	
 				
 				if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 				{
-					useDynamicLighting = !useDynamicLighting;
-					glUniform1i(t_useDynamicPos, useDynamicLighting);
-				}
-				
+					auto t_ref = t_lightManager.modify_state();
+					t_ref.m_UseDynamic = !t_ref.m_UseDynamic;
+				}			
 				
 				if(glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
 				{
-					t_light.y = glm::max(t_light.y - 1.f, 3.f); 
-					glUniform2fv(t_lightPos, 1, glm::value_ptr(t_light));
+					t_light.m_Position.y = glm::max(t_light.m_Position.y - 1.f, 3.f); 
+					t_lightManager.modify_light(t_lightHandle).m_Position = t_light.m_Position;
 				}
 				
 				if(glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
 				{
-					t_light.y = glm::min(t_light.y + 1.f, 30.f-4.f); 
-					glUniform2fv(t_lightPos, 1, glm::value_ptr(t_light));
+					t_light.m_Position.y = glm::min(t_light.m_Position.y + 1.f, 30.f-4.f); 
+					t_lightManager.modify_light(t_lightHandle).m_Position = t_light.m_Position;
 				}
 				
 				if(glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-				{
-					t_light.x = glm::max(t_light.x - 1.f, 3.f); 
-					glUniform2fv(t_lightPos, 1, glm::value_ptr(t_light));
+				{				
+					t_light.m_Position.x = glm::max(t_light.m_Position.x - 1.f, 3.f); 
+					t_lightManager.modify_light(t_lightHandle).m_Position = t_light.m_Position;
 				}
 				
 				if(glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-				{
-					t_light.x = glm::min(t_light.x + 1.f, 50.f-4.f); 
-					glUniform2fv(t_lightPos, 1, glm::value_ptr(t_light));
+				{				
+					t_light.m_Position.x = glm::min(t_light.m_Position.x + 1.f, 50.f-4.f); 
+					t_lightManager.modify_light(t_lightHandle).m_Position = t_light.m_Position;
 				}
 				
 			}
 			else ++inputCounter;
 			
-			glUniform2iv(t_cursorPosPos, 1, glm::value_ptr(t_cursorPos));
+			// Sync local light data with gpu buffer
+			t_lightManager.sync();		
 		
 		    float ratio;
 		    int width, height;

@@ -1,6 +1,7 @@
 #include <stdexcept>
 #include <iterator>
 #include <algorithm>
+#include <sstream>
 #include <ut/cast.hxx>
 
 #include <lighting.hxx>
@@ -75,8 +76,11 @@ auto light_manager::create_light(const light& p_light)
 	
 	handle_type t_handle = ut::narrow_cast<handle_type>(::std::distance(m_Used.begin(), t_it));
 	
+	++m_LightCount;
+	
 	// Insert light data
 	m_Lights[t_handle] = p_light;
+	m_Used[t_handle] = true;
 	
 	return t_handle;
 }
@@ -92,7 +96,11 @@ light& light_manager::modify_light(handle_type p_handle)
 {
 	// First check if the handle is valid
 	if(!check_handle(p_handle) || !m_Used[p_handle])
-		throw ::std::runtime_error("Invalid handle");
+	{
+		::std::ostringstream t_ss{};
+		t_ss << "Invalid handle: " << p_handle;
+		throw ::std::runtime_error(t_ss.str());
+	}
 		
 	// Light state is now considered dirty.
 	m_Dirty = true;
@@ -108,6 +116,15 @@ lighting_state& light_manager::modify_state()
 	return m_State;
 }
 
+void light_manager::destroy_light(handle_type p_handle)
+{
+	if(!check_handle(p_handle) || !m_Used[p_handle])
+		throw ::std::runtime_error("Invalid handle");
+		
+	m_Used[p_handle] = false;
+	--m_LightCount;
+	m_Dirty = true;
+}
 
 bool light_manager::check_handle(handle_type p_handle) const
 {

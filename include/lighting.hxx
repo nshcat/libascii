@@ -18,17 +18,17 @@ struct lighting_state
 	gpu_bool m_UseLighting{true};
 	gpu_bool m_UseDynamic{true};		
 	glm::vec2 m_TlPositon{0.f, 0.f};
-	glm::vec4 m_AmbientLight{1.f};
+	glm::vec4 m_AmbientLight{0.5f, 0.5f, 0.5f, 1.f};
 };
 
 struct light
 {
 	glm::ivec2 m_Position;
-	float m_Intensity;
-	gpu_bool m_UseRadius;
+	float m_Intensity{0.f};
+	gpu_bool m_UseRadius{true};
 	glm::vec4 m_Color;
 	glm::vec3 m_AttFactors;
-	float m_Radius;
+	float m_Radius{1.f};
 };
 
 
@@ -37,6 +37,7 @@ struct light
 // GPU buffer is updated. TODO use SubBufferData to only update parts
 // of the buffer
 // TODO use different dirty bits to only update whats necessary
+// TODO cleanup destructor
 class light_manager
 {
 	static constexpr ::std::size_t max_lights = 25;
@@ -96,7 +97,7 @@ class light_manager
 		bool m_Dirty{true}; 						//< Whether the data was modified this frame
 		unsigned m_GPUBuffer;						//< Handle of GPU Buffer
 		
-		size_type m_LightCount{0U};					//< Current number of lights
+		size_type m_LightCount{0U};						//< Current number of lights
 		::std::array<bool, max_lights> m_Used{false};	//< Contains info about which entries are used
 		::std::array<light, max_lights> m_Lights; 		//< Light data
 		lighting_state m_State;							//< Lighting state
