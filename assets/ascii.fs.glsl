@@ -100,12 +100,12 @@ struct LightingState
 //
 
 // Buffer containg all lights to use in lighting calculations
-layout (std140, binding = 0) uniform light_data
+layout (std140, binding = 0) uniform LightData
 {
 	LightingState state;
 	Light lights[MAX_LIGHTS];
 	uint num_lights;
-};
+} light_data;
 
 
 // Miscellaneous uniforms
@@ -184,7 +184,7 @@ void light_pixel(inout vec4 p_pixel)
 {
 	// Only do lighting if enabled and not gui mode
 	if(	light_data.state.use_lighting &&
-		!flat_in.gui_mode &&
+		!bool(flat_in.gui_mode) &&
 		(flat_in.light_mode != LIGHT_NONE) )
 	{
 		// Apply ambient lighting
@@ -229,6 +229,11 @@ void add_shadows(inout vec4 p_pixel)
 	}
 }
 
+void add_fog(inout vec4 p_pixel)
+{
+	p_pixel = mix(fog_color, p_pixel, flat_in.fog_factor);
+	p_pixel.a = 1.f;
+}
 //===----------------------------------------------------------------------===//
 
 

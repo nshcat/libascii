@@ -183,12 +183,12 @@ uniform usamplerBuffer input_buffer;
 
 
 // Buffer containg all lights to use in lighting calculations
-layout (std140, binding = 0) uniform light_data
+layout (std140, binding = 0) uniform LightData
 {
 	LightingState state;
 	Light lights[MAX_LIGHTS];
 	uint num_lights;
-};
+} light_data;
 
 
 // Miscellaneous uniforms
@@ -255,44 +255,6 @@ CellData this_cell;
 //===----------------------------------------------------------------------===//
 // Subroutines
 //
-
-// Reads data of this cell and saves it to the global cell info variable
-void read_cell()
-{
-	// Determine screen coordinates of this cell
-	this_cell.screen_coords = vec2(
-		gl_InstanceID % glyph_count.x,
-		gl_InstanceID / glyph_count.x
-	);
-	
-	// Retrieve the two uvec4 containing all cell data
-	const uvec4 t_high = texelFetch(input_buffer, gl_InstanceID*2);
-	const uvec4 t_low = texelFetch(input_buffer, (gl_InstanceID*2)+1);
-	
-	// Retrieve front and back color
-	this_cell.front_color = vec4(vec3(t_high.rgb) / 255.f, 1.f);
-	this_cell.back_color = vec4(vec3(t_low.rgb) / 255.f, 1.f);
-	
-	// Retrieve glyph coordinates
-	this_cell.glyph = vec2(
-		t_high.a % sheet_dimensions.x,
-		t_high.a / sheet_dimensions.x
-	);
-	
-	// Retrieve fog percentage
-	// There is no need to shift here, since the fog component starts with
-	// the LSB
-	this_cell.fog_percentage = float(t_low.a & FOG_MASK) / 255.f;
-	
-	// Check if gui mode bit is set
-	this_cell.gui_mode = ( (t_low.a & GUI_MODE) != 0.f ? 1 : 0 );
-	
-	// Retrieve light mode
-	this_cell.light_mode = read_lm(t_low.a);
-	
-	// Read drop shadow orientations
-	read_shadows(t_low.a);
-}
 
 // Retrieve light mode
 // This does not directly assign to this_cell because it is also used
@@ -375,7 +337,7 @@ bool check_point(in ivec2 p_point)
 {
 	// Since p_point is actually in absolute game world coordinates,
 	// we have to substract the absolute position of top left
-	const ivec2 t_relPoint = p_point - light_data.state.tl_position;
+	const ivec2 t_relPoint = p_point - ivec2(light_data.state.tl_position);
 	
 	// Check if it is in screen bounds
 	const ivec2 t_clamped = ivec2(
@@ -393,11 +355,49 @@ bool check_point(in ivec2 p_point)
 		
 	// Fetch entry containg the lighting mode (low word)
 	const int t_index = int((t_relPoint.y * glyph_count.x) + t_relPoint.x);
-	const uint t_word = texelFetch(input_buffer, (index*2)+1).a;
+	const uint t_word = texelFetch(input_buffer, (t_index*2)+1).a;
 	
 	const  uint t_lm = read_lm(t_word);
 	
 	return !(t_lm == LIGHT_NONE || t_lm == LIGHT_DIM);
+}
+
+// Reads data of this cell and saves it to the global cell info variable
+void read_cell()
+{
+	// Determine screen coordinates of this cell
+	this_cell.screen_coords = vec2(
+		gl_InstanceID % glyph_count.x,
+		gl_InstanceID / glyph_count.x
+	);
+	
+	// Retrieve the two uvec4 containing all cell data
+	const uvec4 t_high = texelFetch(input_buffer, gl_InstanceID*2);
+	const uvec4 t_low = texelFetch(input_buffer, (gl_InstanceID*2)+1);
+	
+	// Retrieve front and back color
+	this_cell.front_color = vec4(vec3(t_high.rgb) / 255.f, 1.f);
+	this_cell.back_color = vec4(vec3(t_low.rgb) / 255.f, 1.f);
+	
+	// Retrieve glyph coordinates
+	this_cell.glyph = vec2(
+		t_high.a % sheet_dimensions.x,
+		t_high.a / sheet_dimensions.x
+	);
+	
+	// Retrieve fog percentage
+	// There is no need to shift here, since the fog component starts with
+	// the LSB
+	this_cell.fog_percentage = float(t_low.a & FOG_MASK) / 255.f;
+	
+	// Check if gui mode bit is set
+	this_cell.gui_mode = ( (t_low.a & GUI_MODE) != 0.f ? true : false );
+	
+	// Retrieve light mode
+	this_cell.light_mode = read_lm(t_low.a);
+	
+	// Read drop shadow orientations
+	read_shadows(t_low.a);
 }
 
 // Calculates whether a light source can be seen from given cell
@@ -427,7 +427,7 @@ bool visible(in ivec2 p_cellPos, in ivec2 p_lightPos)
 	}
 	delta_y = abs(delta_y) << 1;
 	
-	if(!check_point(uvec2(start)))
+	if(!check_point(start))
 		return false;
 		
 	if(delta_x >= delta_y)
@@ -445,7 +445,7 @@ bool visible(in ivec2 p_cellPos, in ivec2 p_lightPos)
 			error += delta_y;
 			start.x += ix;
 			
-			if(!check_point(uvec2(start)))
+			if(!check_point(start))
 				return false;
 		}
 	}
@@ -464,7 +464,7 @@ bool visible(in ivec2 p_cellPos, in ivec2 p_lightPos)
 			error += delta_x;
 			start.y += iy;
 			
-			if(!check_point(uvec2(start)))
+			if(!check_point(start))
 				return false;
 		}
 	}
@@ -475,7 +475,7 @@ bool visible(in ivec2 p_cellPos, in ivec2 p_lightPos)
 void calc_lighting()
 {
 	if(light_data.state.use_lighting && light_data.state.use_dynamic 
-		&& (this_cell.lighting_mode != LIGHT_NONE))
+		&& (this_cell.light_mode != LIGHT_NONE))
 	{
 		// Calculate absolute position of cell in game world
 		const ivec2 t_cellPos = ivec2(this_cell.screen_coords + 
@@ -537,9 +537,9 @@ void write_data()
 	flat_out.front_color = this_cell.front_color;
 	flat_out.back_color = this_cell.back_color;
 	flat_out.shadows = this_cell.shadows;
-	flat_out.has_cursor = false; // TODO Implement cursor
+	flat_out.has_cursor = 0; // TODO Implement cursor
 	flat_out.light_mode = this_cell.light_mode;
-	flat_out.gui_mode = this_cell.gui_mode;
+	flat_out.gui_mode = this_cell.gui_mode ? 1 : 0;
 }
 //===----------------------------------------------------------------------===//
 
