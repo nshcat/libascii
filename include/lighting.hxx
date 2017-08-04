@@ -1,6 +1,8 @@
 // TODO: light_wrapper: On construction creates light and stores handle. When dereferenced, calls modify_light.
 //		   				On destruction calls destroy_light.
 
+// TODO: Add methods to enumerate lights
+
 #pragma once
 
 #include <type_traits>
@@ -19,6 +21,8 @@ struct lighting_state
 	gpu_bool m_UseDynamic{true};		
 	glm::vec2 m_TlPositon{0.f, 0.f};
 	glm::vec4 m_AmbientLight{0.5f, 0.5f, 0.5f, 1.f};
+	float m_DimLight{0.5f};
+	float m_Padding[3];
 };
 
 struct light
@@ -43,7 +47,7 @@ class light_manager
 	static constexpr ::std::size_t max_lights = 25;
 	static constexpr ::std::size_t light_size = 8 + 4 + 4 + 16 + 12 + 4;
 	static constexpr ::std::size_t count_size = 4;
-	static constexpr ::std::size_t state_size = 16 + 16;
+	static constexpr ::std::size_t state_size = 16 + 16 + 16;
 	static constexpr ::std::size_t buffer_size = state_size + (max_lights * light_size) + count_size;
 	
 	static_assert(sizeof(light) == light_size, "size of struct light does not match light_size");

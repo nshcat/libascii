@@ -18,6 +18,15 @@
 //
 //===----------------------------------------------------------------------===//
 // TODO:
+//  - CanSeeLight: If the start is a LIGHT_DIM, then it should still receive
+//    light, if it is directly connected to a tile that is permeable
+//    (Only the first layer of wall should be illuminated)
+//  - ==> /!\ Better: Count the number of walls the light has to pass through
+//                    that are LIGHT_DIM, and calculate falloff!
+//					  If we reach LIGHT_NORMAL _AFTER_ LIGHT_DIM (aka
+// 					  pass_through > 0) we return false!
+//
+//  - Allow walls to receive a small amount of dynamic lights
 //  - Use interface blocks for smooth and flat output data
 //  - Use one global CellData instance to store cell data
 //  - To implement fog: Change fog value in input buffer to "depth", a value
@@ -139,6 +148,10 @@ struct LightingState
 	bool use_dynamic;	// │	//< Dynamic lighting enable/disable
 	vec2 tl_position;	// ┘	//< Absolute position of the top left corner
 	vec4 ambient;		//		//< Global ambient illumination
+	float dim_light;	// ┐	//< How much light dim surfaces will receive [0, 1]
+	float padding1;		// │
+	float padding2;		// │
+	float padding3;		// ┘
 };
 
 // Struct containg all data that can be extracted from a cell entry in
@@ -339,6 +352,11 @@ bool check_point(in ivec2 p_point)
 	// we have to substract the absolute position of top left
 	const ivec2 t_relPoint = p_point - ivec2(light_data.state.tl_position);
 	
+	// Special case: The start cell may very well be a LIGHT_DIM cell,
+	// because the first layer of wall should receive a little bit of light.
+	if(t_relPoint == this_cell.screen_coords && this_cell.light_mode == LIGHT_DIM)
+		return true;
+	
 	// Check if it is in screen bounds
 	const ivec2 t_clamped = ivec2(
 		clamp(t_relPoint.x, 0, glyph_count.x-1),
@@ -490,6 +508,10 @@ void calc_lighting()
 			// Fetch current light
 			Light t_light = light_data.lights[t_index];
 			
+			// Lights inside of walls should not be visible
+			if((t_light.position == t_cellPos) && (this_cell.light_mode == LIGHT_DIM))
+				continue;
+				
 			// Check if light is visible
 			// Note that we ALLOW the light to be outside of the screen.
 			// Its important though that the routine does not access out of

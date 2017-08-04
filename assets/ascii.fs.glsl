@@ -87,6 +87,10 @@ struct LightingState
 	bool use_dynamic;	// │	//< Dynamic lighting enable/disable
 	vec2 tl_position;	// ┘	//< Absolute position of the top left corner
 	vec4 ambient;		//		//< Global ambient illumination
+	float dim_light;	// ┐	//< How much light dim surfaces will receive [0, 1]
+	float padding1;		// │
+	float padding2;		// │
+	float padding3;		// ┘
 };
 
 //===----------------------------------------------------------------------===//
@@ -197,6 +201,10 @@ void light_pixel(inout vec4 p_pixel)
 			if(flat_in.light_mode != LIGHT_DIM)
 			{
 				p_pixel += flat_in.lighting_result;
+			}
+			else
+			{
+				p_pixel += light_data.state.dim_light * flat_in.lighting_result;
 			}
 		}
 	}
