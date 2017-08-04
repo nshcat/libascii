@@ -16,6 +16,7 @@
 #include <program.hxx>
 #include <shader.hxx>
 #include <texture.hxx>
+#include <uniform.hxx>
 #include <shadow_texture.hxx>
 #include <weighted_collection.hxx>
 #include <lighting.hxx>
@@ -204,43 +205,6 @@ int main()
 			}
 		}
 		
-		/*for(::std::size_t iy = 6; iy < 15; ++iy)
-		{
-			if(iy == 9) continue;
-		
-			t_Data[t_pos(9, iy)] = glm::uvec4{187, 187, 187, 61};
-			t_Data[t_pos(9, iy)+1] = glm::uvec4{187, 187, 187, 0};
-			t_Data[t_pos(9, iy)+1].a |= (LIGHT_DIM << LIGHT_SHIFT);
-		}
-		*/
-		
-		
-		
-		//t_Data[t_pos(10, 7)] = glm::uvec4{255, 255, 0, 15};
-		
-		/*for(::std::size_t ix = 0; ix < t_Data.size(); ix+=2)
-		{
-			const auto t_clr = t_groundClr(t_gen);
-		
-			t_Data[ix] = glm::uvec4{t_clr.r, t_clr.g, t_clr.b, 219};
-			t_Data[ix+1] = glm::uvec4{0, 0, 0, 0};
-		}*/
-		
-		const unsigned t_levelIncrement = 13;//25;
-		
-		
-		
-			/*for(int ix = t_tl.x; ix <= t_br.x; ix++)
-			{		
-				t_Data[t_pos(ix, i)+1].a |= (t_levelIncrement * ((i % 2 == 0 && i != 0) ? (i-1)/2 : i/2));
-				
-				if(i > 1 && (i % 2 != 0))
-				{
-					t_Data[t_pos(ix, i)+1].a |= SHADOW_N;
-				}
-			}*/
-		
-		
 		
 		// Create buffer
 		glActiveTexture(GL_TEXTURE1);
@@ -252,110 +216,51 @@ int main()
 		glBufferData(GL_TEXTURE_BUFFER, sizeof(glm::uvec4)*t_Data.size(), (GLvoid*)t_Data.data(), GL_DYNAMIC_DRAW);	
 		glBindTexture(GL_TEXTURE_BUFFER, t_buftex);
 		glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32UI, t_buf);
-		
-		
-		
+			
 		
 		// Empty vertex buffer
 		glGenBuffers(1, &vertex_buffer);
 		glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
 		
-		ut::gl::program program{
-			ut::gl::vertex_shader{ ut::gl::from_file, "assets/ascii.vs.glsl" },
-			ut::gl::fragment_shader{ ut::gl::from_file, "assets/ascii.fs.glsl" },
+		
+		
+		gl::program program{
+			gl::vertex_shader{ gl::from_file, "assets/ascii.vs.glsl" },
+			gl::fragment_shader{ gl::from_file, "assets/ascii.fs.glsl" },
 		};
-
-		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		
-		
+	
 		program.use();
 		
+	
+	
+		
+		//===----------------------------------------------------------------------===//
+		// Uniforms
+		//
+		
+		// Set uniforms		
+		gl::set_uniform(program, "fog_color", glm::vec4{ 0.1f, 0.1f, 0.3f, 1.f });
+		gl::set_uniform(program, "fog_density", 5.f);
+		gl::set_uniform(program, "projection_mat", glm::ortho(0.f, (float)t_width, (float)t_height, 0.f, -1.f, 1.f));		
+		gl::set_uniform(program, "sheet_dimensions", glm::ivec2{ texture::sheet_width, texture::sheet_height });
+		gl::set_uniform(program, "glyph_dimensions", t_glyphDim);
+		gl::set_uniform(program, "glyph_count", t_glyphCount);
+		
+		// Samplers are just integers
+		gl::set_uniform(program, "sheet_texture", 0);
+		gl::set_uniform(program, "input_buffer", 1);
+		gl::set_uniform(program, "shadow_texture", 2);
+		//===----------------------------------------------------------------------===/
+		
+		
+		
+				
+		//===----------------------------------------------------------------------===//
+		// Lighting
+		//	
+		
 		// Create light manager
-		light_manager t_lightManager{ };
-		
-		// Set uniforms	
-		const auto t_cursorPosPos = glGetUniformLocation(program.handle(), "cursor_pos");
-		const auto t_sheetDimPos = glGetUniformLocation(program.handle(), "sheet_dimensions");
-		const auto t_glyphDimPos = glGetUniformLocation(program.handle(), "glyph_dimensions");
-		const auto t_glyphCountPos = glGetUniformLocation(program.handle(), "glyph_count");
-		const auto t_projMatPos = glGetUniformLocation(program.handle(), "projection_mat");
-		
-		const auto t_cursorColorPos = glGetUniformLocation(program.handle(), "cursor_default");
-		
-		glm::ivec2 t_cursorPos{ -1, -1 };
-		glUniform2iv(t_cursorPosPos, 1, glm::value_ptr(t_cursorPos));
-		
-		
-		const auto t_fogColorPos = glGetUniformLocation(program.handle(), "fog_color");
-		const glm::vec4 t_fogClr{ 0.1f, 0.1f, 0.3f, 1.f };
-		glUniform4fv(t_fogColorPos, 1, glm::value_ptr(t_fogClr));
-		
-		const glm::vec4 t_cursorClr{ 1.f, 1.f, 1.f, 1.f };
-		glUniform4fv(t_cursorColorPos, 1, glm::value_ptr(t_cursorClr));
-		
-		const auto t_fogDensityPos = glGetUniformLocation(program.handle(), "fog_density");
-		const float t_fogDensity = 5.f;//0.15f;
-		glUniform1f(t_fogDensityPos, t_fogDensity);
-
-		// We use an inverted ortho projection here (flipped y axis) to enable us to use cordinates the
-		// same way they would be used on a 2d screen (with (0,0) in top left corner, and y increasing
-		// downwards)
-		const auto t_proj = glm::ortho(0.f, (float)t_width, (float)t_height, 0.f, -1.f, 1.f);	
-		glUniformMatrix4fv(t_projMatPos, 1, GL_FALSE, glm::value_ptr(t_proj));
-		
-		glUniform2iv(t_glyphDimPos, 1, glm::value_ptr(t_glyphDim));
-		glUniform2iv(t_glyphCountPos, 1, glm::value_ptr(t_glyphCount));
-		
-		const glm::ivec2 t_sheetDims{ texture::sheet_width, texture::sheet_height };
-		glUniform2iv(t_sheetDimPos, 1, glm::value_ptr(t_sheetDims));
-		
-		const auto t_samplerPos = glGetUniformLocation(program.handle(), "sheet_texture");
-		glUniform1i(t_samplerPos, 0);
-		
-		const auto t_samplerBufPos = glGetUniformLocation(program.handle(), "input_buffer");
-		glUniform1i(t_samplerBufPos, 1);
-
-		const auto t_samplerShadowPos = glGetUniformLocation(program.handle(), "shadow_texture");
-		glUniform1i(t_samplerShadowPos, 2);
-		
-		/*const auto t_lightIntensityPos = glGetUniformLocation(program.handle(), "light_intensity");
-		const float t_intensity = 0.7f;
-		glUniform1f(t_lightIntensityPos, t_intensity);
-		
-		
-		const auto t_lightIntensity2Pos = glGetUniformLocation(program.handle(), "light_intensity2");
-		glUniform1f(t_lightIntensity2Pos, t_intensity);*/
-		
-		
-		
-		/*const auto t_useLightingPos = glGetUniformLocation(program.handle(), "use_lighting");
-		glUniform1i(t_useLightingPos, useLighting);
-		
-		const auto t_ambientLightPos = glGetUniformLocation(program.handle(), "ambient_light");
-		//const glm::vec4 t_ambient{ 0.2f, 0.2f, 0.2f, 1.f };
-		const glm::vec4 t_ambient{ 0.5f, 0.5f, 0.5f, 1.f };
-		glUniform4fv(t_ambientLightPos, 1, glm::value_ptr(t_ambient));*/
-		
-		
-		/*const auto t_topleftPos = glGetUniformLocation(program.handle(), "top_left_pos");
-		const glm::vec2 t_topleft{ 0.f, 0.f };
-		glUniform2fv(t_topleftPos, 1, glm::value_ptr(t_topleft));
-		
-		const auto t_lightPos = glGetUniformLocation(program.handle(), "light_pos");
-		glm::vec2 t_light{ 10.f, 7.f };
-		glUniform2fv(t_lightPos, 1, glm::value_ptr(t_light));*/
-		
-		
-		/*const auto t_lightColorPos = glGetUniformLocation(program.handle(), "light_clr");
-		//const glm::vec4 t_lightClr{ 0.92f, 0.5216f, 0.1255f, 1.f };
-		//const glm::vec4 t_lightClr{ 0.96f, 0.81f, 0.4549f, 1.f }; 
-		
-		const glm::vec4 t_lightClr{1.000f, 0.647f, 0.000f, 1.f };
-		//const glm::vec4 t_lightClr{1.000f, 0.0f, 1.000f, 1.f };
-		
-		//const glm::vec4 t_lightClr{1.000f, 0.1f, 0.9f, 1.f };
-		glUniform4fv(t_lightColorPos, 1, glm::value_ptr(t_lightClr));*/
-		
+		light_manager t_lightManager{ };	
 		
 		// Create one light
 		light t_light{
@@ -369,6 +274,10 @@ int main()
 		
 		// Register it and save handle
 		const auto t_lightHandle = t_lightManager.create_light(t_light);	
+		//===----------------------------------------------------------------------===//
+
+
+
 
 		::std::size_t inputCounter = 0;
 		const ::std::size_t inputPeriod = 4;
@@ -387,34 +296,7 @@ int main()
 				// We can use the intensity of the t_light object here, since
 				// that will never change
 				t_lightManager.modify_light(t_lightHandle).m_Intensity = 
-					t_light.m_Intensity * t_intensityMod;
-			
-			
-				/*const float t_intensityMod = t_intensityDistrib(t_gen);
-				glUniform1f(t_lightIntensityPos, t_intensity * t_intensityMod);
-				
-				const float t_intensityMod2 = t_intensityDistrib(t_gen);
-				glUniform1f(t_lightIntensity2Pos, t_intensity * t_intensityMod2);
-				
-				const glm::vec4 t_light = t_lightClr * t_intensityMod;
-				
-				glUniform4fv(t_lightColorPos, 1, glm::value_ptr(t_light));*/
-		
-				
-				/*const double t_mod = glm::abs(glm::cos(glfwGetTime()*2.));
-				
-				if(t_mod <= 0.1f && !latch)
-				{
-					latch = true;
-					clrCounter = (clrCounter + 1) % numClr;
-					
-					glUniform4fv(t_lightColorPos, 1, glm::value_ptr(t_clrs[clrCounter]));
-				}
-				
-				if(t_mod >= 0.95f && latch)
-					latch = false;		
-				
-				glUniform1f(t_lightIntensityPos, t_intensity * t_mod);*/
+					t_light.m_Intensity * t_intensityMod;		
 				
 			}
 			else ++animCounter;
@@ -486,7 +368,7 @@ int main()
 		glfwDestroyWindow(window);
 		glfwTerminate();
 	}
-	catch(const ut::gl::shader_exception& p_ex)
+	catch(const gl::shader_exception& p_ex)
 	{
 		std::cout << "An exception was thrown: " << p_ex.what() << '\n' << p_ex.log() << std::endl;
 	}
