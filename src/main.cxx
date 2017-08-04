@@ -1,3 +1,5 @@
+// TODO nuklear gui class
+
 #define GLM_ENABLE_EXPERIMENTAL
 
 #include <iostream>
@@ -20,6 +22,18 @@
 #include <shadow_texture.hxx>
 #include <weighted_collection.hxx>
 #include <lighting.hxx>
+
+#define NK_INCLUDE_FIXED_TYPES
+#define NK_INCLUDE_STANDARD_IO
+#define NK_INCLUDE_STANDARD_VARARGS
+#define NK_INCLUDE_DEFAULT_ALLOCATOR
+#define NK_INCLUDE_VERTEX_BUFFER_OUTPUT
+#define NK_INCLUDE_FONT_BAKING
+#define NK_INCLUDE_DEFAULT_FONT
+#define NK_IMPLEMENTATION
+#define NK_GLFW_GL3_IMPLEMENTATION
+#include <nuklear.h>
+#include <nuklear_glfw_gl3.h>
 
 constexpr ::std::uint32_t SHADOW_N = 0x1 << 8;
 constexpr ::std::uint32_t SHADOW_W = 0x1 << 9;
@@ -57,6 +71,9 @@ int main()
 	bool lightModeDebug{false};
 	bool useDynamicLighting{true};
 	GLFWwindow* window;
+	
+	nk_context* t_nkctx;
+	nk_color t_nkbg;
 
 	try
 	{
@@ -110,6 +127,15 @@ int main()
 		const auto t_height = t_glyphDim.y * t_glyphCount.y;
 		
 		glfwSetWindowSize(window, t_width, t_height);
+		
+		
+		t_nkctx = nk_glfw3_init(window, NK_GLFW3_INSTALL_CALLBACKS);
+		nk_font_atlas* atlas;
+    	nk_glfw3_font_stash_begin(&atlas);
+    	nk_font* t_fontMenlo = nk_font_atlas_add_from_file(atlas, "assets/menlo.ttf", 17, 0);
+		nk_glfw3_font_stash_end();
+		nk_style_set_font(t_nkctx, &t_fontMenlo->handle);	
+		t_nkbg = nk_rgb(28,48,62);
 		
 		
 		// Glyph data set
@@ -269,16 +295,30 @@ int main()
 			gpu_bool(true),
 			glm::vec4{ 1.f, .647f, 0.f, 1.f },
 			glm::vec3{ 0.f },
-			3.f
+			1.5f
 		};
 		
 		// Register it and save handle
-		const auto t_lightHandle = t_lightManager.create_light(t_light);	
+		const auto t_lightHandle = t_lightManager.create_light(t_light);
+		
+		// Setup ambient light
+		nk_color t_ambient;
+		
+		{
+			const auto& t_ref = t_lightManager.modify_state().m_AmbientLight;
+			t_ambient = nk_color{
+				(nk_byte)(t_ref.r * 255.f),
+				(nk_byte)(t_ref.g * 255.f),
+				(nk_byte)(t_ref.b * 255.f),
+				(nk_byte)(t_ref.a * 255.f)
+			};
+		}
+		
+			
 		//===----------------------------------------------------------------------===//
-
-
-
-
+		
+		
+		
 		::std::size_t inputCounter = 0;
 		const ::std::size_t inputPeriod = 4;
 
@@ -287,6 +327,64 @@ int main()
 
 		while (!glfwWindowShouldClose(window))
 		{
+			glfwPollEvents();
+			nk_glfw3_new_frame();
+			
+			if (nk_begin(t_nkctx, "Debug", nk_rect(700, 100, 330, 350),
+            	NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_SCALABLE|
+            	NK_WINDOW_MINIMIZABLE|NK_WINDOW_TITLE))
+        	{
+        		nk_layout_row_static(t_nkctx, 30, 100, 2);
+        		
+        		if(nk_button_label(t_nkctx, "Lighting"))
+        		{
+        			auto& t_ref = t_lightManager.modify_state();
+					t_ref.m_UseLighting = !t_ref.m_UseLighting;
+        		}
+        		
+        		if(nk_button_label(t_nkctx, "Dynamic"))
+        		{
+        			auto& t_ref = t_lightManager.modify_state();
+					t_ref.m_UseDynamic = !t_ref.m_UseDynamic;
+        		}
+        		    		
+        		nk_layout_row_static(t_nkctx, 30, 200, 1);
+        		nk_label(t_nkctx, "", NK_TEXT_ALIGN_LEFT);
+        		
+        		
+        		nk_layout_row_static(t_nkctx, 30, 200, 1);
+        		nk_label(t_nkctx, "Ambient light:", NK_TEXT_ALIGN_LEFT);
+        		
+            	if (nk_combo_begin_color(t_nkctx, t_ambient, nk_vec2(nk_widget_width(t_nkctx),400))) {
+		        	nk_layout_row_dynamic(t_nkctx, 120, 1);
+		            t_ambient = nk_color_picker(t_nkctx, t_ambient, NK_RGBA);
+		            nk_layout_row_dynamic(t_nkctx, 25, 1);
+		            t_ambient.r = (nk_byte)nk_propertyi(t_nkctx, "#R:", 0, t_ambient.r, 255, 1,1);
+		            t_ambient.g = (nk_byte)nk_propertyi(t_nkctx, "#G:", 0, t_ambient.g, 255, 1,1);
+		            t_ambient.b = (nk_byte)nk_propertyi(t_nkctx, "#B:", 0, t_ambient.b, 255, 1,1);
+		            t_ambient.a = (nk_byte)nk_propertyi(t_nkctx, "#A:", 0, t_ambient.a, 255, 1,1);
+		            nk_combo_end(t_nkctx);
+            	}
+            	
+            	t_lightManager.modify_state().m_AmbientLight =
+            		glm::vec4{float(t_ambient.r)/255.f, float(t_ambient.g)/255.f, float(t_ambient.b)/255.f, float(t_ambient.a)/255.f};
+            		
+        		
+        		float t_radius = t_light.m_Radius;
+        		nk_layout_row_static(t_nkctx, 30, 200, 1);
+        		nk_property_float(t_nkctx, "Radius:", 0.f, &t_radius, 10.f, 0.1f, 0.1f);
+        		
+        		
+        		if(t_radius != t_light.m_Radius)
+        		{
+        			t_lightManager.modify_light(t_lightHandle).m_Radius = t_radius;
+        			t_light.m_Radius = t_radius;
+        		}
+        	}
+				
+			nk_end(t_nkctx);
+			
+		
 			if(animCounter >= animPeriod)
 			{
 				animCounter = 0;
@@ -307,13 +405,13 @@ int main()
 				
 				if(glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
 				{			
-					auto t_ref = t_lightManager.modify_state();
+					auto& t_ref = t_lightManager.modify_state();
 					t_ref.m_UseLighting = !t_ref.m_UseLighting;
 				}	
 				
 				if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 				{
-					auto t_ref = t_lightManager.modify_state();
+					auto& t_ref = t_lightManager.modify_state();
 					t_ref.m_UseDynamic = !t_ref.m_UseDynamic;
 				}			
 				
@@ -353,18 +451,26 @@ int main()
 		    glfwGetFramebufferSize(window, &width, &height);
 		    ratio = width / (float) height;
 
+
+			// /!\ Reset our rendering state, since Nuklear will mess that up
 		    glViewport(0, 0, width, height);
 		    glClear(GL_COLOR_BUFFER_BIT);
-
-		   	program.use();
+		   	program.use();	// Use ascii shader
+		   	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer); // Empty vertex buffer
+			t_tex.use();
+			t_shadow.use();
 		    
 			// We need to render 6 vertices per glyph.
 			glDrawArraysInstanced(GL_TRIANGLES, 0, 6, t_glyphCount.x * t_glyphCount.y);
 
-		    glfwSwapBuffers(window);
-		    glfwPollEvents();
+
+			nk_glfw3_render(NK_ANTI_ALIASING_ON, 512 * 1024, 128 * 1024);
+
+
+		    glfwSwapBuffers(window); 
 		}
 		
+		nk_glfw3_shutdown();
 		glfwDestroyWindow(window);
 		glfwTerminate();
 	}

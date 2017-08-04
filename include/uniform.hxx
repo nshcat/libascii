@@ -34,6 +34,13 @@ namespace gl
 			glUniform##__suffix ( p_location, 1, glm::value_ptr(p_value) );			\
 		}
 		
+		#define MAKE_UNIFORM_IMPL_BVEC(__length)									\
+		MAKE_UNIFORM_IMPL(glm::bvec##__length)										\
+		{																			\
+			glm::uvec##__length t_tmp(p_value);										\
+			glUniform##__length##uiv ( p_location, 1, glm::value_ptr(t_tmp) );		\
+		}
+		
 		#define MAKE_UNIFORM_IMPL_SQUARE_MAT(__type, __suffix)						\
 		MAKE_UNIFORM_IMPL(__type)													\
 		{																			\
@@ -59,9 +66,9 @@ namespace gl
 		MAKE_UNIFORM_IMPL_VEC(glm::uvec3, 3uiv)
 		MAKE_UNIFORM_IMPL_VEC(glm::uvec4, 4uiv)
 		
-		//MAKE_UNIFORM_IMPL_VEC(glm::bvec2, 2uiv)
-		//MAKE_UNIFORM_IMPL_VEC(glm::bvec3, 3uiv)
-		//MAKE_UNIFORM_IMPL_VEC(glm::bvec4, 4uiv)
+		MAKE_UNIFORM_IMPL_BVEC(2)
+		MAKE_UNIFORM_IMPL_BVEC(3)
+		MAKE_UNIFORM_IMPL_BVEC(4)
 		
 		MAKE_UNIFORM_IMPL_SQUARE_MAT(glm::mat2, Matrix2fv)
 		MAKE_UNIFORM_IMPL_SQUARE_MAT(glm::mat3, Matrix3fv)
