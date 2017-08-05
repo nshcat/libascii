@@ -467,7 +467,7 @@ int main()
 			t_lightManager.sync();
 			
 			// Sync local screen data with gpu
-			t_screen.sync();
+			t_screenManager.sync();
 			
 		
 		    float ratio;
