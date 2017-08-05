@@ -62,5 +62,5 @@ endforeach()
 
 
 # Require support for at least C++14.
-set_property(TARGET gl_app PROPERTY CXX_STANDARD 14)
+set_property(TARGET gl_app PROPERTY CXX_STANDARD 17)
 set_property(TARGET gl_app PROPERTY CXX_STANDARD_REQUIRED ON)
