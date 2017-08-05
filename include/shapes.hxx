@@ -8,7 +8,7 @@ namespace internal
 {
 	class point_impl
 	{
-		using position_type = screen::position_type;
+		using position_type = screen_manager::position_type;
 	
 		public:
 			point_impl(const position_type& p_pos)
@@ -33,7 +33,7 @@ namespace internal
 	};
 }
 
-static auto point(const screen::position_type& p_position)
+static auto point(const screen_manager::position_type& p_position)
 	-> internal::point_impl
 {
 	return {p_position};

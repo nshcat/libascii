@@ -126,6 +126,8 @@ class screen_manager
 			{
 				p_action(modify_cell(t_next.value()));
 			}
+			
+			set_dirty();
 		}
 		
 	private:

@@ -1,5 +1,6 @@
 // TODO nuklear gui class
 // TODO fps limiter class (see stackoverflow links in telegram)
+// TODO maybe global type definitions? (color, dimension, point, glyph...)
 
 #define GLM_ENABLE_EXPERIMENTAL
 
@@ -25,6 +26,8 @@
 #include <weighted_collection.hxx>
 #include <lighting.hxx>
 #include <screen.hxx>
+#include <actions.hxx>
+#include <shapes.hxx>
 
 #define NK_INCLUDE_FIXED_TYPES
 #define NK_INCLUDE_STANDARD_IO
@@ -142,15 +145,15 @@ int main()
 		
 		
 		// Glyph data set
-		::std::vector<glm::uvec4> t_Data;
-		t_Data.resize(t_glyphCount.x * t_glyphCount.y * 2);
+		/*::std::vector<glm::uvec4> t_Data;
+		t_Data.resize(t_glyphCount.x * t_glyphCount.y * 2);*/
 		
 		std::random_device rd;
 		std::mt19937 t_gen(rd());
     	std::uniform_int_distribution<unsigned> t_distrib(0, 16);
     	std::uniform_real_distribution<float> t_intensityDistrib(0.4f, 1.0f); 
 		
-		weighted_collection<glm::uvec3> t_groundClr{
+		/*weighted_collection<glm::uvec3> t_groundClr{
 			{ { 84, 84, 84 }, 0.3f },		
 			{ { 94, 94, 94 }, 0.3f },		
 			{ { 56, 56, 56 }, 0.2f },		
@@ -244,8 +247,12 @@ int main()
 		glBindBuffer(GL_TEXTURE_BUFFER, t_buf);
 		glBufferData(GL_TEXTURE_BUFFER, sizeof(glm::uvec4)*t_Data.size(), (GLvoid*)t_Data.data(), GL_DYNAMIC_DRAW);	
 		glBindTexture(GL_TEXTURE_BUFFER, t_buftex);
-		glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32UI, t_buf);
+		glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32UI, t_buf);*/
 			
+		
+		
+		
+		
 		
 		// Empty vertex buffer
 		glGenBuffers(1, &vertex_buffer);
@@ -260,6 +267,17 @@ int main()
 	
 		program.use();
 		
+	
+	
+		//===----------------------------------------------------------------------===//
+		// Screen
+		//
+		screen_manager t_screenManager{ t_glyphCount };
+		
+		t_screenManager.modify(point({5,5}), draw('A', {255, 0, 0}));
+		
+		//===----------------------------------------------------------------------===//
+	
 	
 	
 		
@@ -445,8 +463,12 @@ int main()
 			}
 			else ++inputCounter;
 			
-			// Sync local light data with gpu buffer
-			t_lightManager.sync();		
+			// Sync local light data with gpu
+			t_lightManager.sync();
+			
+			// Sync local screen data with gpu
+			t_screen.sync();
+			
 		
 		    float ratio;
 		    int width, height;
