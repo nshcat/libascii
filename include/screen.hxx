@@ -73,6 +73,9 @@ struct cell
 		
 		void set_glyph(glyph_type);
 		glyph_type glyph() const;
+		
+		void set_light_mode(light_mode);
+		light_mode get_light_mode() const;	
 
 	private:
 		glm::uvec3 		m_Front{0, 0, 0};

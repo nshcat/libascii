@@ -42,3 +42,14 @@ auto cell::glyph() const
 {
 	return m_Glyph;
 }
+
+void cell::set_light_mode(light_mode p_mode)
+{
+	m_Data |= (ut::enum_cast(p_mode) << internal::light_mode_shift);
+}
+
+light_mode cell::get_light_mode() const
+{
+	auto t_value = ((m_Data & internal::light_mode_mask) >> internal::light_mode_shift);
+	return ut::enum_cast<light_mode>(t_value);
+}
