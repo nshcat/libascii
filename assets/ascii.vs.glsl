@@ -18,6 +18,15 @@
 //
 //===----------------------------------------------------------------------===//
 // TODO:
+//  - Support MULTIPLE glyph sets: glyph_set::graphical, glyph_set::text,
+//    glyph_set::draw (<= special set to draw pictures, contains triangles etc)
+//    (see ultima ratio regum)
+//    ==> Could use upper bits of glyph entry to set that
+//    IMPLEMENTATION: One class to manage ALL glyph textures. Takes up to two
+//                    paths, or ONE NAME (from_name, from_path(1str or 2str)
+//                    from_name appends "graphic" and "text" to it.
+//                    Will check if size is the same.
+//
 //  - CanSeeLight: If the start is a LIGHT_DIM, then it should still receive
 //    light, if it is directly connected to a tile that is permeable
 //    (Only the first layer of wall should be illuminated)
