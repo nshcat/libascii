@@ -274,8 +274,11 @@ int main()
 		//
 		screen_manager t_screenManager{ t_glyphCount };
 		
-		t_screenManager.modify(point({5,5}), draw('A', {255, 0, 0}));
-		
+		t_screenManager.modify(point({5,5}),
+			sequence(	draw('A', {255, 0, 0}),
+						set_light_mode(light_mode::full)
+					)
+		);
 		//===----------------------------------------------------------------------===//
 	
 	
