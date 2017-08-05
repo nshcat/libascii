@@ -1,4 +1,5 @@
 // TODO nuklear gui class
+// TODO fps limiter class (see stackoverflow links in telegram)
 
 #define GLM_ENABLE_EXPERIMENTAL
 
@@ -9,6 +10,7 @@
 #include <fstream>
 #include <vector>
 #include <cstdint>
+#include <optional>
 #include <GLXW/glxw.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
@@ -22,6 +24,7 @@
 #include <shadow_texture.hxx>
 #include <weighted_collection.hxx>
 #include <lighting.hxx>
+#include <screen.hxx>
 
 #define NK_INCLUDE_FIXED_TYPES
 #define NK_INCLUDE_STANDARD_IO
