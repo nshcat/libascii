@@ -52,4 +52,12 @@ static auto draw(cell::glyph_type p_glyph, cell::integral_color_type p_front, ce
 		p_cell.set_bg(p_back);
 		p_cell.set_glyph(p_glyph);
 	};
-} 
+}
+
+static auto set_light_mode(light_mode p_mode)
+{
+	return [p_mode](cell& p_cell)
+	{
+		p_cell.set_light_mode(p_mode);
+	};
+}
