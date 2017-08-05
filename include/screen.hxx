@@ -59,6 +59,7 @@ struct cell
 	using integral_color_type = glm::uvec3;
 	using float_color_type = glm::vec3;
 	using glyph_type = ::std::uint32_t;
+	using fog_type = ::std::uint8_t;
 
 	public:
 		void set_fg(const integral_color_type&);
@@ -75,7 +76,13 @@ struct cell
 		glyph_type glyph() const;
 		
 		void set_light_mode(light_mode);
-		light_mode get_light_mode() const;	
+		light_mode get_light_mode() const;
+		
+		void set_fog(fog_type);
+		fog_type fog() const;
+		
+		void set_gui_mode(bool);
+		bool gui_mode() const;
 
 	private:
 		glm::uvec3 		m_Front{0, 0, 0};

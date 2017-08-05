@@ -45,6 +45,7 @@ auto cell::glyph() const
 
 void cell::set_light_mode(light_mode p_mode)
 {
+	m_Data &= ~internal::light_mode_mask;
 	m_Data |= (ut::enum_cast(p_mode) << internal::light_mode_shift);
 }
 
@@ -52,4 +53,29 @@ light_mode cell::get_light_mode() const
 {
 	auto t_value = ((m_Data & internal::light_mode_mask) >> internal::light_mode_shift);
 	return ut::enum_cast<light_mode>(t_value);
+}
+
+void cell::set_fog(fog_type p_fog)
+{
+	m_Data &= ~internal::fog_mask;
+	m_Data |= p_fog;
+}
+
+auto cell::fog() const
+	-> fog_type
+{
+	return ut::narrow_cast<fog_type>(m_Data & internal::fog_mask);
+}
+
+void cell::set_gui_mode(bool p_val)
+{
+	if(p_val)
+		m_Data |= internal::gui_mode_bit;
+	else
+		m_Data &= ~internal::gui_mode_bit;
+}
+
+bool cell::gui_mode() const
+{
+	return ((m_Data & internal::gui_mode_bit) != 0);
 }
