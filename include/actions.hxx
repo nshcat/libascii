@@ -61,3 +61,11 @@ static auto set_light_mode(light_mode p_mode)
 		p_cell.set_light_mode(p_mode);
 	};
 }
+
+static auto set_gui_mode(bool p_flag)
+{
+	return [p_flag](cell& p_cell)
+	{
+		p_cell.set_gui_mode(p_flag);
+	};
+}

@@ -152,6 +152,6 @@ class screen_manager
 		bool m_Dirty{false}; 						//< Whether the data was modified this frame
 		GLuint m_GPUBuffer;							//< Handle of GPU Buffer
 		GLuint m_GPUTexture;						//< Handle of the GPU texture
-		dimension_type m_ScreenDims;				//< Dimensions of screen, in glyphs
+		const dimension_type m_ScreenDims;			//< Dimensions of screen, in glyphs
 		container_type m_Data;						//< Actual screen data
 };

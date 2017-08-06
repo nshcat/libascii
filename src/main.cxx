@@ -274,11 +274,12 @@ int main()
 		//
 		screen_manager t_screenManager{ t_glyphCount };
 		
-		t_screenManager.modify(point({5,5}),
-			sequence(	draw('A', {255, 0, 0}),
-						set_light_mode(light_mode::full)
-					)
-		);
+		t_screenManager.modify(line({5,5}, {10,10}), put_string("meow", {0, 255, 0}));
+		
+		t_screenManager.modify(line({13,10}, {18,5}), put_string("meow", {0, 255, 0}));
+		
+		t_screenManager.modify(point({5,5}), set_light_mode(light_mode::none));
+		t_screenManager.modify(point({10,10}), set_light_mode(light_mode::none));
 		//===----------------------------------------------------------------------===//
 	
 	
