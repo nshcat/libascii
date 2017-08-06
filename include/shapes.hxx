@@ -4,6 +4,7 @@
 
 #include <optional>
 #include <cmath>
+#include <cstdlib>
 #include <string_view>
 #include <stdexcept>
 #include <ut/throwf.hxx>
