@@ -42,6 +42,13 @@ enum class light_mode
 	full = 2U
 };
 
+enum class glyph_set
+	: ::std::uint32_t
+{
+	text = 0U,
+	graphics = 1U
+};
+
 
 // Bitmasks etc are only needed internally
 namespace internal
@@ -51,6 +58,9 @@ namespace internal
 	constexpr const ::std::uint32_t light_mode_shift = 16U;
 	constexpr const ::std::uint32_t gui_mode_bit = 0x1U << 20U;
 	constexpr const ::std::uint32_t fog_mask = 0xFFU;
+	constexpr const ::std::uint32_t glyph_mask = 0xFFU;
+	constexpr const ::std::uint32_t glyph_set_mask = 0xF00U;
+	constexpr const ::std::uint32_t glyph_set_shift = 8U;
 }
 
 
@@ -83,10 +93,16 @@ struct cell
 		
 		void set_gui_mode(bool);
 		bool gui_mode() const;
+		
+		void set_glyph_set(glyph_set);
+		glyph_set get_glyph_set() const;
+		
+		void set_shadows(::std::uint32_t);
+		::std::uint32_t shadows() const;
 
-	private:
+	public:
 		glm::uvec3 		m_Front{0, 0, 0};
-		glyph_type		m_Glyph{0};
+		glyph_type		m_GlyphData{0};
 		glm::uvec3 		m_Back{0, 0, 0};
 		::std::uint32_t m_Data{0};
 };

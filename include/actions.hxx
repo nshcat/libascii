@@ -1,7 +1,10 @@
 // TODO: put_string_fmt (with color formatting! %C)
+// TODO: draw(...) with libcl-like tags for foreground, background, glyph and glyph_set!
+//		 => that is good because no order has to be memorized and we can easily SUPPORT DEFAULT VALUES
 
 #pragma once
 #include <cctype>
+#include <algorithm>
 #include <string_view>
 #include <screen.hxx>
 
@@ -67,5 +70,63 @@ static auto set_gui_mode(bool p_flag)
 	return [p_flag](cell& p_cell)
 	{
 		p_cell.set_gui_mode(p_flag);
+	};
+}
+
+static auto set_glyph_set(glyph_set p_set)
+{
+	return [p_set](cell& p_cell)
+	{
+		p_cell.set_glyph_set(p_set);
+	};
+}
+
+template<	typename... Ts,
+			typename = ::std::enable_if_t<
+				::std::conjunction_v<
+					::std::is_same<Ts, drop_shadow>...
+				>
+			>
+>
+auto set_shadows(Ts... p_args)
+{
+	::std::initializer_list<::std::uint32_t> t_lst = { ut::enum_cast(p_args)... };
+	
+	const auto t_value = ::std::accumulate(
+		t_lst.begin(), t_lst.end(), ::std::uint32_t{}, [](const auto& p_a, const auto& p_b) { return p_a | p_b; }
+	);
+
+	return [t_value](cell& p_cell)
+	{
+		p_cell.set_shadows(t_value);
+	};
+}
+
+template<	typename... Ts,
+			typename = ::std::enable_if_t<
+				::std::conjunction_v<
+					::std::is_same<Ts, drop_shadow>...
+				>
+			>
+>
+auto add_shadows(Ts... p_args)
+{
+	::std::initializer_list<::std::uint32_t> t_lst = { ut::enum_cast(p_args)... };
+	
+	const auto t_value = ::std::accumulate(
+		t_lst.begin(), t_lst.end(), ::std::uint32_t{}, [](const auto& p_a, const auto& p_b) { return p_a | p_b; }
+	);
+
+	return [t_value](cell& p_cell)
+	{
+		p_cell.set_shadows(p_cell.shadows() | t_value);
+	};
+}
+
+static auto highlight()
+{
+	return [](cell& p_cell)
+	{
+		::std::swap(p_cell.m_Front, p_cell.m_Back);
 	};
 }

@@ -34,13 +34,14 @@ auto cell::bg() const
 
 void cell::set_glyph(glyph_type p_glyph)
 {
-	m_Glyph = p_glyph;
+	m_GlyphData &= ~(internal::glyph_mask);
+	m_GlyphData |= p_glyph;
 }
 
 auto cell::glyph() const
 	-> glyph_type
 {
-	return m_Glyph;
+	return (m_GlyphData & internal::glyph_mask);
 }
 
 void cell::set_light_mode(light_mode p_mode)
@@ -53,6 +54,18 @@ light_mode cell::get_light_mode() const
 {
 	auto t_value = ((m_Data & internal::light_mode_mask) >> internal::light_mode_shift);
 	return ut::enum_cast<light_mode>(t_value);
+}
+
+void cell::set_glyph_set(glyph_set p_set)
+{
+	m_GlyphData &= ~internal::glyph_set_mask;
+	m_GlyphData |= (ut::enum_cast(p_set) << internal::glyph_set_shift);
+}
+
+glyph_set cell::get_glyph_set() const
+{
+	auto t_value = ((m_GlyphData & internal::glyph_set_mask) >> internal::glyph_set_shift);
+	return ut::enum_cast<glyph_set>(t_value);
 }
 
 void cell::set_fog(fog_type p_fog)
@@ -78,4 +91,15 @@ void cell::set_gui_mode(bool p_val)
 bool cell::gui_mode() const
 {
 	return ((m_Data & internal::gui_mode_bit) != 0);
+}
+
+void cell::set_shadows(::std::uint32_t p_shadows)
+{
+	m_Data &= ~(internal::drop_shadow_mask);
+	m_Data |= p_shadows;
+}
+
+::std::uint32_t cell::shadows() const
+{
+	return (m_Data & internal::drop_shadow_mask);
 }

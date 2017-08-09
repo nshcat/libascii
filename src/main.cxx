@@ -23,7 +23,7 @@
 #include <shader.hxx>
 #include <texture.hxx>
 #include <uniform.hxx>
-#include <weighted_collection.hxx>
+#include <weighted_distribution.hxx>
 #include <lighting.hxx>
 #include <screen.hxx>
 #include <actions.hxx>
@@ -120,11 +120,6 @@ int main()
 		std::cout << "OpenGL version: " << t_verStr << std::endl;
 		
 		// Load texture
-		/*texture t_tex{ "assets/CLA.png" };
-		//texture t_tex{ "assets/tex4.png" };
-		shadow_texture t_shadow{ "assets/shadows.png" };
-		*/
-		
 		texture_manager t_texManager{
 			shadow_texture("assets/shadows.png"),
 			text_texture("assets/text.png"),
@@ -287,7 +282,14 @@ int main()
 		t_screenManager.modify(line({13,10}, {18,5}), put_string("meow", {0, 255, 0}));
 		
 		t_screenManager.modify(point({5,5}), set_light_mode(light_mode::none));
+		t_screenManager.modify(point({5,5}), highlight());
 		t_screenManager.modify(point({10,10}), set_light_mode(light_mode::none));
+		
+		t_screenManager.modify(area({10, 10}, {15, 15}), draw('.', {0, 255, 0}));
+		t_screenManager.modify(area({10, 13}, {15, 15}), set_glyph_set(glyph_set::graphics));
+		
+		t_screenManager.modify(area({25, 25}, {27, 27}), draw(0, {0, 0, 0}, {0, 255, 0}));
+		t_screenManager.modify(point({26, 26}), set_shadows(drop_shadow::north, drop_shadow::south, drop_shadow::west, drop_shadow::east));
 		//===----------------------------------------------------------------------===//
 	
 	
