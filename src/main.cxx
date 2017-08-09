@@ -127,8 +127,8 @@ int main()
 		
 		texture_manager t_texManager{
 			shadow_texture("assets/shadows.png"),
-			text_texture("assets/tex4.png"),
-			graphics_texture("assets/CLA.png")
+			text_texture("assets/text.png"),
+			graphics_texture("assets/graphics.png")
 		};
 		
 		// Resize window
