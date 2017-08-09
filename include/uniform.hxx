@@ -25,7 +25,7 @@ namespace gl
 			
 		#define MAKE_UNIFORM_IMPL(__type) 											\
 		template< >																	\
-		auto set_uniform_impl<__type>(GLint p_location, const __type& p_value) 		\
+		inline auto set_uniform_impl<__type>(GLint p_location, const __type& p_value)\
 			-> void																
 				
 		#define MAKE_UNIFORM_IMPL_VEC(__type, __suffix)								\

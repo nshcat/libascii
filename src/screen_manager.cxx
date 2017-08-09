@@ -2,19 +2,20 @@
 #include <ut/throwf.hxx>
 #include <GLXW/glxw.h>
 #include <screen.hxx>
+#include <uniform.hxx>
 
 
 screen_manager::screen_manager(dimension_type p_screenSize)
 	:	m_ScreenDims{p_screenSize},
 		m_Data(p_screenSize.x * p_screenSize.y)	
 {
-	glActiveTexture(GL_TEXTURE1);
+	glActiveTexture(GL_TEXTURE3);
 	glGenTextures(1, &m_GPUTexture);
 	glGenBuffers(1, &m_GPUBuffer);
 	glBindBuffer(GL_TEXTURE_BUFFER, m_GPUBuffer);
 	glBufferData(GL_TEXTURE_BUFFER, m_Data.size()*sizeof(cell), static_cast<GLvoid*>(m_Data.data()), GL_DYNAMIC_DRAW);
 	glBindTexture(GL_TEXTURE_BUFFER, m_GPUTexture);
-	glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32UI, m_GPUBuffer);
+	glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32UI, m_GPUBuffer);	
 }
 
 

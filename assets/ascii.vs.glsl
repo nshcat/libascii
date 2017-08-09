@@ -94,6 +94,17 @@
 // Maximum number of lights allowed in the light data uniform
 #define MAX_LIGHTS 25
 
+// Glyph sets
+#define GLYPH_SET_TEXT 0
+#define GLYPH_SET_GRAPHICS 1
+
+// Glyph set mask and shift value
+#define GLYPH_SET_MASK 0xF00
+#define GLYPH_SET_SHIFT 0x8
+
+// Glyph value mask
+#define GLYPH_MASK 0xFF
+
 // Glyph texture offsets from the top left for the 6 vertices of a cell.
 const vec2 texture_offset[] = vec2[6](
 	vec2(1, 1),	// BR
@@ -174,6 +185,7 @@ struct CellData
 	float fog_percentage;	//< Fog percentage value
 	uint shadows[8];		//< Array of shadow orientation flags
 	uint light_mode;		//< Light calulation mode
+	uint glyph_set;			//< Glyph set to use to render this cell
 	bool gui_mode;			//< Act like a normal tile for light calculations,
 							//  but be fully lit (for GUI elements that overlap
 							//  lit scenery)
@@ -200,6 +212,12 @@ struct CellData
 //        ^  ^  ^  ^  ^  ^  ^ ^ ^ ^ ^
 //        GM LM BR BL TR TL E S W N fog
 //	            └──Drop Shadows───┘  
+//
+// And glyph being composed as follows:
+//
+// FF FF F        F     FF
+//                ^      ^
+//        glyph_set  glyph
 //
 uniform usamplerBuffer input_buffer;
 
@@ -240,6 +258,7 @@ out vs_flat_out
 	flat int has_cursor;		//< Flag indicating presence of cursor
 	flat uint light_mode;		//< How this cell should react to light
 	flat uint gui_mode;			//< Flag indicating GUI mode (see CellData)
+	flat uint glyph_set;		//< Glyph set to use to render this cell
 	flat vec4 lighting_result;	//< Color representing result of lighting
 								//  calculations. Is blended in with colored
 								//  glyph texture in fragment shader.
@@ -408,8 +427,8 @@ void read_cell()
 	
 	// Retrieve glyph coordinates
 	this_cell.glyph = vec2(
-		t_high.a % sheet_dimensions.x,
-		t_high.a / sheet_dimensions.x
+		(t_high.a & GLYPH_MASK) % sheet_dimensions.x,
+		(t_high.a & GLYPH_MASK) / sheet_dimensions.x
 	);
 	
 	// Retrieve fog percentage
@@ -425,6 +444,9 @@ void read_cell()
 	
 	// Read drop shadow orientations
 	read_shadows(t_low.a);
+	
+	// Read glyph set
+	this_cell.glyph_set = ((t_high.a & GLYPH_SET_MASK) >> GLYPH_SET_SHIFT);
 }
 
 // Calculates whether a light source can be seen from given cell
@@ -571,6 +593,7 @@ void write_data()
 	flat_out.has_cursor = 0; // TODO Implement cursor
 	flat_out.light_mode = this_cell.light_mode;
 	flat_out.gui_mode = this_cell.gui_mode ? 1 : 0;
+	flat_out.glyph_set = this_cell.glyph_set;
 }
 //===----------------------------------------------------------------------===//
 

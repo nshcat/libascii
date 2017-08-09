@@ -4,59 +4,52 @@
 #include <type_traits>
 #include <random>
 #include <utility>
+#include <vector>
 #include <stdexcept>
 #include <initializer_list>
+#include <ut/type_traits.hxx>
 
-template< typename T, ::std::size_t N = 100UL >
-class weighted_collection
+template< typename T >
+class weighted_distribution
 {
 	using pair_type = ::std::pair<T, float>;
 	using list_type = ::std::initializer_list<pair_type>;
 
 	public:
-		weighted_collection(list_type p_list)
+		weighted_distribution(const list_type& p_list)
+			: m_Data(p_list.begin(), p_list.end())
 		{
-			// Check that total probability does not exceed 1
-			const auto t_sum = ::std::accumulate(p_list.begin(), p_list.end(), 0.f,
-				[](const float& p_a, const pair_type& p_b)
-					-> float
-				{
-					return p_a + p_b.second;
-				}
-			);
 			
-			if(t_sum > 1.f)
-				throw ::std::runtime_error("weighted_collection: Total probability cannot exceed 1!");
-				
-			auto t_iter = m_Data.begin();
-			for(const auto& t_pair: p_list)
-			{
-				const ::std::size_t t_count = t_pair.second * N;
-				
-				t_iter = ::std::fill_n(t_iter, t_count, t_pair.first);
-			}
-			
-			if(t_iter != m_Data.end())
-				::std::fill(t_iter, m_Data.end(), T{});
 		}
-	
+		
 	public:
 		template< typename TGenerator >
 		auto operator()(TGenerator& p_gen)
 			-> const T&
 		{
-			return m_Data[m_Distrib(p_gen)];
-		}
+			if(m_Data.size() == 0)
+				throw ::std::runtime_error("weighted_distribution::operator(): No entries!");
 		
-		template< typename TGenerator >
-		auto shuffle(TGenerator& p_gen)
-			-> void
-		{
-			::std::shuffle(m_Data.begin(), m_Data.end(), p_gen);
+			// Roll random number
+			const auto t_roll = m_Distrib(p_gen);
+			
+			float t_sum{ };
+			for(const auto& t_pair: m_Data)
+			{
+				t_sum += t_pair.second;
+				
+				if(t_roll <= t_sum)
+					return t_pair.first;							
+			}
+			
+			// If the propabilities didn't add up to 1 we could reach this:
+			// The generated float value is outside of our range!
+			// We just return the last element here, aka we are extending
+			// the last propability to sum up to 1.
+			return * ::std::prev(m_Data.end());
 		}
 	
 	private:
-		::std::array<T, N> m_Data;
-		::std::uniform_int_distribution<::std::size_t> m_Distrib{0, N-1};
+		::std::vector<pair_type> m_Data;
+		::std::uniform_real_distribution<float> m_Distrib{0.f, 1.f};
 };
-

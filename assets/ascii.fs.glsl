@@ -47,6 +47,10 @@
 #define LIGHT_MASK 	0xF0000
 #define LIGHT_SHIFT 16
 
+// Glyph sets
+#define GLYPH_SET_TEXT 0
+#define GLYPH_SET_GRAPHICS 1
+
 // Gui mode bit position
 #define GUI_MODE 0x1 << 20
 
@@ -113,7 +117,8 @@ layout (std140, binding = 0) uniform LightData
 
 
 // Miscellaneous uniforms
-uniform sampler2D sheet_texture;
+uniform sampler2D text_texture;
+uniform sampler2D graphics_texture;
 uniform sampler2D shadow_texture;
 uniform vec4 fog_color;
 uniform vec4 cursor_default; //< Default cursor front color
@@ -149,6 +154,7 @@ in vs_flat_out
 	flat int has_cursor;		//< Flag indicating presence of cursor
 	flat uint light_mode;		//< How this cell should react to light
 	flat uint gui_mode;			//< Flag indicating GUI mode (see CellData)
+	flat uint glyph_set;		//< Glyph set to use to render cell
 	flat vec4 lighting_result;	//< Color representing result of lighting
 								//  calculations. Is blended in with colored
 								//  glyph texture in fragment shader.
@@ -177,7 +183,21 @@ in vs_smooth_out
 // Calculate base pixel color using the sheet texture
 vec4 calc_pixel()
 {
-	const vec4 t_texColor = texture2D(sheet_texture, smooth_in.tex_coords);
+	vec4 t_texColor = vec4(0.f);
+	
+	switch(flat_in.glyph_set)
+	{
+		case GLYPH_SET_TEXT:
+		{
+			t_texColor = texture2D(text_texture, smooth_in.tex_coords);
+			break;
+		}		
+		case GLYPH_SET_GRAPHICS:
+		{
+			t_texColor = texture2D(graphics_texture, smooth_in.tex_coords);
+			break;
+		}
+	}
 
 	return mix(	flat_in.back_color,
 				flat_in.front_color * t_texColor,

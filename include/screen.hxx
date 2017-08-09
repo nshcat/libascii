@@ -126,6 +126,9 @@ class screen_manager
 	public:
 		// TODO maybe make Taction a callable that accepts cell AND count
 		// That would allow much more interesting actions
+		// Maybe it should be a context struct containg info it is a corner piece etc
+		// This would allow "border", but that would destroy the idea of decoupled, because
+		// border would only work with rectangle!
 		template< typename Tshape, typename Taction >
 		void modify(Tshape&& p_shape, Taction&& p_action)
 		{

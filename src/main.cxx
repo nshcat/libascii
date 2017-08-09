@@ -12,6 +12,7 @@
 #include <vector>
 #include <cstdint>
 #include <optional>
+#include <type_traits>
 #include <GLXW/glxw.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
@@ -22,7 +23,6 @@
 #include <shader.hxx>
 #include <texture.hxx>
 #include <uniform.hxx>
-#include <shadow_texture.hxx>
 #include <weighted_collection.hxx>
 #include <lighting.hxx>
 #include <screen.hxx>
@@ -120,13 +120,19 @@ int main()
 		std::cout << "OpenGL version: " << t_verStr << std::endl;
 		
 		// Load texture
-		glEnable(GL_TEXTURE_2D);
-		texture t_tex{ "assets/CLA.png" };
+		/*texture t_tex{ "assets/CLA.png" };
 		//texture t_tex{ "assets/tex4.png" };
 		shadow_texture t_shadow{ "assets/shadows.png" };
+		*/
+		
+		texture_manager t_texManager{
+			shadow_texture("assets/shadows.png"),
+			text_texture("assets/tex4.png"),
+			graphics_texture("assets/CLA.png")
+		};
 		
 		// Resize window
-		const glm::ivec2 t_glyphDim = t_tex.glyph_size();
+		const glm::ivec2 t_glyphDim = t_texManager.glyph_size();
 		const glm::ivec2 t_glyphCount = /*{ 20, 20 };//*/ { 60, 30 };
 		
 		const auto t_width = t_glyphDim.x * t_glyphCount.x;
@@ -267,6 +273,8 @@ int main()
 	
 		program.use();
 		
+		
+		//weighted_collection x{  {1, 1.f}  };
 	
 	
 		//===----------------------------------------------------------------------===//
@@ -293,14 +301,15 @@ int main()
 		gl::set_uniform(program, "fog_color", glm::vec4{ 0.1f, 0.1f, 0.3f, 1.f });
 		gl::set_uniform(program, "fog_density", 5.f);
 		gl::set_uniform(program, "projection_mat", glm::ortho(0.f, (float)t_width, (float)t_height, 0.f, -1.f, 1.f));		
-		gl::set_uniform(program, "sheet_dimensions", glm::ivec2{ texture::sheet_width, texture::sheet_height });
+		gl::set_uniform(program, "sheet_dimensions", glm::ivec2{ texture_manager::sheet_width, texture_manager::sheet_height });
 		gl::set_uniform(program, "glyph_dimensions", t_glyphDim);
 		gl::set_uniform(program, "glyph_count", t_glyphCount);
 		
 		// Samplers are just integers
-		gl::set_uniform(program, "sheet_texture", 0);
-		gl::set_uniform(program, "input_buffer", 1);
+		gl::set_uniform(program, "text_texture", 0);
+		gl::set_uniform(program, "graphics_texture", 1);	
 		gl::set_uniform(program, "shadow_texture", 2);
+		gl::set_uniform(program, "input_buffer", 3);
 		//===----------------------------------------------------------------------===/
 		
 		
@@ -486,8 +495,7 @@ int main()
 		    glClear(GL_COLOR_BUFFER_BIT);
 		   	program.use();	// Use ascii shader
 		   	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer); // Empty vertex buffer
-			t_tex.use();
-			t_shadow.use();
+			t_texManager.use();
 		    
 			// We need to render 6 vertices per glyph.
 			glDrawArraysInstanced(GL_TRIANGLES, 0, 6, t_glyphCount.x * t_glyphCount.y);
