@@ -1,0 +1,4 @@
+- Refactor different parts of the game into separate namespaces (gfx, input, rng ...)
+- Global defined types for glyphs, colors etc
+- Random class that supports all kinds of operations. One, global, auto-seeded (e.g. time, random_device) instance (instance()) for game rng,
+  but random should also be constructible for local RNG (map gen, using fixed seed to replicate mapgen)
