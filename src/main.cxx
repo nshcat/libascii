@@ -290,6 +290,9 @@ int main()
 		
 		t_screenManager.modify(area({25, 25}, {27, 27}), draw(0, {0, 0, 0}, {0, 255, 0}));
 		t_screenManager.modify(point({26, 26}), set_shadows(drop_shadow::north, drop_shadow::south, drop_shadow::west, drop_shadow::east));
+		
+		t_screenManager.modify(point({3, 3}), draw(foreground({255, 255, 255}), glyph('X')));
+		t_screenManager.modify(point({4, 3}), draw(foreground({255, 255, 255}), glyph('X'), set(glyph_set::graphics)));
 		//===----------------------------------------------------------------------===//
 	
 	

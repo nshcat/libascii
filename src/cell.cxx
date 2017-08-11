@@ -35,7 +35,7 @@ auto cell::bg() const
 void cell::set_glyph(glyph_type p_glyph)
 {
 	m_GlyphData &= ~(internal::glyph_mask);
-	m_GlyphData |= p_glyph;
+	m_GlyphData |= (p_glyph & internal::glyph_mask);
 }
 
 auto cell::glyph() const

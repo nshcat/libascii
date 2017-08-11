@@ -7,7 +7,75 @@
 #include <algorithm>
 #include <string_view>
 #include <screen.hxx>
+#include <utility.hxx>
 
+
+// TODO: fog, shadows
+namespace internal
+{
+	struct draw_parameters
+	{
+		cell::integral_color_type m_Foreground{0U};
+		cell::integral_color_type m_Background{0U};
+		cell::glyph_type m_Glyph{0U};
+		glyph_set m_GlyphSet{glyph_set::text};
+	};
+}
+
+using foreground = internal::tag_base<
+					internal::draw_parameters,
+					cell::integral_color_type,
+					&internal::draw_parameters::m_Foreground,
+					struct foreground_tag_t
+				   >;
+				   
+using background = internal::tag_base<
+					internal::draw_parameters,
+					cell::integral_color_type,
+					&internal::draw_parameters::m_Background,
+					struct background_tag_t
+				   >;
+
+using glyph =	   internal::tag_base<
+					internal::draw_parameters,
+					cell::glyph_type,
+					&internal::draw_parameters::m_Glyph,
+					struct glyph_tag_t
+				   >;
+				   
+using set =  	   internal::tag_base<
+					internal::draw_parameters,
+					glyph_set,
+					&internal::draw_parameters::m_GlyphSet,
+					struct glyph_set_tag_t
+				   >; 
+				 
+
+
+template< 	typename... Ts,
+			typename = ::std::enable_if_t<
+				::std::conjunction_v<
+					::std::is_same<
+						typename Ts::target_type,
+						internal::draw_parameters
+					>...	
+				>
+			>
+>
+auto draw(Ts&&... p_tags)
+{
+	internal::draw_parameters t_params{ };
+	
+	auto x = { (p_tags.apply(t_params), 0)... };
+	
+	return [t_params](cell& p_cell) -> void
+	{
+		p_cell.set_fg(t_params.m_Foreground);
+		p_cell.set_bg(t_params.m_Background);
+		p_cell.set_glyph(t_params.m_Glyph);
+		p_cell.set_glyph_set(t_params.m_GlyphSet);
+	};
+}
 
 template< typename... Ts >
 auto sequence(Ts&&... p_funcs)
