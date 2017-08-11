@@ -19,3 +19,6 @@
 				When GLFW_RELEASE is encountered, everything about the key is reset.
 					=> IMPORTANT: Look at demo implementation in main.cxx for how modifier keys will work perfectly! :)
 		  => Additionally: character stream functionality for text boxes :)
+		  
+		  
+nuklear_gui::initialize(const render_manager::handle_type) => Needs window pointer aka. window handle
