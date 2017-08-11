@@ -21,6 +21,7 @@ set(GLFW_INSTALL OFF CACHE BOOL "bla")
 add_subdirectory(glfw)
 add_subdirectory(glxw)
 add_subdirectory(ut)
+add_subdirectory(nuklear)
 
 
 # Source files
@@ -47,7 +48,7 @@ target_include_directories(gl_app PRIVATE ${SDL2_INCLUDE_DIR})
 target_include_directories(gl_app PRIVATE ${SDL2_IMAGE_INCLUDE_DIR})
 
 # IF THIS DOESNT WORK, ADD "glfw"
-target_link_libraries(gl_app glfw glxw ${GLFW_LIBRARIES} ${GLXW_LIBRARY} ${OPENGL_LIBRARY} ${LIBUT_LIBRARIES} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARY})
+target_link_libraries(gl_app glfw glxw ${NUKLEAR_LIBRARIES} ${GLFW_LIBRARIES} ${GLXW_LIBRARY} ${OPENGL_LIBRARY} ${LIBUT_LIBRARIES} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARY})
 
 # Copy assets to output path
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/assets")
@@ -61,5 +62,5 @@ endforeach()
 
 
 # Require support for at least C++14.
-set_property(TARGET gl_app PROPERTY CXX_STANDARD 14)
+set_property(TARGET gl_app PROPERTY CXX_STANDARD 17)
 set_property(TARGET gl_app PROPERTY CXX_STANDARD_REQUIRED ON)
