@@ -2,3 +2,5 @@
 - Global defined types for glyphs, colors etc
 - Random class that supports all kinds of operations. One, global, auto-seeded (e.g. time, random_device) instance (instance()) for game rng,
   but random should also be constructible for local RNG (map gen, using fixed seed to replicate mapgen)
+  - IMPORTANT: Refactor main.src! Currently, all values are part of main() thats bad, because nothing can be put into functions!
+  		=> Either put it into global state, or wrap as much as possible with classes (render_manager contains glfw.. etc, nk_manager, debug_ui ..)

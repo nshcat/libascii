@@ -22,7 +22,7 @@ add_subdirectory(glfw)
 add_subdirectory(glxw)
 add_subdirectory(ut)
 add_subdirectory(nuklear)
-
+add_subdirectory(minitrace)
 
 # Source files
 file(GLOB SOURCE_FILES src/*.cxx)
@@ -48,7 +48,7 @@ target_include_directories(gl_app PRIVATE ${SDL2_INCLUDE_DIR})
 target_include_directories(gl_app PRIVATE ${SDL2_IMAGE_INCLUDE_DIR})
 
 # IF THIS DOESNT WORK, ADD "glfw"
-target_link_libraries(gl_app glfw glxw ${NUKLEAR_LIBRARIES} ${GLFW_LIBRARIES} ${GLXW_LIBRARY} ${OPENGL_LIBRARY} ${LIBUT_LIBRARIES} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARY})
+target_link_libraries(gl_app glfw glxw ${LIBMINITRACE_LIBRARIES} ${NUKLEAR_LIBRARIES} ${GLFW_LIBRARIES} ${GLXW_LIBRARY} ${OPENGL_LIBRARY} ${LIBUT_LIBRARIES} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARY})
 
 # Copy assets to output path
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/assets")

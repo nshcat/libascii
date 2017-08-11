@@ -19,6 +19,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/transform.hpp>
+#include <minitrace.h>
 #include <program.hxx>
 #include <shader.hxx>
 #include <texture.hxx>
@@ -28,6 +29,7 @@
 #include <screen.hxx>
 #include <actions.hxx>
 #include <shapes.hxx>
+
 
 #define NK_INCLUDE_FIXED_TYPES
 #define NK_INCLUDE_STANDARD_IO
@@ -62,6 +64,7 @@ constexpr ::std::uint32_t LIGHT_FULL = 2;
 void error_callback(int error, const char* description)
 {
 	std::cerr << "glfw error: " << description << std::endl;
+	mtr_shutdown();
 	std::exit(EXIT_FAILURE);
 }
 
@@ -73,6 +76,10 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 int main()
 {
+	mtr_init("trace.json");
+	
+	MTR_SCOPE("GFX", "RenderThread");
+
 	bool useLighting{true};
 	bool lightModeDebug{false};
 	bool useDynamicLighting{true};
@@ -358,6 +365,17 @@ int main()
 		
 		
 		
+		//===----------------------------------------------------------------------===//
+		// Viewport setup
+		//
+		float ratio;
+		int width, height;
+
+		glfwGetFramebufferSize(window, &width, &height);
+		ratio = width / (float) height;
+		glViewport(0, 0, width, height);
+		//===----------------------------------------------------------------------===//
+				
 		::std::size_t inputCounter = 0;
 		const ::std::size_t inputPeriod = 4;
 
@@ -366,9 +384,12 @@ int main()
 
 		while (!glfwWindowShouldClose(window))
 		{
+			MTR_BEGIN("GFX", "RenderFrame");
+		
 			glfwPollEvents();
-			nk_glfw3_new_frame();
 			
+			MTR_BEGIN("GFX", "NkLogic");
+			nk_glfw3_new_frame();		
 			if (nk_begin(t_nkctx, "Debug", nk_rect(700, 100, 330, 350),
             	NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_SCALABLE|
             	NK_WINDOW_MINIMIZABLE|NK_WINDOW_TITLE))
@@ -421,7 +442,8 @@ int main()
         		}
         	}
 				
-			nk_end(t_nkctx);
+			nk_end(t_nkctx);		
+			MTR_END("GFX", "NkLogic");
 			
 		
 			if(animCounter >= animPeriod)
@@ -481,40 +503,57 @@ int main()
 			}
 			else ++inputCounter;
 			
+			MTR_BEGIN("GFX", "RenderSetup");
+			
+					
+			MTR_BEGIN("GFX", "DataSync");
+	
+			MTR_BEGIN("GFX", "LightSync");	
 			// Sync local light data with gpu
 			t_lightManager.sync();
-			
+			MTR_END("GFX", "LightSync");	
+	
+			MTR_BEGIN("GFX", "ScreenSync");			
 			// Sync local screen data with gpu
 			t_screenManager.sync();
-			
+			MTR_END("GFX", "ScreenSync");
 		
-		    float ratio;
-		    int width, height;
-
-		    glfwGetFramebufferSize(window, &width, &height);
-		    ratio = width / (float) height;
-
-
+			MTR_END("GFX", "DataSync");
+			
+			
+			
 			// /!\ Reset our rendering state, since Nuklear will mess that up
-		    glViewport(0, 0, width, height);
-		    glClear(GL_COLOR_BUFFER_BIT);
+			MTR_BEGIN("GFX", "SetupState");
+			glClear(GL_COLOR_BUFFER_BIT);
 		   	program.use();	// Use ascii shader
 		   	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer); // Empty vertex buffer
 			t_texManager.use();
+			MTR_END("GFX", "SetupState");
+			
+			MTR_END("GFX", "RenderSetup");
+			
 		    
+		    
+	    	MTR_BEGIN("GFX", "RenderGlyphs");
 			// We need to render 6 vertices per glyph.
 			glDrawArraysInstanced(GL_TRIANGLES, 0, 6, t_glyphCount.x * t_glyphCount.y);
-
-
+			MTR_END("GFX", "RenderGlyphs");
+			
+		
+			MTR_BEGIN("GFX", "RenderNuklearGUI");
 			nk_glfw3_render(NK_ANTI_ALIASING_ON, 512 * 1024, 128 * 1024);
+			MTR_END("GFX", "RenderNuklearGUI");
 
-
-		    glfwSwapBuffers(window); 
+		    glfwSwapBuffers(window);
+		    
+		    MTR_END("GFX", "RenderFrame");
 		}
 		
 		nk_glfw3_shutdown();
 		glfwDestroyWindow(window);
 		glfwTerminate();
+		
+		mtr_shutdown();
 	}
 	catch(const gl::shader_exception& p_ex)
 	{
