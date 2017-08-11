@@ -4,3 +4,18 @@
   but random should also be constructible for local RNG (map gen, using fixed seed to replicate mapgen)
   - IMPORTANT: Refactor main.src! Currently, all values are part of main() thats bad, because nothing can be put into functions!
   		=> Either put it into global state, or wrap as much as possible with classes (render_manager contains glfw.. etc, nk_manager, debug_ui ..)
+  		
+- IDEA: All classes that need to be global state: NO INITIALIZATION IN CTOR! (because order isnt garuantueed) Add initialize() method!
+
+- Replace GLFW with SDL2? Or make new input handler?
+	=> IMPORTANT: A single GLFW_PRESS Event should only count ONCE. if it is GLFW_REPEAT Keep it pressed until
+		GLFW_UP
+		OR BETTER: only use the polling functions. They should return the proper value.
+		
+		=> NO: polling functions can not implement repeat delay :)
+		=> Two interfaces: one using the polling functions (no repeat delay), one using the callbacks (repeat delay)
+			=> Basically: When Key is pressed using GLFW_PRESS, flag it to be cleared BEFORE NEXT FRAME.
+				Only if it is pressed using GLFW_REPEAT it will be set as DONT_CLEAR, and thus persist.
+				When GLFW_RELEASE is encountered, everything about the key is reset.
+					=> IMPORTANT: Look at demo implementation in main.cxx for how modifier keys will work perfectly! :)
+		  => Additionally: character stream functionality for text boxes :)

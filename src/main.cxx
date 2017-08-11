@@ -68,10 +68,49 @@ void error_callback(int error, const char* description)
 	std::exit(EXIT_FAILURE);
 }
 
+bool clear_ = true;
+bool pressed_ = false;
+bool clear__ = true;
+bool pressed__ = false;
+
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GLFW_TRUE);
+        
+    if (key == GLFW_KEY_E && action == GLFW_PRESS)
+    {
+    	clear_ = pressed_ = true;
+    }
+    
+    if (key == GLFW_KEY_E && action == GLFW_REPEAT)
+    {
+    	clear_ = false;
+    	pressed_ = true;
+    }
+    
+    if (key == GLFW_KEY_E && action == GLFW_RELEASE)
+    {
+    	clear_ = true;
+    	pressed_ = false;
+    }
+   
+    if ((mods & GLFW_MOD_SHIFT) && action == GLFW_PRESS)
+    {
+    	clear__ = pressed__ = true;
+    }
+    
+    if ((mods & GLFW_MOD_SHIFT) && action == GLFW_REPEAT)
+    {
+    	clear__ = false;
+    	pressed__ = true;
+    }
+    
+    if ((mods & GLFW_MOD_SHIFT) && action == GLFW_RELEASE)
+    {
+    	clear__ = true;
+    	pressed__ = false;
+    }
 }
 
 int main()
@@ -411,6 +450,25 @@ int main()
         		nk_layout_row_static(t_nkctx, 30, 200, 1);
         		nk_label(t_nkctx, "", NK_TEXT_ALIGN_LEFT);
         		
+        		nk_layout_row_static(t_nkctx, 30, 200, 1);
+        		
+        		//bool t_pressed = (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS);
+        		bool t_pressed = pressed_;
+        		
+        		if(clear_)
+        		{
+        			pressed_ = false;
+        		}
+        		
+        		bool t_pressed2 = pressed__;
+        		
+        		if(clear__)
+        		{
+        			pressed__ = false;
+        		}
+        		
+        		nk_menu_item_label(t_nkctx, (t_pressed ? "E pressed" : "E not pressed"), NK_TEXT_LEFT);
+        		nk_menu_item_label(t_nkctx, (t_pressed2 ? "Shift pressed" : "Shift not pressed"), NK_TEXT_LEFT);
         		
         		nk_layout_row_static(t_nkctx, 30, 200, 1);
         		nk_label(t_nkctx, "Ambient light:", NK_TEXT_ALIGN_LEFT);
