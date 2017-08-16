@@ -1,5 +1,5 @@
 - Refactor different parts of the game into separate namespaces (gfx, input, rng ...)
-- Global defined types for glyphs, colors etc
+- Global defined types for glyphs, colors, position.. (real_position, position, color, real_color) etc /!\ VERY IMPORTANT
 - Random class that supports all kinds of operations. One, global, auto-seeded (e.g. time, random_device) instance (instance()) for game rng,
   but random should also be constructible for local RNG (map gen, using fixed seed to replicate mapgen)
   - IMPORTANT: Refactor main.src! Currently, all values are part of main() thats bad, because nothing can be put into functions!
@@ -22,3 +22,35 @@
 		  
 		  
 nuklear_gui::initialize(const render_manager::handle_type) => Needs window pointer aka. window handle
+
+- render_manager with ::frame( ); method.
+	-> and ::screen();
+	-> is initialized with ::initialize() and contains shader program, screen, lights and textures
+	-> Other things are drawn by supplying the screen to them
+	
+	
+- high level drawing functions: e.g. `border(...)` returns a lambda that can be given to a new overload of `screen::modify`:
+	=> 	auto border(...)
+		{
+			return [](screen_manager& scr)
+			{
+				scr.modify(...);
+				scr.modify(...);
+				scr.modify(...);
+			};
+		}
+		
+	=> screen.modify(border(...));
+	
+	template< TL, TR, BL, BR, ... >
+	class border_style
+	{
+		static constexpr .... 
+	};
+	
+	
+	using thick_border_style = ...
+	using slim_border_style = ...
+	
+	=> One can create custom border styles by inheritance and then overriding single members
+		
