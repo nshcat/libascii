@@ -151,10 +151,18 @@ class screen_manager
 			Tshape t_shape{ ::std::forward<Tshape>(p_shape) };
 		
 			::std::optional<position_type> t_next;
-			while(t_next = t_shape.next())
+			while((t_next = t_shape.next()))
 			{
 				p_action(modify_cell(t_next.value()));
 			}
+			
+			set_dirty();
+		}
+		
+		template< typename Taction >
+		void modify(Taction&& p_action)
+		{
+			p_action(*this);
 			
 			set_dirty();
 		}

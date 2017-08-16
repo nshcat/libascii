@@ -8,6 +8,10 @@
 #include <string_view>
 #include <screen.hxx>
 #include <utility.hxx>
+#include <ut/throwf.hxx>
+
+#include "screen.hxx"
+#include "shapes.hxx"
 
 
 // TODO: fog, shadows
@@ -15,7 +19,7 @@ namespace internal
 {
 	struct draw_parameters
 	{
-		cell::integral_color_type m_Foreground{0U};
+		cell::integral_color_type m_Foreground{255U, 255U, 255U};
 		cell::integral_color_type m_Background{0U};
 		cell::glyph_type m_Glyph{0U};
 		glyph_set m_GlyphSet{glyph_set::text};
@@ -56,13 +60,13 @@ template< 	typename... Ts,
 			typename = ::std::enable_if_t<
 				::std::conjunction_v<
 					::std::is_same<
-						typename Ts::target_type,
+						typename ::std::decay_t<Ts>::target_type,
 						internal::draw_parameters
 					>...	
 				>
 			>
 >
-auto draw(Ts&&... p_tags)
+auto draw(Ts... p_tags)
 {
 	internal::draw_parameters t_params{ };
 	
@@ -196,5 +200,71 @@ static auto highlight()
 	return [](cell& p_cell)
 	{
 		::std::swap(p_cell.m_Front, p_cell.m_Back);
+	};
+}
+
+template<	cell::glyph_type TL,
+			cell::glyph_type TR,
+			cell::glyph_type BR,
+			cell::glyph_type BL,
+			cell::glyph_type Horz,
+			cell::glyph_type Vert
+>
+struct border_style
+{
+	using glyph_type = cell::glyph_type;
+
+	static constexpr glyph_type horizontal = Horz;
+	static constexpr glyph_type vertical = Vert;
+	
+	static constexpr glyph_type top_left = TL;
+	static constexpr glyph_type top_right = TR;
+	static constexpr glyph_type bottom_left = BL;
+	static constexpr glyph_type bottom_right = BR;
+};
+
+using thick_border_style = border_style< 201U, 187U, 188U, 200U, 205U, 186U >;
+using thin_border_style = border_style< 218U, 191U, 217U, 192U, 196U, 179U >;
+
+template<	typename Tstyle,
+			typename... Ts,
+			typename = ::std::enable_if_t<
+				::std::conjunction_v<
+					::std::is_same<
+						typename ::std::decay_t<Ts>::target_type,
+						internal::draw_parameters
+					>...	
+				>
+			>
+>
+auto border(const screen_manager::position_type& p_tl, const screen_manager::position_type& p_br, Ts... p_tags)
+{
+	if((p_tl.x > p_br.x) || (p_tl.y > p_br.y))
+		ut::throwf<::std::runtime_error>("border: Invalid rectangle formed by (%u, %u) and (%u, %u)",
+			p_tl.x, p_tl.y, p_br.x, p_br.y);
+
+	//internal::draw_parameters t_params{ };
+	
+	//auto x = { (p_tags.apply(t_params), 0)... };
+	
+	return [=](screen_manager& p_screen)
+	{
+		// Calculate missing points
+		const auto t_tr = screen_manager::position_type{ p_br.x, p_tl.y };
+		const auto t_bl = screen_manager::position_type{ p_tl.x, p_br.y };
+		
+		// Draw horizontal lines
+		p_screen.modify(line(p_tl, t_tr), draw(p_tags..., glyph(Tstyle::horizontal)));
+		p_screen.modify(line(t_bl, p_br), draw(p_tags..., glyph(Tstyle::horizontal)));
+		
+		// Draw vertical lines
+		p_screen.modify(line(p_tl, t_bl), draw(p_tags..., glyph(Tstyle::vertical)));
+		p_screen.modify(line(t_tr, p_br), draw(p_tags..., glyph(Tstyle::vertical)));
+		
+		// Draw edges
+		p_screen.modify(point(p_tl), draw(p_tags..., glyph(Tstyle::top_left)));
+		p_screen.modify(point(t_tr), draw(p_tags..., glyph(Tstyle::top_right)));
+		p_screen.modify(point(p_br), draw(p_tags..., glyph(Tstyle::bottom_right)));
+		p_screen.modify(point(t_bl), draw(p_tags..., glyph(Tstyle::bottom_left)));
 	};
 }
