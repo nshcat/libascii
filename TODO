@@ -12,6 +12,14 @@
 			=> THIS IS WRONG. A green surface is green BECAUSE IT ABSORBS ALL RED LIGHT. So
 			it won't magically turn red when lit by a red light source!
 				=> GOOD NEWS: A fix is easy. The lighting equation just needs to be adjusted.
+				
+	=> CAREFUL: Not mixing of the tex color with lighting! The texcolor is only the k_d value, no lights no color
+		=> directly follow lambert diffuse term
+		=> PROBLEM: Maybe we cant do it in VS anymore
+			=> IF SO: Raytrace, and e.g. save flags if lights are visible using integral bit field, and then 
+				access light data in FS aswell to calculate light.
+				=> OR: just save accumulated irradiance
+				
 
 - fog should use integral distance values, like "this tile is two tiles beneath the current main z-level"
 
