@@ -134,7 +134,7 @@ class screen_manager
 		// Sync buffer on GPU with state contained in this object
 		void sync();
 		
-		void clear_screen();
+		void clear();
 		void clear_cell(position_type);
 		cell& modify_cell(position_type);
 		const cell& read_cell(position_type) const;

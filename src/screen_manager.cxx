@@ -64,7 +64,7 @@ bool screen_manager::check_position(position_type p_pos) const
 	return (p_pos.x < m_ScreenDims.x && p_pos.y < m_ScreenDims.y);
 }
 
-void screen_manager::clear_screen()
+void screen_manager::clear()
 {
 	for(auto& t_entry: m_Data)
 		t_entry = cell{ };
