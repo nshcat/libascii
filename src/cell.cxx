@@ -68,16 +68,16 @@ glyph_set cell::get_glyph_set() const
 	return ut::enum_cast<glyph_set>(t_value);
 }
 
-void cell::set_fog(fog_type p_fog)
+void cell::set_depth(depth_type p_depth)
 {
-	m_Data &= ~internal::fog_mask;
-	m_Data |= p_fog;
+	m_Data &= ~internal::depth_mask;
+	m_Data |= (p_depth & internal::depth_mask); 
 }
 
-auto cell::fog() const
-	-> fog_type
+auto cell::depth() const
+	-> depth_type
 {
-	return ut::narrow_cast<fog_type>(m_Data & internal::fog_mask);
+	return ut::narrow_cast<depth_type>(m_Data & internal::depth_mask);
 }
 
 void cell::set_gui_mode(bool p_val)
@@ -93,13 +93,14 @@ bool cell::gui_mode() const
 	return ((m_Data & internal::gui_mode_bit) != 0);
 }
 
-void cell::set_shadows(::std::uint32_t p_shadows)
+void cell::set_shadows(shadow_type p_shadows)
 {
 	m_Data &= ~(internal::drop_shadow_mask);
 	m_Data |= p_shadows;
 }
 
-::std::uint32_t cell::shadows() const
+auto cell::shadows() const
+	-> shadow_type
 {
 	return (m_Data & internal::drop_shadow_mask);
 }

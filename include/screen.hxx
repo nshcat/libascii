@@ -57,7 +57,7 @@ namespace internal
 	constexpr const ::std::uint32_t light_mode_mask = 0xF0000U;
 	constexpr const ::std::uint32_t light_mode_shift = 16U;
 	constexpr const ::std::uint32_t gui_mode_bit = 0x1U << 20U;
-	constexpr const ::std::uint32_t fog_mask = 0xFFU;
+	constexpr const ::std::uint32_t depth_mask = 0xFFU;
 	constexpr const ::std::uint32_t glyph_mask = 0xFFU;
 	constexpr const ::std::uint32_t glyph_set_mask = 0xF00U;
 	constexpr const ::std::uint32_t glyph_set_shift = 8U;
@@ -68,8 +68,9 @@ struct cell
 {
 	using integral_color_type = glm::uvec3;
 	using float_color_type = glm::vec3;
-	using glyph_type = ::std::uint32_t;
-	using fog_type = ::std::uint8_t;
+	using glyph_type = ::std::uint8_t;
+	using depth_type = ::std::uint8_t;
+	using shadow_type = ::std::uint32_t;
 
 	public:
 		void set_fg(const integral_color_type&);
@@ -88,8 +89,8 @@ struct cell
 		void set_light_mode(light_mode);
 		light_mode get_light_mode() const;
 		
-		void set_fog(fog_type);
-		fog_type fog() const;
+		void set_depth(depth_type);
+		depth_type depth() const;
 		
 		void set_gui_mode(bool);
 		bool gui_mode() const;
@@ -97,12 +98,12 @@ struct cell
 		void set_glyph_set(glyph_set);
 		glyph_set get_glyph_set() const;
 		
-		void set_shadows(::std::uint32_t);
-		::std::uint32_t shadows() const;
+		void set_shadows(shadow_type);
+		shadow_type shadows() const;
 
 	public:
 		glm::uvec3 		m_Front{0, 0, 0};
-		glyph_type		m_GlyphData{0};
+		::std::uint32_t	m_GlyphData{0};
 		glm::uvec3 		m_Back{0, 0, 0};
 		::std::uint32_t m_Data{0};
 };

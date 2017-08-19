@@ -102,6 +102,6 @@ namespace gl
 		{
 			set_uniform<T>(t_loc, p_value);
 		}
-		else throw ::std::runtime_error("Invalid uniform name for given program!");
+		//else throw ::std::runtime_error("Invalid uniform name for given program!");
 	}
 }

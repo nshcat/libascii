@@ -85,8 +85,8 @@
 // Gui mode bit position
 #define GUI_MODE 0x1 << 20
 
-// Mask for fog percentage value
-#define FOG_MASK 0xFF
+// Mask for integral depth value
+#define DEPTH_MASK 0xFF
 
 // Cursor bit position
 #define CURSOR 0x1 << 16
@@ -182,7 +182,7 @@ struct CellData
 	vec4 front_color;		//< Front color of the glyph
 	vec4 back_color;		//< Back color of the glyph
 	vec2 glyph;				//< Glyph coordinates on glyph sheet
-	float fog_percentage;	//< Fog percentage value
+	uint depth;				//< Depth of the tile. Used to calculate fog.
 	uint shadows[8];		//< Array of shadow orientation flags
 	uint light_mode;		//< Light calulation mode
 	uint glyph_set;			//< Glyph set to use to render this cell
@@ -210,7 +210,7 @@ struct CellData
 //
 // FF 000 0  F  0  0  0  0  0 0 0 0 FF
 //        ^  ^  ^  ^  ^  ^  ^ ^ ^ ^ ^
-//        GM LM BR BL TR TL E S W N fog
+//        GM LM BR BL TR TL E S W N depth
 //	            └──Drop Shadows───┘  
 //
 // And glyph being composed as follows:
@@ -367,7 +367,7 @@ void calc_shadow_coords()
 void calc_fog()
 {
 	// Standard exponential distance fog equation
-	const float t_fogFactor = exp(-fog_density * this_cell.fog_percentage);
+	const float t_fogFactor = exp(-fog_density * this_cell.depth);
 	
 	flat_out.fog_factor = clamp(t_fogFactor, 0.f, 1.f);
 }
@@ -431,10 +431,10 @@ void read_cell()
 		(t_high.a & GLYPH_MASK) / sheet_dimensions.x
 	);
 	
-	// Retrieve fog percentage
+	// Retrieve depth
 	// There is no need to shift here, since the fog component starts with
 	// the LSB
-	this_cell.fog_percentage = float(t_low.a & FOG_MASK) / 255.f;
+	this_cell.depth = uint(t_low.a & DEPTH_MASK);
 	
 	// Check if gui mode bit is set
 	this_cell.gui_mode = ( (t_low.a & GUI_MODE) != 0.f ? true : false );

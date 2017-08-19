@@ -161,7 +161,7 @@ int main()
 		t_screenManager.modify(point({3, 3}), draw(foreground({255, 255, 255}), glyph('X')));
 		t_screenManager.modify(point({4, 3}), draw(foreground({255, 255, 255}), glyph('X'), set(glyph_set::graphics)));
 		
-		t_screenManager.modify(border<thin_border_style>({0, 0}, {6, 6}, foreground({94, 34, 55})));
+		t_screenManager.modify(draw_border<thin_border_style>({0, 0}, {6, 6}, set(glyph_set::graphics)));
 		//===----------------------------------------------------------------------===//
 	
 		

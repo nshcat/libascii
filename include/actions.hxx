@@ -137,6 +137,14 @@ static auto set_light_mode(light_mode p_mode)
 	};
 }
 
+static auto set_depth(cell::depth_type p_depth)
+{
+	return [p_depth](cell& p_cell)
+	{
+		p_cell.set_depth(p_depth);
+	};
+}
+
 static auto set_gui_mode(bool p_flag)
 {
 	return [p_flag](cell& p_cell)
@@ -237,7 +245,7 @@ template<	typename Tstyle,
 				>
 			>
 >
-auto border(const screen_manager::position_type& p_tl, const screen_manager::position_type& p_br, Ts... p_tags)
+auto draw_border(const screen_manager::position_type& p_tl, const screen_manager::position_type& p_br, Ts... p_tags)
 {
 	if((p_tl.x > p_br.x) || (p_tl.y > p_br.y))
 		ut::throwf<::std::runtime_error>("border: Invalid rectangle formed by (%u, %u) and (%u, %u)",
