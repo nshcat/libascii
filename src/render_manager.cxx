@@ -36,7 +36,7 @@ auto render_manager::set_uniforms()
 {
 	// Set uniforms		
 	gl::set_uniform(m_Program, "fog_color", glm::vec4{ 0.1f, 0.1f, 0.3f, 1.f });
-	gl::set_uniform(m_Program, "fog_density", 5.f);
+	gl::set_uniform(m_Program, "fog_density", .15f);
 	gl::set_uniform(m_Program, "projection_mat", glm::ortho(0.f, static_cast<float>(m_Context.dimensions().x), static_cast<float>(m_Context.dimensions().y), 0.f, -1.f, 1.f));		
 	gl::set_uniform(m_Program, "sheet_dimensions", glm::ivec2{ texture_manager::sheet_width, texture_manager::sheet_height });
 	gl::set_uniform(m_Program, "glyph_dimensions", m_Tex.glyph_size());

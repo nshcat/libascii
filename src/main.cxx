@@ -130,12 +130,23 @@ int main()
     	std::uniform_int_distribution<unsigned> t_distrib(0, 16);
     	std::uniform_real_distribution<float> t_intensityDistrib(0.4f, 1.0f); 
 		
-		/*weighted_collection<glm::uvec3> t_groundClr{
+		/*weighted_distribution<glm::uvec3> t_groundClr{
 			{ { 84, 84, 84 }, 0.3f },		
 			{ { 94, 94, 94 }, 0.3f },		
 			{ { 56, 56, 56 }, 0.2f },		
 			{ { 75, 75, 75 }, 0.2f }
 		};*/
+		
+		weighted_distribution<glm::uvec3> t_groundClr{
+			{ { 0, 102, 43 }, 0.2f },
+			{ { 68, 102, 41 }, 0.2f },
+			{ { 0, 62, 26 }, 0.2f },
+			{ { 107, 107, 54 }, 0.15f },		
+			{ { 51, 77, 31 }, 0.1f },		
+			{ { 85, 128, 51 }, 0.06f },
+			{ { 0, 92, 38 }, 0.06f },
+			{ { 94, 94, 94 }, 0.03f }
+		};
 		
 		
 	
@@ -144,24 +155,25 @@ int main()
 		//
 		auto& t_screenManager = t_renderer.screen();
 		
-		t_screenManager.modify(line({5,5}, {10,10}), put_string("meow", {0, 255, 0}));
+		//t_screenManager.modify(line({5,5}, {10,5}), put_string("meow nyan", {0, 255, 0}));
+
+		t_screenManager.modify(draw_border<thin_border_style>({0, 0}, {21, 21}, set(glyph_set::graphics)));
 		
-		t_screenManager.modify(line({13,10}, {18,5}), put_string("meow", {0, 255, 0}));
+		for(::std::size_t t_ix = 1; t_ix < 20; t_ix += 2)
+		{
+			t_screenManager.modify(area({t_ix, 1}, {t_ix+1, 20}),
+				sequence(
+					sample_background(t_groundClr, rd),
+					set_depth(t_ix/2)
+				)
+			);
+			
+			if(t_ix >= 3)
+				t_screenManager.modify(area({t_ix, 1}, {t_ix, 20}),
+					set_shadows(drop_shadow::west)
+				);
+		}
 		
-		t_screenManager.modify(point({5,5}), set_light_mode(light_mode::none));
-		t_screenManager.modify(point({5,5}), highlight());
-		t_screenManager.modify(point({10,10}), set_light_mode(light_mode::none));
-		
-		t_screenManager.modify(area({10, 10}, {15, 15}), draw('.', {0, 255, 0}));
-		t_screenManager.modify(area({10, 13}, {15, 15}), set_glyph_set(glyph_set::graphics));
-		
-		t_screenManager.modify(area({25, 25}, {27, 27}), draw(0, {0, 0, 0}, {0, 255, 0}));
-		t_screenManager.modify(point({26, 26}), set_shadows(drop_shadow::north, drop_shadow::south, drop_shadow::west, drop_shadow::east));
-		
-		t_screenManager.modify(point({3, 3}), draw(foreground({255, 255, 255}), glyph('X')));
-		t_screenManager.modify(point({4, 3}), draw(foreground({255, 255, 255}), glyph('X'), set(glyph_set::graphics)));
-		
-		t_screenManager.modify(draw_border<thin_border_style>({0, 0}, {6, 6}, set(glyph_set::graphics)));
 		//===----------------------------------------------------------------------===//
 	
 		
@@ -307,7 +319,6 @@ int main()
 
 			t_renderer.begin_frame();
 			{
-				t_renderer.screen().modify(point({0,0}), draw(glyph('X'), foreground({255, 0, 0})));
 				t_renderer.render();
 				nk_glfw3_render(NK_ANTI_ALIASING_ON, 512 * 1024, 128 * 1024);
 			}

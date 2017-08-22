@@ -98,6 +98,15 @@ static auto clear()
 	};
 }
 
+template< typename Tdistr, typename Tgen >
+auto sample_background(Tdistr& p_distribution, Tgen& p_generator)
+{
+	return [&](cell& p_cell) -> void
+	{
+		p_cell.set_bg(p_distribution(p_generator));
+	};
+}
+
 static auto put_string(::std::string_view p_str, cell::integral_color_type p_front, cell::integral_color_type p_back = { })
 {
 	return [p_str, p_front, p_back](cell& p_cell) mutable
