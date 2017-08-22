@@ -2,6 +2,9 @@
 cmake_minimum_required(VERSION 3.1.3)
 project(gl_app)
 
+# If this is enabled, CMake will copy the game binary, assets and all
+# required dependencies to the folder "distrib".
+option(GL_APP_DISTRIBUTE "Create distribution folder" ON)
 
 # Search for OpenGL
 find_package(OpenGL REQUIRED)
@@ -10,6 +13,7 @@ find_package(OpenGL REQUIRED)
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
 find_package(SDL2 REQUIRED)
 find_package(SDL2_image REQUIRED)
+
 
 # Disable glfw examples and tests
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "bla")
@@ -64,3 +68,17 @@ endforeach()
 # Require support for at least C++14.
 set_property(TARGET gl_app PROPERTY CXX_STANDARD 17)
 set_property(TARGET gl_app PROPERTY CXX_STANDARD_REQUIRED ON)
+
+# Bundle dependencies on mingw
+if(MINGW AND GL_APP_DISTRIBUTE)
+	add_custom_command(
+		TARGET gl_app
+		POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E make_directory "distrib"
+		COMMAND ${CMAKE_COMMAND} -E copy  ${CMAKE_SOURCE_DIR}/mingw-bundledlls/mingw-bundledlls ${CMAKE_BINARY_DIR}/distrib/mingw-bundledlls
+		COMMAND ${CMAKE_COMMAND} -E copy  ${CMAKE_BINARY_DIR}/gl_app.exe ${CMAKE_BINARY_DIR}/distrib/gl_app.exe
+		COMMAND ${CMAKE_COMMAND} -E copy_directory  ${CMAKE_BINARY_DIR}/assets ${CMAKE_BINARY_DIR}/distrib/assets
+		COMMAND ${CMAKE_BINARY_DIR}/distrib/mingw-bundledlls --copy "${CMAKE_BINARY_DIR}/distrib/gl_app.exe"
+		COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_BINARY_DIR}/distrib/mingw-bundledlls
+	)
+endif()
