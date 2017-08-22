@@ -46,7 +46,7 @@ class weighted_distribution
 			// The generated float value is outside of our range!
 			// We just return the last element here, aka we are extending
 			// the last propability to sum up to 1.
-			return * ::std::prev(m_Data.end());
+			return ::std::prev(m_Data.end())->first;
 		}
 	
 	private:
