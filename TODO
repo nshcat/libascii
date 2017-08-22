@@ -1,3 +1,9 @@
+- Put begin_frame and end_frame into render_context
+
+- Add a way to sample color values from a distribution to draw! (maybe foreground(sampled(dist, gen)))
+	=> Would allow draw() to use that!
+		=> Make the actions sample_background better!
+
 - Introduce "clean areas", areas that will be cleaned up on next begin_frame!
 - Reimplement profiling
 - Add option to disable debug mode in render_context (constructor: `debug_mode(true)`)
