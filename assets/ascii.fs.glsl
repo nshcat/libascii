@@ -23,45 +23,45 @@
 
 // Drop shadow orientation bit positions. A cell may have any combination of
 // them. They will be rendered on-top of each other.
-#define SHADOW_N 	0x1 << 8
-#define SHADOW_W 	0x1 << 9
-#define SHADOW_S 	0x1 << 10
-#define SHADOW_E 	0x1 << 11
-#define SHADOW_TL 	0x1 << 12
-#define SHADOW_TR 	0x1 << 13
-#define SHADOW_BL 	0x1 << 14
-#define SHADOW_BR 	0x1 << 15
+#define SHADOW_N 	0x1U << 8U
+#define SHADOW_W 	0x1U << 9U
+#define SHADOW_S 	0x1U << 10U
+#define SHADOW_E 	0x1U << 11U
+#define SHADOW_TL 	0x1U << 12U
+#define SHADOW_TR 	0x1U << 13U
+#define SHADOW_BL 	0x1U << 14U
+#define SHADOW_BR 	0x1U << 15U
 
 // Amount of different shadow orientations
-#define NUM_SHADOWS 8
+#define NUM_SHADOWS 8U
 
 // Shadow bit mask, contains shadow orientation bit field
-#define SHADOW_MASK 0xFF00
+#define SHADOW_MASK 0xFF00U
 
 // Light modes. These are used to determine how a cell reacts to lighting.
-#define LIGHT_NONE 	0	//< Block light. Stays completely dark.
-#define LIGHT_DIM 	1	//< Block light. Receive small amount of light.
-#define LIGHT_FULL 	2	//< Don't block light. Receive full amount of light.
+#define LIGHT_NONE 	0U	//< Block light. Stays completely dark.
+#define LIGHT_DIM 	1U	//< Block light. Receive small amount of light.
+#define LIGHT_FULL 	2U	//< Don't block light. Receive full amount of light.
 
 // Mask and shift for light mode value
-#define LIGHT_MASK 	0xF0000
-#define LIGHT_SHIFT 16
+#define LIGHT_MASK 	0xF0000U
+#define LIGHT_SHIFT 16U
 
 // Glyph sets
-#define GLYPH_SET_TEXT 0
-#define GLYPH_SET_GRAPHICS 1
+#define GLYPH_SET_TEXT 0U
+#define GLYPH_SET_GRAPHICS 1U
 
 // Gui mode bit position
-#define GUI_MODE 0x1 << 20
+#define GUI_MODE 0x1U << 20U
 
 // Mask for fog percentage value
-#define FOG_MASK 0xFF
+#define FOG_MASK 0xFFU
 
 // Cursor bit position
-#define CURSOR 0x1 << 16
+#define CURSOR 0x1U << 16U
 
 // Maximum number of lights allowed in the light data uniform
-#define MAX_LIGHTS 25
+#define MAX_LIGHTS 25U
 
 //===----------------------------------------------------------------------===//
 
