@@ -1,8 +1,21 @@
+- Research ECS (entity component system) https://github.com/phiste/kengine <- on bottom of page there is an example
+
 - Put begin_frame and end_frame into render_context
 
 - Add a way to sample color values from a distribution to draw! (maybe foreground(sampled(dist, gen)))
 	=> Would allow draw() to use that!
 		=> Make the actions sample_background better!
+
+- Implement palettes: screen_manager has a reference to a palette instance
+	=> When choosing colours, it is possible to either use RGB (`foreground({244, 33, 32})`) or a palette color (`foreground(color::light_red)`)
+	=> RenderManager gets palette reference, it should be loaded from disk
+	
+- With palettes implemented, implement `format_text(...)` which supports colours
+	=> How?
+		(1) Format string normally
+		(2) Split string at color markers
+		(3) Print sequentially with correct colors
+	=> Format would need to be like `%%{BLK}` or something like that
 
 - Introduce "clean areas", areas that will be cleaned up on next begin_frame!
 - Reimplement profiling
