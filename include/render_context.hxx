@@ -31,6 +31,12 @@ class render_context
 			
 		auto pump_events()
 			-> void;
+		
+		auto begin_frame()
+			-> void;
+			
+		auto end_frame()
+			-> void;
 			
 	private:
 		auto init_glfw()

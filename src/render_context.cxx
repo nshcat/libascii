@@ -128,6 +128,19 @@ auto render_context::dimensions() const
 	return m_WindowSize;
 }
 
+auto render_context::end_frame()
+	-> void
+{
+	// TODO maybe this should be done in context.
+	glfwSwapBuffers(handle());
+}
+
+auto render_context::begin_frame()
+	-> void
+{
+	glClear(GL_COLOR_BUFFER_BIT);
+}
+
 auto render_context::should_close() const
 	-> bool
 {

@@ -28,13 +28,7 @@ class render_manager
 			-> light_manager&;
 			
 		auto render()
-			-> void;
-			
-		auto begin_frame()
-			-> void;
-			
-		auto end_frame()
-			-> void;
+			-> void;	
 	
 	private:
 		auto set_uniforms()

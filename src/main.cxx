@@ -317,12 +317,12 @@ int main()
 			else ++animCounter;
 		
 
-			t_renderer.begin_frame();
+			t_context.begin_frame();
 			{
 				t_renderer.render();
 				nk_glfw3_render(NK_ANTI_ALIASING_ON, 512 * 1024, 128 * 1024);
 			}
-			t_renderer.end_frame();
+			t_context.end_frame();
 		}
 		
 		nk_glfw3_shutdown();

@@ -65,19 +65,6 @@ auto render_manager::render()
 	glDrawArraysInstanced(GL_TRIANGLES, 0, 6, m_GlyphCount.x * m_GlyphCount.y);
 }
 
-auto render_manager::end_frame()
-	-> void
-{
-	// TODO maybe this should be done in context.
-	glfwSwapBuffers(m_Context.handle());
-}
-
-auto render_manager::begin_frame()
-	-> void
-{
-	glClear(GL_COLOR_BUFFER_BIT);
-}
-
 auto render_manager::light_manager()
 	-> class light_manager&
 {
