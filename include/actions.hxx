@@ -4,6 +4,8 @@
 
 #pragma once
 #include <cctype>
+#include <limits>
+#include <string_view>
 #include <algorithm>
 #include <string_view>
 #include <screen.hxx>
@@ -23,6 +25,7 @@ namespace internal
 		cell::integral_color_type m_Background{0U};
 		cell::glyph_type m_Glyph{0U};
 		glyph_set m_GlyphSet{glyph_set::text};
+		::std::size_t m_MaxLen{::std::numeric_limits<::std::size_t>::max()};
 	};
 }
 
@@ -52,9 +55,26 @@ using set =  	   internal::tag_base<
 					glyph_set,
 					&internal::draw_parameters::m_GlyphSet,
 					struct glyph_set_tag_t
+				   >;
+				   
+using max_length =  internal::tag_base<
+					internal::draw_parameters,
+					::std::size_t,
+					&internal::draw_parameters::m_MaxLen,
+					struct max_len_tag_t
 				   >; 
-				 
 
+
+static auto draw(const internal::draw_parameters& p_params)
+{
+	return [p_params](cell& p_cell) -> void
+	{
+		p_cell.set_fg(p_params.m_Foreground);
+		p_cell.set_bg(p_params.m_Background);
+		p_cell.set_glyph(p_params.m_Glyph);
+		p_cell.set_glyph_set(p_params.m_GlyphSet);
+	};
+}
 
 template< 	typename... Ts,
 			typename = ::std::enable_if_t<
@@ -70,15 +90,10 @@ auto draw(Ts... p_tags)
 {
 	internal::draw_parameters t_params{ };
 	
-	auto x = { (p_tags.apply(t_params), 0)... };
+	if constexpr(sizeof...(Ts) > 0)
+		auto x = { (p_tags.apply(t_params), 0)... };
 	
-	return [t_params](cell& p_cell) -> void
-	{
-		p_cell.set_fg(t_params.m_Foreground);
-		p_cell.set_bg(t_params.m_Background);
-		p_cell.set_glyph(t_params.m_Glyph);
-		p_cell.set_glyph_set(t_params.m_GlyphSet);
-	};
+	return draw(t_params);
 }
 
 template< typename... Ts >
@@ -107,9 +122,9 @@ auto sample_background(Tdistr& p_distribution, Tgen& p_generator)
 	};
 }
 
-static auto put_string(::std::string_view p_str, cell::integral_color_type p_front, cell::integral_color_type p_back = { })
+static auto put_string(::std::string_view p_str, internal::draw_parameters p_params)
 {
-	return [p_str, p_front, p_back](cell& p_cell) mutable
+	return [=](cell& p_cell) mutable
 	{
 		if(p_str.length() > 0)
 		{
@@ -118,15 +133,36 @@ static auto put_string(::std::string_view p_str, cell::integral_color_type p_fro
 				throw ::std::runtime_error("put_string: Encountered non-printable character!");
 			
 			// Since the character is printable, just converting it to a glyph is valid
-			p_cell.set_glyph(p_str.front());
-			p_cell.set_fg(p_front);
-			p_cell.set_bg(p_back);
+			p_params.m_Glyph = p_str.front();
+			
+			draw(p_params)(p_cell);
 			
 			// Remove char from string	
 			p_str.remove_prefix(1);
 		}
 	};
 }
+
+template< 	typename... Ts,
+			typename = ::std::enable_if_t<
+				::std::conjunction_v<
+					::std::is_same<
+						typename ::std::decay_t<Ts>::target_type,
+						internal::draw_parameters
+					>...	
+				>
+			>
+>
+static auto put_string(::std::string_view p_str, Ts... p_tags)
+{
+	internal::draw_parameters t_params{ };
+	
+	if constexpr(sizeof...(Ts) > 0)
+		auto x = { (p_tags.apply(t_params), 0)... };
+	
+	return put_string(p_str, t_params);
+}
+
 
 static auto draw(cell::glyph_type p_glyph, cell::integral_color_type p_front, cell::integral_color_type p_back = { })
 {
@@ -260,28 +296,68 @@ auto draw_border(const screen_manager::position_type& p_tl, const screen_manager
 		ut::throwf<::std::runtime_error>("border: Invalid rectangle formed by (%u, %u) and (%u, %u)",
 			p_tl.x, p_tl.y, p_br.x, p_br.y);
 
-	//internal::draw_parameters t_params{ };
+	internal::draw_parameters t_params{ };
 	
-	//auto x = { (p_tags.apply(t_params), 0)... };
+	if constexpr(sizeof...(Ts) > 0)
+		auto x = { (p_tags.apply(t_params), 0)... };
 	
-	return [=](screen_manager& p_screen)
+	return [=](screen_manager& p_screen) mutable
 	{
 		// Calculate missing points
 		const auto t_tr = screen_manager::position_type{ p_br.x, p_tl.y };
 		const auto t_bl = screen_manager::position_type{ p_tl.x, p_br.y };
 		
 		// Draw horizontal lines
-		p_screen.modify(line(p_tl, t_tr), draw(p_tags..., glyph(Tstyle::horizontal)));
-		p_screen.modify(line(t_bl, p_br), draw(p_tags..., glyph(Tstyle::horizontal)));
+		// We are doing this a bit ugly here since we dont want to apply all the tags for every single
+		// call we do here
+		t_params.m_Glyph = Tstyle::horizontal;
+		p_screen.modify(line(p_tl, t_tr), draw(t_params));
+		p_screen.modify(line(t_bl, p_br), draw(t_params));
 		
 		// Draw vertical lines
-		p_screen.modify(line(p_tl, t_bl), draw(p_tags..., glyph(Tstyle::vertical)));
-		p_screen.modify(line(t_tr, p_br), draw(p_tags..., glyph(Tstyle::vertical)));
+		t_params.m_Glyph = Tstyle::vertical;
+		p_screen.modify(line(p_tl, t_bl), draw(t_params));
+		p_screen.modify(line(t_tr, p_br), draw(t_params));
 		
 		// Draw edges
-		p_screen.modify(point(p_tl), draw(p_tags..., glyph(Tstyle::top_left)));
-		p_screen.modify(point(t_tr), draw(p_tags..., glyph(Tstyle::top_right)));
-		p_screen.modify(point(p_br), draw(p_tags..., glyph(Tstyle::bottom_right)));
-		p_screen.modify(point(t_bl), draw(p_tags..., glyph(Tstyle::bottom_left)));
+		t_params.m_Glyph = Tstyle::top_left;
+		p_screen.modify(point(p_tl), draw(t_params));
+		
+		t_params.m_Glyph = Tstyle::top_right;
+		p_screen.modify(point(t_tr), draw(t_params));
+		
+		t_params.m_Glyph = Tstyle::bottom_right;
+		p_screen.modify(point(p_br), draw(t_params));
+		
+		t_params.m_Glyph = Tstyle::bottom_left;
+		p_screen.modify(point(t_bl), draw(t_params));
 	};
+}
+
+
+template<	typename... Ts,
+			typename = ::std::enable_if_t<
+				::std::conjunction_v<
+					::std::is_same<
+						typename ::std::decay_t<Ts>::target_type,
+						internal::draw_parameters
+					>...	
+				>
+			>
+>
+auto draw_string(const screen_manager::position_type& p_pos, ::std::string_view p_str, Ts... p_tags)
+{
+	internal::draw_parameters t_params{ };
+	
+	if constexpr(sizeof...(Ts) > 0)
+		auto x = { (p_tags.apply(t_params), 0)... };
+	
+	const auto t_len = ::std::min(p_str.length(), t_params.m_MaxLen);
+	
+	const screen_manager::position_type t_endPos{ p_pos.x + t_len, p_pos.y };
+	
+	return [=](screen_manager& p_screen)
+	{
+		p_screen.modify(line(p_pos, t_endPos), put_string(p_str, t_params));
+	};		
 }

@@ -28,7 +28,7 @@ class render_manager
 			-> light_manager&;
 			
 		auto render()
-			-> void;	
+			-> void;
 	
 	private:
 		auto set_uniforms()
