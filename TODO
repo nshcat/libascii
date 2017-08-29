@@ -1,7 +1,5 @@
 - Research ECS (entity component system) https://github.com/phiste/kengine <- on bottom of page there is an example
 
-- Put begin_frame and end_frame into render_context
-
 - Add a way to sample color values from a distribution to draw! (maybe foreground(sampled(dist, gen)))
 	=> Would allow draw() to use that!
 		=> Make the actions sample_background better!
@@ -9,6 +7,7 @@
 - Implement palettes: screen_manager has a reference to a palette instance
 	=> When choosing colours, it is possible to either use RGB (`foreground({244, 33, 32})`) or a palette color (`foreground(color::light_red)`)
 	=> RenderManager gets palette reference, it should be loaded from disk
+	=> palettes should allow changing colors => to allow ingame color changes?
 	
 - With palettes implemented, implement `format_text(...)` which supports colours
 	=> How?
@@ -17,15 +16,22 @@
 		(3) Print sequentially with correct colors
 	=> Format would need to be like `%%{BLK}` or something like that
 
+- Add new light mode `LIGHT_GLOW` that will cause all areas with 100% foreground color to receive full possible brightness,
+	but everything else is lit normally
+	=> Check for alpha value to decide what to do in fragment shader
+
 - Introduce "clean areas", areas that will be cleaned up on next begin_frame!
 - Reimplement profiling
 - Add option to disable debug mode in render_context (constructor: `debug_mode(true)`)
 - OpenGL cleanup in destructors!
 
 - /!\ Lighting could be wrong!
-	=> Normally, the lighting equation is as follows: k_d * I_L * c_L
+	=> Normally, the lighting equation is as follows: k_a * I_A + ( k_d * I_L * c_L )[for all L]
 		where I_L and c_L are the intensity and colour of the i-th light source, and k_d the diffuse albedo of the
 		surface (in this case, texel of the gylph texture). ==>> WHICH SHOULD BE A 3D COLOR VECTOR! <<==
+			=> k_A is the ambient albedo of the surface. Ideally it should also be the color of the surface (??)
+				=> maybe its better here to use a albedo that is the same for all components
+		
 		This multiplication causes e.g. red light to not show up on a completely green surface!
 		But in our case, this is not the case! We just add up all the light sources.
 			=> THIS IS WRONG. A green surface is green BECAUSE IT ABSORBS ALL RED LIGHT. So
@@ -39,8 +45,6 @@
 				access light data in FS aswell to calculate light.
 				=> OR: just save accumulated irradiance
 				
-
-- fog should use integral distance values, like "this tile is two tiles beneath the current main z-level"
 
 - Refactor different parts of the game into separate namespaces (gfx, input, rng ...)
 - Global defined types for glyphs, colors, position.. (real_position, position, color, real_color) etc /!\ VERY IMPORTANT
@@ -67,34 +71,3 @@
 		  
 nuklear_gui::initialize(const render_manager::handle_type) => Needs window pointer aka. window handle
 
-- render_manager with ::frame( ); method.
-	-> and ::screen();
-	-> is initialized with ::initialize() and contains shader program, screen, lights and textures
-	-> Other things are drawn by supplying the screen to them
-	
-	
-- high level drawing functions: e.g. `border(...)` returns a lambda that can be given to a new overload of `screen::modify`:
-	=> 	auto border(...)
-		{
-			return [](screen_manager& scr)
-			{
-				scr.modify(...);
-				scr.modify(...);
-				scr.modify(...);
-			};
-		}
-		
-	=> screen.modify(border(...));
-	
-	template< TL, TR, BL, BR, ... >
-	class border_style
-	{
-		static constexpr .... 
-	};
-	
-	
-	using thick_border_style = ...
-	using slim_border_style = ...
-	
-	=> One can create custom border styles by inheritance and then overriding single members
-		
