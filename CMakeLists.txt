@@ -14,6 +14,10 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
 find_package(SDL2 REQUIRED)
 find_package(SDL2_image REQUIRED)
 
+# Search for Boost
+# Note that for header-only libraries like boost::property_tree,
+# no component has to be specified here
+find_package(Boost 1.56 REQUIRED COMPONENTS)
 
 # Disable glfw examples and tests
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "bla")
@@ -50,6 +54,9 @@ target_include_directories(gl_app PRIVATE ${CMAKE_BINARY_DIR}/glxw/include)
 # SDL2 and SDL2_Image headers
 target_include_directories(gl_app PRIVATE ${SDL2_INCLUDE_DIR})
 target_include_directories(gl_app PRIVATE ${SDL2_IMAGE_INCLUDE_DIR})
+
+# Boost headers
+target_include_directories(gl_app PRIVATE ${Boost_INCLUDE_DIRS})
 
 # IF THIS DOESNT WORK, ADD "glfw"
 target_link_libraries(gl_app glfw glxw ${LIBMINITRACE_LIBRARIES} ${NUKLEAR_LIBRARIES} ${GLFW_LIBRARIES} ${GLXW_LIBRARY} ${OPENGL_LIBRARY} ${LIBUT_LIBRARIES} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARY})
