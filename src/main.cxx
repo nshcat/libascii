@@ -19,6 +19,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/transform.hpp>
+#include <ut/cast.hxx>
 #include <minitrace.h>
 #include <program.hxx>
 #include <shader.hxx>
@@ -31,6 +32,7 @@
 #include <screen.hxx>
 #include <actions.hxx>
 #include <shapes.hxx>
+#include <palette.hxx>
 
 
 
@@ -99,6 +101,8 @@ int main()
 
 	try
 	{
+		palette t_palette{ "assets/test.json" };
+	
 		render_context t_context{ };
 		
 		// Load texture
@@ -154,10 +158,8 @@ int main()
 		// Screen
 		//
 		auto& t_screenManager = t_renderer.screen();
-		
-		//t_screenManager.modify(line({5,5}, {10,5}), put_string("meow nyan", {0, 255, 0}));
-
 		t_screenManager.modify(draw_border<thin_border_style>({0, 0}, {21, 21}, set(glyph_set::graphics)));
+		t_screenManager.modify(draw_string({1, 0}, "Fog"));
 		
 		for(::std::size_t t_ix = 1; t_ix < 20; t_ix += 2)
 		{
@@ -172,6 +174,15 @@ int main()
 				t_screenManager.modify(area({t_ix, 1}, {t_ix, 20}),
 					set_shadows(drop_shadow::west)
 				);
+		}
+		
+		t_screenManager.modify(draw_border<thin_border_style>({23, 0}, {32, 3}, set(glyph_set::graphics)));
+		t_screenManager.modify(draw_string({24, 0}, "Palette"));
+		
+		for(::std::size_t t_ix = 0; t_ix < 8; ++t_ix)
+		{
+			t_screenManager.modify(point({24+t_ix, 1}), draw(background(t_palette.lookup(ut::enum_cast<color>(t_ix)))));
+			t_screenManager.modify(point({24+t_ix, 2}), draw(background(t_palette.lookup(ut::enum_cast<color>(t_ix+8)))));
 		}
 		
 		//===----------------------------------------------------------------------===//
