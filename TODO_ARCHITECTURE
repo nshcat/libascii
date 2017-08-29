@@ -1,0 +1,9 @@
+- Important: GUI STATE IS NOT PART OF THE GAME LOGIC
+	=> It is local state in the view!
+		=> e.g. AI does not have UI state, but local_player has
+		=> This decouples UI from GameLogic/State
+=> GameState only concerns the state of the game data
+=> GUI state is purely located in the view and is used to issue commands and display information
+=> settings are completely local (keymaps, layout, colors)
+=> example: If player opens main menu, game input is disabled BY NOT SENDING COMMANDS
+	=> the remote game logic does not need to know about this
