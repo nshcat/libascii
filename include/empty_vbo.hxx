@@ -14,5 +14,6 @@ class empty_vbo
 			-> void;
 			
 	private:
-		handle_type m_Handle;
+		handle_type m_VBOHandle;
+		handle_type m_VAOHandle;
 };
