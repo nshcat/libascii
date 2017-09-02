@@ -6,7 +6,11 @@
 #include <glm/glm.hpp>
 #include <GLFW/glfw3.h>
 
+#include "global_system.hxx"
+
+
 class render_context
+	: public global_system
 {
 	public:
 		using handle_type = GLFWwindow*;
@@ -15,6 +19,10 @@ class render_context
 	public:
 		render_context();
 		~render_context();
+		
+	public:
+		auto initialize()
+			-> void;
 		
 	public:
 		auto handle() const
@@ -52,6 +60,7 @@ class render_context
 			-> void;
 			
 	private:
+		bool m_Initialized{false}; //< This is only used to safely destruct objects of this type
 		handle_type m_WindowHandle{};
 		dimension_type m_WindowSize{100, 100};
 };

@@ -37,15 +37,25 @@ auto opengl_message_callback(	GLenum p_source, GLenum p_type, GLuint p_id,
 
 render_context::render_context()
 {
-	init_glfw();
-	init_glxw();
-	init_debug();
 }
 
 render_context::~render_context()
 {
-	glfwDestroyWindow(m_WindowHandle);
-	glfwTerminate();
+	if(m_Initialized)
+	{
+		glfwDestroyWindow(m_WindowHandle);
+		glfwTerminate();
+	}
+}
+
+auto render_context::initialize()
+	-> void
+{
+	init_glfw();
+	init_glxw();
+	init_debug();
+	
+	m_Initialized = true;
 }
 
 auto render_context::init_debug()
