@@ -5,9 +5,12 @@
 ```
 class asset_manager
 {
-	template< typename TLoader >
-	auto load_asset( TLoader )
-		-> typename TLoader::result_type;
+	template< typename TLoader, typename... Ts >
+	auto load_asset( Ts... )
+		-> typename TLoader::result_type
+	{
+		return Tloader{::std::forward<Ts>(p_params...)}.load(m_Prefix);
+	}
 		
 	auto initialize(); //< Uses data from `configuration` to set-up prefix
 
@@ -26,13 +29,13 @@ class ? // A loader
 
 // We load a palette here. Note how the palette loader automatically
 // adds `/palettes/` to the prefix path.
-palette t_pal = loader.load_asset(palette_loader("c64"));
+palette t_pal = loader.load_asset<palette_loader>("c64");
 
 // Here, the `texture_manager` is initialized.
 // This could either be done by letting the `texture_loader` actually return a
 // texture manager, but also by returning a `texture_set`, which is a small struct
 // containg all paths to the separate texture files.
-t_texManager.initialize( loader.load_asset(texture_loader("default"));
+t_texManager.initialize( loader.load_asset<texture_loader>("default") ;
 ```
 
 Examples:
