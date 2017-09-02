@@ -1,0 +1,64 @@
+```
+
+class asset_manager
+{
+	template< typename TLoader >
+	auto load_asset( TLoader )
+		-> typename TLoader::result_type;
+		
+	auto initialize(); //< Uses data from `configuration` to set-up prefix
+
+	::std::string m_Prefix; // Like /usr/share/roguelike/assets
+};
+
+class ? // A loader
+{
+	using result_type = ?;
+
+	auto load_asset(::std::string p_prefix)
+		-> result_type;
+}
+
+// ...
+
+// We load a palette here. Note how the palette loader automatically
+// adds `/palettes/` to the prefix path.
+palette t_pal = loader.load_asset(palette_loader("c64"));
+
+// Here, the `texture_manager` is initialized.
+// This could either be done by letting the `texture_loader` actually return a
+// texture manager, but also by returning a `texture_set`, which is a small struct
+// containg all paths to the separate texture files.
+t_texManager.initialize( loader.load_asset(texture_loader("default"));
+```
+
+Examples:
+
+```
+// A simple asset loader that just creates a full path
+class path_builder
+{
+	using result_type = ::std::string;
+
+	path_builder(const ::std::string& p_category, const ::std::string& p_name);
+	
+	auto load_asset(const ::std::string& p_prefix)
+		-> result_type
+	{
+		return p_prefix + "/" + m_Category + "/" + m_Name;
+	}
+	
+	::std::string m_Category;
+	::std::string m_Name;
+};
+
+class font_loader
+	: public path_builder
+{
+	font_loader(const ::std::string& p_name)
+		: path_builder("fonts", p_name")
+	{
+	}
+};
+
+```

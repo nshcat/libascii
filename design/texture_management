@@ -1,0 +1,8 @@
+- Use "texture pack names" instead of paths in the configuration file
+	- A pack is a folder in the texture subdirectory that contains the texture files for text, graphics and shadows
+	- The game should detect if, e.g., a graphics font is not available and thus mustn't be passed to the constructor
+	  of the texture manager
+	  -> Use std::filesystem for that
+	  -> Problem: Should the texture manager have this functionality (receiving a pack name and searching that folder
+	     for texture files) or should there be a separate asset loader?
+	     -> Most likely the latter.
