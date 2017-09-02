@@ -26,12 +26,13 @@
 #include <texture_set.hxx>
 #include <uniform.hxx>
 #include <weighted_distribution.hxx>
-#include <render_context.hxx>
+#include <global_state.hxx>
 #include <renderer.hxx>
 #include <lighting.hxx>
 #include <screen.hxx>
 #include <actions.hxx>
 #include <shapes.hxx>
+#include <frame_guard.hxx>
 #include <palette.hxx>
 
 
@@ -103,7 +104,7 @@ int main()
 	{
 		palette t_palette{ "assets/palettes/c64.json" };
 	
-		render_context t_context{ };
+		global_state().context().initialize();
 		
 		// Load texture
 		texture_set t_texSet{
@@ -113,13 +114,13 @@ int main()
 		};
 		
 		render_manager t_renderer{
-			t_context,
+			global_state().context(),
 			{ 60, 30 },
 			t_texSet
 		};
 		
 		
-		t_nkctx = nk_glfw3_init(t_context.handle(), NK_GLFW3_INSTALL_CALLBACKS);
+		t_nkctx = nk_glfw3_init(global_state().context().handle(), NK_GLFW3_INSTALL_CALLBACKS);
 		nk_font_atlas* atlas;
     	nk_glfw3_font_stash_begin(&atlas);
     	nk_font* t_fontMenlo = nk_font_atlas_add_from_file(atlas, "assets/fonts/menlo.ttf", 17, 0);
@@ -234,6 +235,8 @@ int main()
 		::std::size_t animCounter = 0;
 		const ::std::size_t animPeriod = 6;
 
+		auto& t_context = global_state().context();
+
 		while (!t_context.should_close())
 		{	
 			t_context.pump_events();
@@ -328,8 +331,9 @@ int main()
 			else ++animCounter;
 		
 
+			//frame_guard t_frame{ };
 			t_context.begin_frame();
-			{
+			{		
 				t_renderer.render();
 				nk_glfw3_render(NK_ANTI_ALIASING_ON, 512 * 1024, 128 * 1024);
 			}
