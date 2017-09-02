@@ -16,3 +16,6 @@
 [submodule "nuklear_cmake"]
 	path = nuklear_cmake
 	url = https://github.com/nshcat/nuklear_cmake
+[submodule "minitrace"]
+	path = minitrace
+	url = https://github.com/nshcat/minitrace
