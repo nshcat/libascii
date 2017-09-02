@@ -1,3 +1,5 @@
+- Rename headers to include "manager", where applicable
+
 - Research ECS (entity component system) https://github.com/phiste/kengine <- on bottom of page there is an example
 
 - Add a way to sample color values from a distribution to draw! (maybe foreground(sampled(dist, gen)))
