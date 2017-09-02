@@ -1,5 +1,8 @@
-```
+/!\ All loaders should return actual objects (like textures or shaders), and not proxy objects.
+    The only exception to this rule are loaders that need to construct paths for e.g. C-Apis (like
+    the font loader for nuklear)
 
+```
 class asset_manager
 {
 	template< typename TLoader >
