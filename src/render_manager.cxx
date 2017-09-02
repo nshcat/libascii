@@ -15,8 +15,8 @@ render_manager::render_manager(	render_context& p_context,
 		m_Context{p_context},
 		m_GlyphCount{p_screenDims},
 		m_Program{
-			gl::vertex_shader{ gl::from_file, "assets/ascii.vs.glsl" },
-			gl::fragment_shader{ gl::from_file, "assets/ascii.fs.glsl" },
+			gl::vertex_shader{ gl::from_file, "assets/shaders/ascii.vs.glsl" },
+			gl::fragment_shader{ gl::from_file, "assets/shaders/ascii.fs.glsl" },
 		}	
 {
 	p_context.resize({p_texMgr.glyph_size().x * p_screenDims.x, p_texMgr.glyph_size().y * p_screenDims.y});
