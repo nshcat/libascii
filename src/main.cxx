@@ -101,15 +101,15 @@ int main()
 
 	try
 	{
-		palette t_palette{ "assets/test.json" };
+		palette t_palette{ "assets/palettes/c64.json" };
 	
 		render_context t_context{ };
 		
 		// Load texture
 		texture_manager t_texManager{
-			shadow_texture("assets/shadows.png"),
-			text_texture("assets/text.png"),
-			graphics_texture("assets/graphics.png")
+			shadow_texture("assets/textures/default/shadows.png"),
+			text_texture("assets/textures/default/text.png"),
+			graphics_texture("assets/textures/default/graphics.png")
 		};
 		
 		render_manager t_renderer{
@@ -122,7 +122,7 @@ int main()
 		t_nkctx = nk_glfw3_init(t_context.handle(), NK_GLFW3_INSTALL_CALLBACKS);
 		nk_font_atlas* atlas;
     	nk_glfw3_font_stash_begin(&atlas);
-    	nk_font* t_fontMenlo = nk_font_atlas_add_from_file(atlas, "assets/menlo.ttf", 17, 0);
+    	nk_font* t_fontMenlo = nk_font_atlas_add_from_file(atlas, "assets/fonts/menlo.ttf", 17, 0);
 		nk_glfw3_font_stash_end();
 		nk_style_set_font(t_nkctx, &t_fontMenlo->handle);	
 		t_nkbg = nk_rgb(28,48,62);
