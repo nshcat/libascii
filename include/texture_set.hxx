@@ -50,7 +50,7 @@ internal::graphics_texture_t graphics_texture(const ::std::string&);
 
 
 // A class managing the ascii glyph sheet
-class texture_manager
+class texture_set
 {
 	using size_type = ::std::size_t;
 	using dimension_type = glm::ivec2;
@@ -70,13 +70,13 @@ class texture_manager
 						>
 					>
 		>
-		texture_manager(Ts&&... p_args)
+		texture_set(Ts&&... p_args)
 		{
 			static_assert(ut::contains_v<internal::text_texture_t, ::std::decay_t<Ts>...>,
-				"texture_manager: text texture required but not supplied");
+				"texture_set: text texture required but not supplied");
 			
 			static_assert(ut::contains_v<internal::shadow_texture_t, ::std::decay_t<Ts>...>,
-				"texture_manager: shadow texture required but not supplied");
+				"texture_set: shadow texture required but not supplied");
 			
 			glEnable(GL_TEXTURE_2D);
 			
@@ -86,7 +86,7 @@ class texture_manager
 			use();
 		}
 		
-		~texture_manager();
+		~texture_set();
 
 	private:
 		void dispatch(const internal::shadow_texture_t&);

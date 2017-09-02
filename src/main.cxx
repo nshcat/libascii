@@ -23,7 +23,7 @@
 #include <minitrace.h>
 #include <program.hxx>
 #include <shader.hxx>
-#include <texture.hxx>
+#include <texture_set.hxx>
 #include <uniform.hxx>
 #include <weighted_distribution.hxx>
 #include <render_context.hxx>
@@ -106,7 +106,7 @@ int main()
 		render_context t_context{ };
 		
 		// Load texture
-		texture_manager t_texManager{
+		texture_set t_texSet{
 			shadow_texture("assets/textures/default/shadows.png"),
 			text_texture("assets/textures/default/text.png"),
 			graphics_texture("assets/textures/default/graphics.png")
@@ -115,7 +115,7 @@ int main()
 		render_manager t_renderer{
 			t_context,
 			{ 60, 30 },
-			t_texManager
+			t_texSet
 		};
 		
 		

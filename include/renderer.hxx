@@ -3,7 +3,7 @@
 #include "screen.hxx"
 #include "uniform.hxx"
 #include "program.hxx"
-#include "texture.hxx"
+#include "texture_set.hxx"
 #include "lighting.hxx"
 #include "render_context.hxx"
 #include "empty_vbo.hxx"
@@ -12,13 +12,13 @@ class render_manager
 {
 	using dimension_type = glm::uvec2;
 	using handle_type = render_context::handle_type;
-	using texture_type = const texture_manager&;
+	using texture_type = const texture_set&;
 	using context_type = render_context&;
 
 	public:
 		render_manager(	render_context& p_context,
 						const dimension_type& p_screenDims,
-						const texture_manager& p_texMgr );
+						const texture_type& p_texMgr );
 		
 	public:		
 		auto screen()

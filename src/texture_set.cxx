@@ -3,7 +3,7 @@
 #include <GLXW/glxw.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
-#include <texture.hxx>
+#include <texture_set.hxx>
 
 // TODO SDL error handling from sdl_cpu
 
@@ -68,7 +68,7 @@ GLuint make_gl_texture(const ::std::string& p_path)
 	return TextureID;
 }
 
-texture_manager::~texture_manager()
+texture_set::~texture_set()
 {
 	glDeleteTextures(1, &m_TextTex);
 	glDeleteTextures(1, &m_ShadowTex);
@@ -77,27 +77,27 @@ texture_manager::~texture_manager()
 		glDeleteTextures(1, &m_GfxTex);
 }
 
-void texture_manager::dispatch(const internal::shadow_texture_t& p_tag)
+void texture_set::dispatch(const internal::shadow_texture_t& p_tag)
 {
 	m_ShadowTex = make_gl_texture(p_tag.m_Path);
 	// TODO: size check
 }
 
-void texture_manager::dispatch(const internal::text_texture_t& p_tag)
+void texture_set::dispatch(const internal::text_texture_t& p_tag)
 {
 	m_TextTex = make_gl_texture(p_tag.m_Path);
 	
 	update_dims(recv_dims(m_TextTex));
 }
 
-void texture_manager::dispatch(const internal::graphics_texture_t& p_tag)
+void texture_set::dispatch(const internal::graphics_texture_t& p_tag)
 {
 	m_GfxTex = make_gl_texture(p_tag.m_Path);
 	
 	update_dims(recv_dims(m_GfxTex));
 }
 
-void texture_manager::update_dims(const dimension_type& p_dims)
+void texture_set::update_dims(const dimension_type& p_dims)
 {
 	if(m_GlyphDim != dimension_type{})
 	{
@@ -111,7 +111,7 @@ void texture_manager::update_dims(const dimension_type& p_dims)
 }
 
 
-void texture_manager::use() const
+void texture_set::use() const
 {
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_TextTex);
@@ -123,13 +123,13 @@ void texture_manager::use() const
 	glBindTexture(GL_TEXTURE_2D, m_ShadowTex);
 }
 
-auto texture_manager::glyph_size() const
+auto texture_set::glyph_size() const
 	-> const dimension_type&
 {
 	return m_GlyphDim;
 }
 
-auto texture_manager::recv_dims(GLuint p_tex)
+auto texture_set::recv_dims(GLuint p_tex)
 	-> dimension_type
 {
 	dimension_type t_dims{};
@@ -137,7 +137,7 @@ auto texture_manager::recv_dims(GLuint p_tex)
 	glGetTextureLevelParameteriv(p_tex, 0, GL_TEXTURE_WIDTH, &t_dims.x);
 	glGetTextureLevelParameteriv(p_tex, 0, GL_TEXTURE_HEIGHT, &t_dims.y);	
 	
-	return t_dims / dimension_type{ texture_manager::sheet_width, texture_manager::sheet_height };
+	return t_dims / dimension_type{ texture_set::sheet_width, texture_set::sheet_height };
 }
 
 internal::shadow_texture_t shadow_texture(const ::std::string& p_path)
