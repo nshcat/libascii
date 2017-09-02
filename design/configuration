@@ -1,0 +1,9 @@
+- Implement a class called `configuration` that holds a property with game configuration
+- The settings should be loaded _first_ from disk, and after that from _command line_
+	-> This basically allows overriding settings via the command line
+	-> For this to work, initialization basically receives a path to a config file, aswell as
+	   (some adaptor to) a commandline handler (libcl)
+	   => Better write an adapter that does all the work, so that the configuration class
+	   	  DOES NOT NEED TO KNOW what entries can actually be loaded from command line
+	   	  
+	-> Expose interface to change/get values etc (for later LUA compatibility etc)

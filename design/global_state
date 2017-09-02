@@ -1,0 +1,44 @@
+- global state is discouraged in general programming, but in game programming, the huge number of global systems makes it necessary
+- Design:
+	- Have one global struct that contains all global systems
+	- All those systems need to adhere to the "GlobalSystem" concept:
+		- They must have an empty default constructor
+		- They must have a method named `initialization`, what parameters it expects is not important
+	- This design is important since statics are not initialized in order, and may depend on data that is only
+	  available after loading configuration files
+	  	- See `initialization_sequence` for design of that part
+	- /!\ Currently, some systems expect arguments that they could read from global state
+		- `render_manager` expect a reference to a `render_context` instance, this can be replaced
+	       by an access of global state.
+	     
+	- Access to the unique global instance of this struct is only possible through a special function:
+		```
+		auto global_state() -> global_state_t
+		{
+			static global_state_t g_State;
+			
+			return g_State;
+		}
+		```
+		- This basically implements a _thread safe_ singleton.
+		
+	- The struct will contain data members and accessors:
+		```
+		class global_state_t
+		{
+			auto context() -> render_context& ...
+		
+		
+			private:
+				render_context ...
+		};
+		```
+		
+	- For clarity, all systems that need to be initialized manually and adhere to the `GlobalSystem` concept
+	  should inherit a simple base class:
+	  	```
+	  	class global_system
+	  	{
+	  		// Empty ctor, disabled copy ctor/assignment	
+	  	};
+	  	```
