@@ -13,3 +13,6 @@
 [submodule "mingw-bundledlls"]
 	path = mingw-bundledlls
 	url = https://github.com/mpreisler/mingw-bundledlls.git
+[submodule "nuklear_cmake"]
+	path = nuklear_cmake
+	url = https://github.com/nshcat/nuklear_cmake
