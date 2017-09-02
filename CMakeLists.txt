@@ -64,15 +64,11 @@ target_link_libraries(	roguelike glfw glxw ${LIBMINITRACE_LIBRARIES}
 						${LIBUT_LIBRARIES} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARY})
 
 # Copy assets to output path
-file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/assets")
-
-file(GLOB DATA_FILES assets/*.*)
-
-foreach(DATA_FILE ${DATA_FILES})
-	get_filename_component(DATA_FILE_NAME ${DATA_FILE} NAME)
-	configure_file(${DATA_FILE} "${CMAKE_BINARY_DIR}/assets/${DATA_FILE_NAME}" COPYONLY)
-endforeach()
-
+add_custom_command(
+	TARGET roguelike
+	POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/assets $<TARGET_FILE_DIR:roguelike>/assets
+)
 
 # Require support for at least C++14.
 set_property(TARGET roguelike PROPERTY CXX_STANDARD 17)
