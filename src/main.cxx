@@ -34,6 +34,7 @@
 #include <shapes.hxx>
 #include <frame_guard.hxx>
 #include <palette.hxx>
+#include <build_settings.hxx>
 
 
 

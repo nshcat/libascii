@@ -2,9 +2,16 @@
 cmake_minimum_required(VERSION 3.1.3)
 project(roguelike)
 
-# If this is enabled, CMake will copy the game binary, assets and all
-# required dependencies to the folder "distrib".
-option(ROGUELIKE_DISTRIBUTE "Create distribution folder" ON)
+
+## === BUILD OPTIONS ===
+##
+
+set(DISTRIBUTE 		OFF		CACHE BOOL 		"Create distribution folder"		)
+set(PREFIX 			"/usr" 	CACHE STRING 	"Game install prefix"				)	# This is unused if the game is used in portable (distribute) form.
+set(USE_HOME_DIR	OFF		CACHE BOOL 		"Use home directory for user data"	)
+
+## =====================
+
 
 # Search for OpenGL
 find_package(OpenGL REQUIRED)
@@ -17,7 +24,7 @@ find_package(SDL2_image REQUIRED)
 # Search for Boost
 # Note that for header-only libraries like boost::property_tree,
 # no component has to be specified here
-find_package(Boost 1.56 REQUIRED COMPONENTS)
+find_package(Boost 1.56 REQUIRED COMPONENTS filesystem)
 
 # Disable glfw examples and tests
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "bla")
@@ -57,11 +64,24 @@ target_include_directories(roguelike PRIVATE ${SDL2_IMAGE_INCLUDE_DIR})
 # Boost headers
 target_include_directories(roguelike PRIVATE ${Boost_INCLUDE_DIRS})
 
-# IF THIS DOESNT WORK, ADD "glfw"
+# Link dependencies
 target_link_libraries(	roguelike glfw glxw ${LIBMINITRACE_LIBRARIES}
 						${NUKLEAR_LIBRARIES} ${NUKLEAR_GLFW_OPENGL3_LIBRARIES}
 						${GLFW_LIBRARIES} ${GLXW_LIBRARY} ${OPENGL_LIBRARY}
-						${LIBUT_LIBRARIES} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARY})
+						${LIBUT_LIBRARIES} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARY}
+						Boost::filesystem)
+						
+# Set definitions
+if(USE_HOME_DIR)
+	target_compile_definitions(roguelike PUBLIC -DROGUELIKE_USE_HOME=true)
+else()
+	target_compile_definitions(roguelike PUBLIC -DROGUELIKE_USE_HOME=false)
+endif()
+
+# PREFIX only sets the install prefix, but ROGUELIKE_DATA_PATH has to directly
+# point to the asset folder.
+target_compile_definitions(roguelike PUBLIC -DROGUELIKE_DATA_PATH="${PREFIX}/share/roguelike/assets")
+
 
 # Copy assets to output path
 add_custom_command(
