@@ -1,0 +1,19 @@
+- On different systems, user data is saved in different locations
+- Additionally, the game should be able to run both in portable mode (data and user data in same folder as binary),
+  aswell as in install-mode (data in e.g. /usr/share, user data somewhere in $HOME)
+- This means that a class is needed that is able to find the correct folder/file to use
+	- This could be done on a "first come first serve" basis:
+		- Establish a "search order", e.g. first search the application folder, then the /usr/share etc.
+		- This of course is system dependant.
+- Usage example: Normally, during development, the configuration file is stored in the application folder, and thus
+  is found first.
+  
+- Class is called "path manager" and is a global system
+  
+- Class could receive a string identifiying the game (e.h. "roguelike"), because this is needed to check if paths
+  are there
+  
+- `path_manager` exposes methods to retrieve different kinds of paths:
+	- configuration file path
+	- data prefix
+	- user data prefix
