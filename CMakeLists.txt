@@ -95,7 +95,7 @@ set_property(TARGET roguelike PROPERTY CXX_STANDARD 17)
 set_property(TARGET roguelike PROPERTY CXX_STANDARD_REQUIRED ON)
 
 # Bundle dependencies on mingw
-if(MINGW AND ROGUELIKE_DISTRIBUTE)
+if(MINGW AND DISTRIBUTE)
 	add_custom_command(
 		TARGET roguelike
 		POST_BUILD
