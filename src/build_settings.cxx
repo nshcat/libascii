@@ -9,5 +9,5 @@ auto build_settings::data_path()
 auto build_settings::use_home()
 	-> bool
 {
-	return { ROGUELIKE_USE_HOME };
+	return ROGUELIKE_USE_HOME;
 }
