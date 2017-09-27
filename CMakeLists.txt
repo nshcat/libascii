@@ -80,7 +80,7 @@ endif()
 
 # PREFIX only sets the install prefix, but ROGUELIKE_DATA_PATH has to directly
 # point to the asset folder.
-target_compile_definitions(roguelike PUBLIC -DROGUELIKE_DATA_PATH="${PREFIX}/share/roguelike/assets")
+target_compile_definitions(roguelike PUBLIC -DROGUELIKE_DATA_PATH=${PREFIX}/share/roguelike/assets)
 
 
 # Copy assets to output path
