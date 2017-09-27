@@ -35,6 +35,7 @@
 #include <frame_guard.hxx>
 #include <palette.hxx>
 #include <build_settings.hxx>
+#include <path_manager.hxx>
 
 
 
@@ -98,6 +99,13 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 int main()
 {
+	path_manager t_mgr{};
+	t_mgr.initialize();
+	
+	::std::cout << "User data path: " << t_mgr.user_path() << ::std::endl;
+	::std::cout << "Game data path: " << t_mgr.data_path() << ::std::endl;
+	::std::cout << "Config file path: " << t_mgr.config_path() << ::std::endl << ::std::endl;
+
 	nk_context* t_nkctx;
 	nk_color t_nkbg;
 
