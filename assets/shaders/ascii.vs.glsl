@@ -18,6 +18,11 @@
 //
 //===----------------------------------------------------------------------===//
 // TODO:
+//  - Add real glow. Add flag that controls if bg or fg are glowing,
+//    then use classic glow algorithm (only render glowing parts to FBO,
+//    blur them, blend them additively over main scene)
+//    (glBlendEquation(GL_ADD); glBlendFunc(GL_ONE, GL_ONE);)
+//
 //  - Support MULTIPLE glyph sets: glyph_set::graphical, glyph_set::text,
 //    glyph_set::draw (<= special set to draw pictures, contains triangles etc)
 //    (see ultima ratio regum)
