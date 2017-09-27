@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include <boost/filesystem.hpp>
 
 // Class holding information set at build-time
@@ -16,4 +18,9 @@ class build_settings
 		// to store configuration and save data or not
 		static auto use_home()
 			-> bool;
+			
+		// Create string that contains all build settings with labels.
+		// Used for debugging purposes.
+		static auto dump_settings()
+			-> ::std::string;
 };

@@ -99,12 +99,13 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 int main()
 {
-	path_manager t_mgr{};
-	t_mgr.initialize();
+	global_state().initialize();
 	
-	::std::cout << "User data path: " << t_mgr.user_path() << ::std::endl;
-	::std::cout << "Game data path: " << t_mgr.data_path() << ::std::endl;
-	::std::cout << "Config file path: " << t_mgr.config_path() << ::std::endl << ::std::endl;
+	::std::cout << "User data path: " << global_state().path_manager().user_path() << ::std::endl;
+	::std::cout << "Game data path: " << global_state().path_manager().data_path() << ::std::endl;
+	::std::cout << "Config file path: " << global_state().path_manager().config_path() << ::std::endl << ::std::endl;
+
+	::std::cout << *global_state().configuration().get<int>("test") << ::std::endl;
 
 	nk_context* t_nkctx;
 	nk_color t_nkbg;
@@ -113,7 +114,7 @@ int main()
 	{
 		palette t_palette{ "assets/palettes/c64.json" };
 	
-		global_state().context().initialize();
+		//global_state().context().initialize();
 		
 		// Load texture
 		texture_set t_texSet{
