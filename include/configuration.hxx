@@ -45,6 +45,12 @@ class configuration
 		auto save() const
 			-> void;
 			
+		// Resets the configuration to known defaults.
+		// This will override the configuration file on disk,
+		// if present.
+		auto reset()
+			-> void;
+			
 	public:
 		// We have to replicate most of the interface here since
 		// we want to control which tree actually gets accessed

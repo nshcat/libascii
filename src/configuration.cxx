@@ -24,14 +24,22 @@ auto configuration::initialize()
 	}
 	else
 	{
-		const auto t_dataPath = global_state().path_manager().data_path();
-	
-		// Load property tree from default config file
-		pt::read_json((t_dataPath / "config" / "default.json").string(), m_DataTree);
-		
-		// Write back to file
-		save();
+		// Create new configuration file populated with default values
+		reset();
 	}
+}
+
+auto configuration::reset()
+	-> void
+{
+	// Retrieve data path
+	const auto t_dataPath = global_state().path_manager().data_path();
+	
+	// Load property tree from default config file
+	pt::read_json((t_dataPath / "config" / "default.json").string(), m_DataTree);
+	
+	// Write back to file
+	save();
 }
 
 auto configuration::save() const
