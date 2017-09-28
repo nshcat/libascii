@@ -67,4 +67,10 @@ class font_loader
 	}
 };
 
+class texture_loader
+	: public path_builder
+{
+	// Here, it should be detected what textures are there, like graphics and stuff.
+};
+
 ```

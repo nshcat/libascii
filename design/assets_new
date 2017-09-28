@@ -1,0 +1,34 @@
+
+Have a template `asset_loader` that can be specialized:
+
+template< typename T >
+struct asset_loader
+{
+	static_assert(ut::always_false_v<T>,
+		"asset_manager: Don't know how to load this asset type");
+};
+
+template< >
+struct asset_loader <palette>
+{
+	... logic ...
+};
+
+
+And then a manager class: (can later implement caching)
+
+class asset_manager
+{
+	template< typename T, typename... Ts >
+	auto load(Ts&&... p_args)
+		-> T // utilizes RVO
+	{
+		asset_loader<T> t_loader{ };
+		
+		return t_loader.load(::std::forward<Ts>(p_args)...);
+	}
+};
+
+
+
+

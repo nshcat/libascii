@@ -12,6 +12,12 @@ auto global_state_t::path_manager()
 	return m_PathManager;
 }
 
+auto global_state_t::asset_manager()
+	-> class asset_manager&
+{
+	return m_AssetManager;
+}
+
 auto global_state_t::configuration()
 	-> class configuration&
 {

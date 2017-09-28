@@ -1,3 +1,6 @@
 {
-	"test" : 320
+	"graphics" : {
+		"tileset" : "default",
+		"palette" : "c64"
+	}
 }

@@ -104,15 +104,13 @@ int main()
 	::std::cout << "User data path: " << global_state().path_manager().user_path() << ::std::endl;
 	::std::cout << "Game data path: " << global_state().path_manager().data_path() << ::std::endl;
 	::std::cout << "Config file path: " << global_state().path_manager().config_path() << ::std::endl << ::std::endl;
-
-	::std::cout << *global_state().configuration().get<int>("test") << ::std::endl;
-
+	
 	nk_context* t_nkctx;
 	nk_color t_nkbg;
 
 	try
 	{
-		palette t_palette{ "assets/palettes/c64.json" };
+		auto t_palette = global_state().asset_manager().load_asset<palette>("c64");//{ "assets/palettes/c64.json" };
 	
 		//global_state().context().initialize();
 		
