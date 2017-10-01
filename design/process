@@ -1,0 +1,107 @@
+The engine implements a cooperative multitasking scheduler.
+
+Process states:
+
+- WAITING: 	Process is initialized, but has not yet started because
+			its preconditions are not met. (for example, it is waiting
+			for its parent process to finish)
+	
+- ACTIVE:	Process is active and ready to be run for the next time slice.
+
+- DEAD:		Process is finished.
+
+- PAUSED:	Process is paused and shall not be run.
+
+
+
+Process type:
+
+- PER_FRAME:	Gets a time slice each frame
+
+- PER_TICK:		Gets a time slice each game simulation tick
+
+
+Process flags:
+
+- PERIODIC_DELAY:	Process is only run every N time slices. This can be configured and changed on the fly.
+
+
+
+Process manager:
+
+On every update:
+
+1.) Check and update process states. For example, a paused process could now be active, depending on its pause duration.
+	Or, a waiting process might have met its preconditions and thus should be switched to being active.
+	
+	If a process is active, it might need to be made paused, if it has PERIODIC_DELAY
+	
+2.) Run every processes update function
+
+=> This should be done seperately for PER_FRAME and PER_TICK, but of course a PER_TICK process might have a PER_FRAME parent its waiting on
+
+
+Processes should refer to themselves using PIDs.
+
+Processes should only have one update method. The type determines if its called every frame or tick.
+
+Processes can modify themselves using their pid:
+
+process{
+	update()
+	{
+		// Will not be executed for the next 2 time slices (whether thats frames or ticks)
+		process_manager().pause_process(this->pid(), 2U);
+	}
+};
+
+
+The process manager should store processes
+as shared_ptrs (or unique_ptrs) in a hash map using the PIDs as key.
+
+
+Examples:
+
+- A process that does something after a certain delay:
+
+class delayed_event
+	: process
+{
+	// ...
+	initialize()
+	{
+		process_manager().pause_process(this->pid(), 10U);
+	}
+	
+	update()
+	{
+		// Do event
+		// ...
+		
+		// Kill process
+		process_manager().kill_process(this->pid());
+	}
+
+};
+
+- chained process
+
+class chain_parent
+	: process
+{
+	initialize()
+	{
+		const auto pid = process_manager().create_process<chain_child>(this->pid());	
+	}
+};
+
+class chain_child
+	: process
+{
+	initialize()
+	{
+		process_manager().wait_for_parent(this->pid());	
+	}
+};
+
+		
