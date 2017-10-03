@@ -59,7 +59,14 @@ enum class process_type
 enum class process_flags
 	: ::std::uint32_t
 {
-	none = 0U	//< No flags
+	none = 0U,						//< No flags
+	
+	periodic_sleep = 1U,			//< Causes the process to periodically sleep.
+									//  Can be configured by setting the sleep period.
+	
+	limited_runtime = 1U << 1,		//< Process will be killed after a certain number
+									//  of allotted time slices.
+									//  TODO other name? "kill_after", "auto_kill"
 };
 
 LIBUT_MAKE_BITMASK(process_flags)
