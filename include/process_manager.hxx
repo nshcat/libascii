@@ -52,33 +52,10 @@ class process_manager
 			static_assert(::std::is_base_of_v<process, T>,
 				"T needs to be derived from process!");
 		
-			// Casting up unique pointers is allowed
-			process_ptr t_ptr = ::std::make_unique<T>(next_pid(), p_parent, ::std::forward<Ts>(p_args)...);
-			
-			// Create view from unique_ptr to save a lookup at the end
-			process_view t_view = process_view{ t_ptr.get() };
-			
-			// Insert process into lookup map
-			m_ProcMap.emplace(t_view->pid(), ::std::move(t_ptr));
-			
-			// Insert process view into appropiate list
-			insert_sorted((t_view->type() == process_type::per_frame) ? m_PerFrameProcs : m_PerTickProcs, t_view,
-				[](const auto& p_l, const auto& p_r) -> bool
-				{
-					return ut::enum_cast(p_l->priority()) < ut::enum_cast(p_r->priority());
-				}
+			// Create new process object and register it
+			return register_process(
+				::std::make_unique<T>(next_pid(), p_parent, ::std::forward<Ts>(p_args)...)
 			);
-			
-			// Initialize process
-			t_view->initialize();
-			
-			// If process state was not changed, change it to active.
-			// This allows initialize() to switch the process into waiting or paused state
-			// without us overwriting that here
-			if(t_view.state() == process_state::inactive)
-				t_view.set_state(process_state::active);
-
-			return t_view;
 		}
 		
 	public:
@@ -92,6 +69,11 @@ class process_manager
 			-> process_view;	
 			
 	private:
+		// TODO really return view here? The view can be constructed
+		// in create_process aswell.
+		auto register_process(process_ptr)
+			-> process_view;
+	
 		auto next_pid()
 			-> process_id;
 		

@@ -20,6 +20,35 @@ auto process_manager::tick()
 	update_processes(process_type::per_tick);
 }
 
+auto process_manager::register_process(process_ptr p_proc)
+	-> process_view
+{
+	// Create view from unique_ptr to save a lookup at the end
+	process_view t_view = process_view{ p_proc.get() };
+	
+	// Insert process into lookup map
+	m_ProcMap.emplace(t_view->pid(), ::std::move(p_proc));
+	
+	// Insert process view into appropiate list
+	insert_sorted((t_view->type() == process_type::per_frame) ? m_PerFrameProcs : m_PerTickProcs, t_view,
+		[](const auto& p_l, const auto& p_r) -> bool
+		{
+			return ut::enum_cast(p_l->priority()) < ut::enum_cast(p_r->priority());
+		}
+	);
+	
+	// Initialize process
+	t_view->initialize();
+	
+	// If process state was not changed, change it to active.
+	// This allows initialize() to switch the process into waiting or paused state
+	// without us overwriting that here
+	if(t_view.state() == process_state::inactive)
+		t_view.set_state(process_state::active);
+		
+	return t_view;
+}
+
 auto process_manager::get_state(process_id p_id) const
 	-> process_state
 {
