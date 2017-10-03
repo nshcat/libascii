@@ -1,8 +1,8 @@
 #include <process.hxx>
 #include <global_state.hxx>
 
-process::process(process_id p_id, process_id p_parent, process_type p_type)
-	: m_Pid{p_id}, m_Parent{p_parent}, m_Type{p_type}
+process::process(process_id p_id, process_id p_parent, process_type p_type, process_priority p_prio)
+	: m_Pid{p_id}, m_Parent{p_parent}, m_Priority{p_prio}, m_Type{p_type}
 {
 }
 
@@ -98,6 +98,12 @@ auto process::wait_pid() const
 	-> process_id
 {
 	return m_WaitPid;
+}
+
+auto process::priority() const
+	-> process_priority
+{
+	return m_Priority();
 }
 
 auto process::sleep_duration() const

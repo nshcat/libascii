@@ -5,9 +5,11 @@
 #include <unordered_map>
 #include <type_traits>
 #include <ut/observer_ptr.hxx>
+#include <ut/cast.hxx>
 
 #include "global_system.hxx"
 #include "process.hxx"
+#include "utility.hxx"
 
 
 // Problem: If a parent process gets deleted, that has a child that waits for it, but the PID
@@ -17,12 +19,18 @@
 // Fix 2): Implement proper garbage collection using a background process that regulary checks the
 //		   dependency chain and removes the processes.
 
+
+
 class process_manager
 	: public global_system
 {
 	using process_ptr = ::std::unique_ptr<process>;
 	using process_view = ut::observer_ptr<process>;
 	using process_map = ::std::unordered_map<process_id, process_ptr>;
+	using process_list = ::std::vector<process_view>;
+	
+	// Allow process base class methods to access housekeeping methods
+	friend class process;
 	
 	public:
 		auto initialize()
@@ -48,12 +56,17 @@ class process_manager
 			// Create view from unique_ptr to save a lookup at the end
 			process_view t_view = process_view{ t_ptr.get() };
 			
-			// Insert process into appropiate map
-			if(t_ptr->type() == process_type::per_frame)
-				m_PerFrameProcs.emplace(t_view->pid(), ::std::move(t_ptr)); 
-			else
-				m_PerTickProcs.emplace(t_view->pid(), ::std::move(t_ptr)); 
+			// Insert process into lookup map
+			m_ProcMap.emplace(t_view->pid(), ::std::move(t_ptr));
 			
+			// Insert process view into appropiate list
+			insert_sorted((t_view->type() == process_type::per_frame) ? m_PerFrameProcs : m_PerTickProcs, t_view,
+				[](const auto& p_l, const auto& p_r) -> bool
+				{
+					return ut::enum_cast(p_l->priority()) < ut::enum_cast(p_r->priority());
+				}
+			);
+
 			return t_view;
 		}
 		
@@ -61,18 +74,22 @@ class process_manager
 		auto kill_process(process_id)	
 			-> void;
 				
-		auto process_state(process_id)
+		auto process_state(process_id) const
 			-> class process_state;
 			
 		auto process(process_id);
-			-> process_view;
+			-> process_view;	
 			
 	private:
 		auto next_pid()
 			-> process_id;
+		
+		auto update_processes(process_type)
+			-> void;
 			
 	private:
 		process_id	m_NextPid{1U};		//< The next pid that may be used for a process
-		process_map m_PerFrameProcs;	//< All processes that are updated every frame
-		process_map m_PerTickProcs;		//< All processes that are update every game simulation tick
+		process_map m_ProcMap;			//< Fast lookup map that owns all processes
+		process_list m_PerFrameProcs;	//< Ordered (by priority) list of process views (per frame)
+		process_list m_PerTickProcs;	//< Ordered (by priority) list of process views (per tick)
 };

@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <type_traits>
+#include <limits>
 
 #include <ut/bitmask.hxx>
 
@@ -65,10 +66,21 @@ LIBUT_MAKE_BITMASK(process_flags)
 //
 
 
+// Process priority. Smaller is higher priority.
+enum class process_priority
+	: ::std::uint32_t
+{
+	highest = 0U,
+	normal = ::std::uint32_t(-1) / 2U,
+	lowest = ::std::uint32_t(-1)
+};
+//
+
+
 class process
 {
 	public:
-		process(process_id p_id, process_id p_parent, process_type p_type);
+		process(process_id p_id, process_id p_parent, process_type p_type, process_priority p_prio);
 		
 	public:
 		// Copying a process does not make any sense
@@ -104,6 +116,9 @@ class process
 		auto wait_pid() const
 			-> process_id;
 			
+		auto priority() const
+			-> process_priority;
+			
 	public:
 		auto set_wait_pid(process_id)
 			-> void;
@@ -134,13 +149,14 @@ class process
 			-> void;
 		
 	protected:
-		process_id m_Pid;								//< Unique process identificator
-		process_id m_Parent{no_process};				//< PID of parent process
-		process_id m_WaitPid{no_process};				//< Process this process is waiting for
-		process_type m_Type{process_type::per_frame};	//< Type of this process
-		process_state m_State{process_state::inactive}; //< Current state of the process
-		process_flags m_Flags{process_flags::none};		//< Additional process flags
-		::std::size_t m_SleepDuration{no_sleep};		//< Duration the process still has to sleep
+		process_id m_Pid;										//< Unique process identificator
+		process_id m_Parent{no_process};						//< PID of parent process
+		process_id m_WaitPid{no_process};						//< Process this process is waiting for
+		process_priority m_Priority{process_priority::normal};	//< Priority of this process
+		process_type m_Type{process_type::per_frame};			//< Type of this process
+		process_state m_State{process_state::inactive}; 		//< Current state of the process
+		process_flags m_Flags{process_flags::none};				//< Additional process flags
+		::std::size_t m_SleepDuration{no_sleep};				//< Duration the process still has to sleep
 };
 
 
