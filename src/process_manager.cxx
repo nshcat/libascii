@@ -60,7 +60,7 @@ auto process_manager::update_states(process_type p_type)
 	// Determine process list that should be used
 	auto& t_procList = proc_list(p_type);
 						
-	// Iterate and check state
+	// Iterate and check state.
 	for(auto& t_procView: t_procList)
 	{
 		switch(t_procView->state())
@@ -115,7 +115,7 @@ auto process_manager::update_processes(process_type p_type)
 	auto& t_procList = proc_list(p_type);
 	
 	// Iterate through processes of matching type, from high to
-	// low priority
+	// low priority. (hight priority is a low numerical value)
 	for(auto t_procView: t_procList)
 	{
 		// Only give time slice to processes that are in active

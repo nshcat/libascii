@@ -24,6 +24,7 @@ Process type:
 Process flags:
 
 - PERIODIC_SLEEP:	Process is only run every N time slices. This can be configured and changed on the fly.
+- KILL_AFTER:		Kill process after a certain number of allotted time slices.
 
 
 
