@@ -43,6 +43,8 @@ class process_manager
 			-> void;
 		
 	public:
+		// TODO put as much as possible of this method into a
+		// non-template method. (one that takes unique_ptr<process>)
 		template< typename T, typename... Ts >
 		auto create_process(process_id p_parent, Ts&&... p_args)
 			-> process_view
@@ -66,6 +68,15 @@ class process_manager
 					return ut::enum_cast(p_l->priority()) < ut::enum_cast(p_r->priority());
 				}
 			);
+			
+			// Initialize process
+			t_view->initialize();
+			
+			// If process state was not changed, change it to active.
+			// This allows initialize() to switch the process into waiting or paused state
+			// without us overwriting that here
+			if(t_view.state() == process_state::inactive)
+				t_view.set_state(process_state::active);
 
 			return t_view;
 		}
@@ -74,18 +85,29 @@ class process_manager
 		auto kill_process(process_id)	
 			-> void;
 				
-		auto process_state(process_id) const
-			-> class process_state;
+		auto get_state(process_id) const
+			-> process_state;
 			
-		auto process(process_id);
+		auto get_process(process_id);
 			-> process_view;	
 			
 	private:
 		auto next_pid()
 			-> process_id;
 		
+		// Assigns every process of the given type
+		// a time slice.
 		auto update_processes(process_type)
 			-> void;
+			
+		// Updates the states of processes. Some processes
+		// might require a state change because of fulfilled
+		// conditions etc.
+		auto update_states(process_type)
+			-> void;
+			
+		auto proc_list(process_type)
+			-> process_list&;
 			
 	private:
 		process_id	m_NextPid{1U};		//< The next pid that may be used for a process

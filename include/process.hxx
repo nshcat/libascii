@@ -71,8 +71,8 @@ enum class process_priority
 	: ::std::uint32_t
 {
 	highest = 0U,
-	normal = ::std::uint32_t(-1) / 2U,
-	lowest = ::std::uint32_t(-1)
+	lowest = ::std::numeric_limits<::std::uint32_t>::max(),
+	normal = lowest / 2U
 };
 //
 
