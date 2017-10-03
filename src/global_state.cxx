@@ -12,6 +12,12 @@ auto global_state_t::path_manager()
 	return m_PathManager;
 }
 
+auto global_state_t::process_manager()
+	-> class process_manager&
+{
+	return m_ProcessManager;
+}
+
 auto global_state_t::asset_manager()
 	-> class asset_manager&
 {
@@ -29,6 +35,7 @@ auto global_state_t::initialize()
 {
 	m_PathManager.initialize();
 	m_Configuration.initialize();
+	m_ProcessManager.initialize();
 	m_Context.initialize();
 }
 

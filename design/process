@@ -23,7 +23,7 @@ Process type:
 
 Process flags:
 
-- PERIODIC_DELAY:	Process is only run every N time slices. This can be configured and changed on the fly.
+- PERIODIC_SLEEP:	Process is only run every N time slices. This can be configured and changed on the fly.
 
 
 
@@ -39,6 +39,25 @@ On every update:
 2.) Run every processes update function
 
 => This should be done seperately for PER_FRAME and PER_TICK, but of course a PER_TICK process might have a PER_FRAME parent its waiting on
+
+Support:
+	- (wait_for_signal) later
+	- wait_for
+	- sleep
+	- kill
+	- 
+
+
+create_process<T>(...)
+{
+	...
+	t_proc.initialize();
+	
+	// If the process state was not changed by the initialization,
+	// change it to being active.
+	if(t_proc.state() == process_state::inactive)
+		t_proc.set_state(process_state::active);
+}
 
 
 Processes should refer to themselves using PIDs.
