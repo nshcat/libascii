@@ -1,0 +1,3 @@
+- use liblog to report errors and debug info
+- build custom log formatter that uses the diagnostics api
+- use LOG_FATAL_TERMINATE() to report unrecoverable errors, not exceptions (?)
