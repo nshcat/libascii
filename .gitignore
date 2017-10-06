@@ -30,3 +30,8 @@
 
 bld/
 bld
+
+# CLion ide files
+.idea/
+cmake-build-debug/
+cmake-build-release/
