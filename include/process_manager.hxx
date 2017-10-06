@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 #include <unordered_map>
 #include <type_traits>
 #include <ut/observer_ptr.hxx>
@@ -65,7 +66,7 @@ class process_manager
 		auto get_state(process_id) const
 			-> process_state;
 			
-		auto get_process(process_id);
+		auto get_process(process_id)
 			-> process_view;	
 			
 	private:

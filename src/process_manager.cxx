@@ -43,8 +43,8 @@ auto process_manager::register_process(process_ptr p_proc)
 	// If process state was not changed, change it to active.
 	// This allows initialize() to switch the process into waiting or paused state
 	// without us overwriting that here
-	if(t_view.state() == process_state::inactive)
-		t_view.set_state(process_state::active);
+	if(t_view->state() == process_state::inactive)
+		t_view->set_state(process_state::active);
 		
 	return t_view;
 }
@@ -65,14 +65,14 @@ auto process_manager::get_state(process_id p_id) const
 		return process_state::nonexistent;
 }
 
-auto process_manager::get_process(process_id p_id) const
+auto process_manager::get_process(process_id p_id)
 	-> process_view
 {
 	// Try to find process with given id
 	const auto t_it = m_ProcMap.find(p_id);
 	
 	if(t_it != ::std::end(m_ProcMap))
-		return t_it->second;
+		return { t_it->second.get() };
 	else throw ::std::runtime_error("process_manager: tried process with given pid not found");
 }
 
@@ -81,6 +81,12 @@ auto process_manager::next_pid()
 {
 	// TODO better strategy (see notes)
 	return m_NextPid++;
+}
+
+auto process_manager::kill_process(process_id)
+	-> void
+{
+	return;
 }
 
 auto process_manager::update_states(process_type p_type)

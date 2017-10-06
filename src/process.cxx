@@ -27,9 +27,11 @@ auto process::wait_for(process_id p_id)
 		
 	// If the other process is already dead or nonexistent,
 	// this operation is a nop.
-	if(const auto t_state = global_state().process_manager().process_state(p_id);
-		t_state == process_state::nonexistant || t_state == process_state::dead)
+	if(const auto t_state = global_state().process_manager().get_state(p_id);
+		t_state == process_state::nonexistent || t_state == process_state::dead)
+	{
 		return;
+	}
 		
 	// If we are currently sleeping, the remaining sleep duration
 	// will be overridden, since waiting for a condition has priority
@@ -103,7 +105,7 @@ auto process::wait_pid() const
 auto process::priority() const
 	-> process_priority
 {
-	return m_Priority();
+	return m_Priority;
 }
 
 auto process::sleep_duration() const
