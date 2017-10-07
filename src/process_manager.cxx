@@ -83,10 +83,39 @@ auto process_manager::next_pid()
 	return m_NextPid++;
 }
 
-auto process_manager::kill_process(process_id)
+auto process_manager::kill_process(process_id p_id)
 	-> void
 {
-	return;
+	// Validate given PID
+	if(p_id == no_process)
+		return;
+		
+	// Try to find process entry
+	const auto t_it = m_ProcMap.find(p_id);
+	if(t_it != m_ProcMap.end())
+	{
+		// Process entry was found. Retrieve process type to decide
+		// in what auxiliary data structures views on this process
+		// are stored
+		auto& t_procList = proc_list(t_it->second->type());
+		
+		// Find position
+		const auto t_pos = binary_find(::std::begin(t_procList), ::std::end(t_procList), t_it->second,
+			[](const auto& p_l, const auto& p_r) -> bool
+			{
+				return ut::enum_cast(p_l->priority()) < ut::enum_cast(p_r->priority());
+			}
+		);
+		
+		// Erase element
+		t_procList.erase(t_pos);
+		
+		// Remove process entry from main map
+		m_ProcMap.erase(p_id);
+	}
+
+	// Process is either now known or was deleted, work is done.
+	return;	
 }
 
 auto process_manager::update_states(process_type p_type)

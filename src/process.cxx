@@ -9,7 +9,8 @@ process::process(process_id p_id, process_id p_parent, process_type p_type, proc
 auto process::kill()
 	-> void
 {
-	// Killing a process has to be delegated to the scheduler
+	// Killing a process has to be delegated to the scheduler,
+	// since it involves changing global data structures
 	global_state().process_manager().kill_process(pid());
 }
 
