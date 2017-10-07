@@ -38,3 +38,11 @@ auto insert_sorted(TContainer& p_container, typename TContainer::const_reference
 		p_item
 	);
 }
+
+template< typename TIt, typename T, typename TComp = ::std::less<>>
+auto binary_find(TIt p_first, TIt p_last, const T& p_val, TComp p_comp = {})
+	-> TIt
+{
+	p_first = ::std::lower_bound(p_first, p_last, p_val, p_comp);
+	return p_first != p_last && !p_comp(p_val, *p_first) ? p_first : p_last;
+};
