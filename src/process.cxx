@@ -109,6 +109,18 @@ auto process::priority() const
 	return m_Priority;
 }
 
+auto process::runtime() const
+	-> ::std::size_t
+{
+	return m_Runtime;
+}
+
+auto process::runtime_limit() const
+	-> ::std::size_t
+{
+	return m_RuntimeLimit;
+}
+
 auto process::sleep_duration() const
 	-> ::std::size_t
 {
@@ -121,16 +133,38 @@ auto process::set_sleep_duration(::std::size_t p_duration)
 	m_SleepDuration = p_duration;
 }
 
+auto process::set_runtime_limit(::std::size_t p_limit)
+	-> void
+{
+	m_RuntimeLimit = p_limit;
+}
+
 auto process::set_wait_pid(process_id p_id)
 	-> void
 {
 	m_WaitPid = p_id;
 }
 
+auto process::kill_after(::std::size_t p_limit)
+	-> void
+{
+	if(p_limit == no_limit)
+		return;
+
+	set_runtime_limit(p_limit);
+	set_flags(flags() | process_flags::limited_runtime);
+}
+
 auto process::dec_sleep_duration()
 	-> void
 {
 	--m_SleepDuration;
+}
+
+auto process::inc_runtime()
+	-> void
+{
+	++m_Runtime;
 }
 
 auto process::set_parent(process_id p_id)

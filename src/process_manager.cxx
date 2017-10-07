@@ -1,4 +1,5 @@
 #include <stdexcept>
+#include <ut/small_vector.hxx>
 
 #include <process_manager.hxx>
 
@@ -178,6 +179,12 @@ auto process_manager::update_processes(process_type p_type)
 	// Determine which process list to use
 	auto& t_procList = proc_list(p_type);
 	
+	// Buffer for PIDs of processes that have exceeded their runtime
+	// limits and thus need to be killed. Removal of these processes
+	// has to be postponed after updating is done, since iterators
+	// would be invalidated otherwise.
+	ut::small_vector<process_id, 16> t_pidsToKill{ };
+	
 	// Iterate through processes of matching type, from high to
 	// low priority. (hight priority is a low numerical value)
 	for(auto t_procView: t_procList)
@@ -185,8 +192,26 @@ auto process_manager::update_processes(process_type p_type)
 		// Only give time slice to processes that are in active
 		// state
 		if(t_procView->state() == process_state::active)
+		{
 			t_procView->update();
+			
+			// Increment runtime counter
+			t_procView->inc_runtime();
+			
+			// If the process has a runtime limit, check if it was
+			// exceeded. In that case, the process needs to be added
+			// to list to be killed later
+			if(t_procView->flags() & process_flags::limited_runtime)
+			{
+				if(t_procView->runtime() >= t_procView->runtime_limit())
+					t_pidsToKill.push_back(t_procView->pid());
+			}
+		}
 	}
+	
+	// Kill all processes stored in the to-kill list
+	for(const auto& t_pid: t_pidsToKill)
+		kill_process(t_pid);
 }
 
 auto process_manager::proc_list(process_type p_type)

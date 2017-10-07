@@ -26,6 +26,16 @@ Process flags:
 - PERIODIC_SLEEP:	Process is only run every N time slices. This can be configured and changed on the fly.
 - KILL_AFTER:		Kill process after a certain number of allotted time slices.
 
+/!\ KILL_AFTER needs special implementation: After updating the state, remove all processes that have been running more
+	than allowed using `remove_if`. This cant be done in the loops because it would invalidate iterators.
+
+
+Process info:
+- class including name, description, category..
+
+class process_info
+{
+};
 
 
 Process manager:
@@ -96,7 +106,7 @@ class delayed_event
 	// ...
 	initialize()
 	{
-		process_manager().pause_process(this->pid(), 10U);
+		this->sleep(10U);
 	}
 	
 	update()
@@ -105,7 +115,7 @@ class delayed_event
 		// ...
 		
 		// Kill process
-		process_manager().kill_process(this->pid());
+		this->kill();
 	}
 
 };
@@ -117,7 +127,9 @@ class chain_parent
 {
 	initialize()
 	{
-		const auto pid = process_manager().create_process<chain_child>(this->pid());	
+		process_manager().create_process<chain_child>(this->pid());
+		
+		this->kill_after(5U);
 	}
 };
 
@@ -126,7 +138,7 @@ class chain_child
 {
 	initialize()
 	{
-		process_manager().wait_for_parent(this->pid());	
+		this->wait_for(this->parent());	
 	}
 };
 

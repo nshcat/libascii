@@ -16,6 +16,7 @@ using process_id = ::std::uint64_t;
 constexpr static process_id no_process = process_id{0U};
 
 constexpr static ::std::size_t no_sleep = ::std::size_t{0U};
+constexpr static ::std::size_t no_limit = ::std::size_t{0U};
 
 
 // Enumeration of states a process can be in
@@ -126,6 +127,14 @@ class process
 		auto priority() const
 			-> process_priority;
 			
+		auto runtime() const
+			-> ::std::size_t;
+			
+		// Amount of time slices this process can
+		// run for before being killed.
+		auto runtime_limit() const
+			-> ::std::size_t;
+			
 	public:
 		auto set_wait_pid(process_id)
 			-> void;
@@ -145,6 +154,12 @@ class process
 		auto dec_sleep_duration()
 			-> void;
 			
+		auto set_runtime_limit(::std::size_t)
+			-> void;
+		
+		auto inc_runtime()
+			-> void;
+			
 	public:
 		auto sleep(::std::size_t)
 			-> void;
@@ -153,6 +168,10 @@ class process
 			-> void;
 			
 		auto wait_for(process_id)
+			-> void;
+			
+		// TODO: better name?
+		auto kill_after(::std::size_t)
 			-> void;
 		
 	protected:
@@ -164,6 +183,8 @@ class process
 		process_state m_State{process_state::inactive}; 		//< Current state of the process
 		process_flags m_Flags{process_flags::none};				//< Additional process flags
 		::std::size_t m_SleepDuration{no_sleep};				//< Duration the process still has to sleep
+		::std::size_t m_Runtime{};								//< Current process runtime duration
+		::std::size_t m_RuntimeLimit{no_limit};					//< Process runtime limitation used by auto kill.
 };
 
 
