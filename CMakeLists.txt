@@ -42,8 +42,11 @@ add_subdirectory(minitrace)
 # Source files
 file(GLOB SOURCE_FILES src/*.cxx)
 
+# Headers
+file(GLOB HEADER_FILES include/*.hxx)
+
 # Define target as executable
-add_executable(roguelike ${SOURCE_FILES})
+add_executable(roguelike ${SOURCE_FILES} ${HEADER_FILES})
 
 # Own headers
 target_include_directories(roguelike PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
