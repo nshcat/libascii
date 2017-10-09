@@ -22,6 +22,24 @@
 
 
 
+// TODO give this class a container interface (using unique_ptr -> observer_ptr wrapper, maybe program iterator_adaptor with a 
+// converter struct?
+//
+// template< typename T, typename U, typename Convert = converter<T, U>>
+// class iterator_adaptor
+// { };
+//
+// template< typename T, typename U >
+// struct converter { // Base class, try casting
+//    static_assert(castable..., "not specialized and not castable")
+// };
+//
+// template< typename T >
+// struct converter <unique_ptr<T>, ut::observer_ptr<T>>
+// {
+//      auto convert(const unique_ptr<T>& p_ptr) -> const ut::observer_ptr<T>
+//      {  return { p_ptr.ptr() } }
+//
 class process_manager
 	: public global_system
 {

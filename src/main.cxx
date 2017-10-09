@@ -51,6 +51,66 @@
 #include <nuklear.h>
 #include <nuklear_glfw_gl3.h>
 
+struct test_process
+	: public process
+{
+	public:
+		test_process(process_id p_id, process_id p_parent)
+			: 	process(
+					p_id,
+					p_parent,
+					process_type::per_frame,
+					process_priority::normal
+				)
+		{
+		}
+		
+	public:
+		virtual auto initialize() -> void override
+		{
+			this->kill_after(5U);
+		}
+		
+		virtual auto update() -> void override
+		{
+			::std::cout << m_Counter << ' ';
+			++m_Counter;
+		}
+		
+	private:
+		::std::size_t m_Counter{1};
+};
+
+struct periodic_process
+	: public process
+{
+	public:
+		periodic_process(process_id p_id, process_id p_parent)
+			: 	process(
+					p_id,
+					p_parent,
+					process_type::per_frame,
+					process_priority::normal
+				)
+		{
+		}
+		
+	public:
+		virtual auto initialize() -> void override
+		{
+			this->periodic_sleep(2U);
+		}
+		
+		virtual auto update() -> void override
+		{
+			::std::cout << "* ";
+			++m_Counter;
+		}
+		
+	private:
+		::std::size_t m_Counter{1};
+};
+
 
 bool clear_ = true;
 bool pressed_ = false;
@@ -110,6 +170,10 @@ int main()
 
 	try
 	{
+		global_state().process_manager().create_process<test_process>(no_process);
+		global_state().process_manager().create_process<periodic_process>(no_process);
+		
+	
 		auto t_palette = global_state().asset_manager().load_asset<palette>("c64");//{ "assets/palettes/c64.json" };
 	
 		//global_state().context().initialize();
@@ -248,6 +312,9 @@ int main()
 		while (!t_context.should_close())
 		{	
 			t_context.pump_events();
+			
+			global_state().process_manager().frame();
+			::std::cout << "Frame" << ::std::endl;
 			
 			nk_glfw3_new_frame();		
 			if (nk_begin(t_nkctx, "Debug", nk_rect(700, 100, 330, 350),

@@ -67,6 +67,22 @@ auto process::sleep(::std::size_t p_duration)
 	set_state(process_state::sleeping);
 }
 
+auto process::periodic_sleep(::std::size_t p_duration, bool p_initialSleep)
+	-> void
+{
+	// No sleep duration is invalid here
+	if(p_duration == no_sleep)
+		return;
+		
+	set_flags(flags() | process_flags::periodic_sleep);
+	set_periodic_duration(p_duration);
+	
+	// Only switch state to sleeping if requested by user
+	set_state(process_state::sleeping);
+	// This is a hack to allow the process to immediately run if requested
+	set_sleep_duration(p_initialSleep ? p_duration : no_sleep);
+}
+
 auto process::pid() const
 	-> process_id
 {
@@ -119,6 +135,18 @@ auto process::runtime_limit() const
 	-> ::std::size_t
 {
 	return m_RuntimeLimit;
+}
+
+auto process::periodic_duration() const
+	-> ::std::size_t
+{
+	return m_PeriodicDuration;
+}
+
+auto process::set_periodic_duration(::std::size_t p_duration)
+	-> void
+{
+	m_PeriodicDuration = p_duration;
 }
 
 auto process::sleep_duration() const

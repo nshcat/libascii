@@ -161,6 +161,24 @@ auto process_manager::update_states(process_type p_type)
 				
 				break;
 			}
+			case process_state::active:
+			{
+				// If the process was already active, it needs to be put to sleep if it has the
+				// "periodic_sleep" flag.
+				if(t_procView->flags() & process_flags::periodic_sleep)
+				{
+					// Sanity check: Are we even trying to sleep?
+					if(t_procView->periodic_duration() != no_sleep)
+					{
+						// Since the process is not executed this time slice, it needs to sleep for
+						// one less time slice than requested
+						t_procView->set_state(process_state::sleeping);
+						t_procView->set_sleep_duration(t_procView->periodic_duration() - 1U);
+					}
+				}	
+					
+				break;
+			}
 			default:
 			{
 				// Do nothing for processes in other states.
@@ -181,7 +199,7 @@ auto process_manager::update_processes(process_type p_type)
 	
 	// Buffer for PIDs of processes that have exceeded their runtime
 	// limits and thus need to be killed. Removal of these processes
-	// has to be postponed after updating is done, since iterators
+	// has to be postponed to after updating is done, since iterators
 	// would be invalidated otherwise.
 	ut::small_vector<process_id, 16> t_pidsToKill{ };
 	

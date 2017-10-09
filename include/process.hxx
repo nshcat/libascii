@@ -62,8 +62,9 @@ enum class process_flags
 {
 	none = 0U,						//< No flags
 	
-	periodic_sleep = 1U,			//< Causes the process to periodically sleep.
-									//  Can be configured by setting the sleep period.
+	periodic_sleep = 1U,			//< Causes the process to periodically sleep. This means after
+									//  every time slice, the process will sleep for set amount of time
+									//	units.
 	
 	limited_runtime = 1U << 1,		//< Process will be killed after a certain number
 									//  of allotted time slices.
@@ -135,6 +136,9 @@ class process
 		auto runtime_limit() const
 			-> ::std::size_t;
 			
+		auto periodic_duration() const
+			-> ::std::size_t;
+			
 	public:
 		auto set_wait_pid(process_id)
 			-> void;
@@ -146,6 +150,9 @@ class process
 			-> void;
 			
 		auto set_parent(process_id)
+			-> void;
+		
+		auto set_periodic_duration(::std::size_t)
 			-> void;
 			
 		auto set_sleep_duration(::std::size_t)
@@ -161,7 +168,17 @@ class process
 			-> void;
 			
 	public:
+		// Put process to sleep for given amount of time slices.
+		// If the process is already sleeping, this will do nothing
+		// (It will NOT update the sleep duration)
 		auto sleep(::std::size_t)
+			-> void;
+			
+		// After each assigned time slice, automatically put process to 
+		// sleep for the fiven amount of time slices. Like `sleep`, this will
+		// not initially update the sleep duration if the process is already sleeping.
+		// If the flag is set, the process will start with sleeping instead of being active.
+		auto periodic_sleep(::std::size_t p_duration, bool p_initialSleep = false)
 			-> void;
 			
 		auto kill()
@@ -185,6 +202,7 @@ class process
 		::std::size_t m_SleepDuration{no_sleep};				//< Duration the process still has to sleep
 		::std::size_t m_Runtime{};								//< Current process runtime duration
 		::std::size_t m_RuntimeLimit{no_limit};					//< Process runtime limitation used by auto kill.
+		::std::size_t m_PeriodicDuration{no_sleep};				//< Duration used to reset the sleep duration with periodic_sleep.
 };
 
 
