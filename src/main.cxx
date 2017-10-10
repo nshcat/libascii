@@ -111,6 +111,38 @@ struct periodic_process
 		::std::size_t m_Counter{1};
 };
 
+struct chained_process
+	: public process
+{
+	public:
+		chained_process(process_id p_id, process_id p_parent)
+			: 	process(
+					p_id,
+					p_parent,
+					process_type::per_frame,
+					process_priority::normal
+				)
+		{
+		}
+		
+	public:
+		virtual auto initialize() -> void override
+		{
+			const auto t_procView = global_state().process_manager().create_process<test_process>(this->pid());
+			t_procView->wait_for(this->pid());
+			this->kill_after(10U);
+		}
+		
+		virtual auto update() -> void override
+		{
+			::std::cout << static_cast<char>('a' + m_Counter) << ' ';
+			++m_Counter;
+		}
+		
+	private:
+		::std::size_t m_Counter{1};
+};
+
 
 bool clear_ = true;
 bool pressed_ = false;
@@ -170,7 +202,7 @@ int main()
 
 	try
 	{
-		global_state().process_manager().create_process<test_process>(no_process);
+		global_state().process_manager().create_process<chained_process>(no_process);
 		global_state().process_manager().create_process<periodic_process>(no_process);
 		
 	

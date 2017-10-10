@@ -45,4 +45,4 @@ auto binary_find(TIt p_first, TIt p_last, const T& p_val, TComp p_comp = {})
 {
 	p_first = ::std::lower_bound(p_first, p_last, p_val, p_comp);
 	return p_first != p_last && !p_comp(p_val, *p_first) ? p_first : p_last;
-};
+};		

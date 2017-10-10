@@ -7,6 +7,7 @@
 #include <type_traits>
 #include <ut/observer_ptr.hxx>
 #include <ut/cast.hxx>
+#include <boost/iterator/transform_iterator.hpp>
 
 #include "global_system.hxx"
 #include "process.hxx"
@@ -20,26 +21,29 @@
 // Fix 2): Implement proper garbage collection using a background process that regulary checks the
 //		   dependency chain and removes the processes.
 
+namespace internal
+{
+	// A functor that converts a unique_ptr to a oberserver_ptr.
+	// We sadly cant use lambdas here, since the process_manager class
+	// needs to expose the type of the iterator as a type alias, so we
+	// need to directly use the class "transform_iterator" that is
+	// supplied by boost.
+	template< typename T >
+	struct convert_ptr
+	{
+		using to_type = ut::observer_ptr<T>;
+	
+		// Iterator of maps use pairs as value type
+		template< typename U >
+		auto operator()(const U& p_result) const
+			-> to_type
+		{
+			return { p_result->second.get() };
+		}
+	};
+}
 
 
-// TODO give this class a container interface (using unique_ptr -> observer_ptr wrapper, maybe program iterator_adaptor with a 
-// converter struct?
-//
-// template< typename T, typename U, typename Convert = converter<T, U>>
-// class iterator_adaptor
-// { };
-//
-// template< typename T, typename U >
-// struct converter { // Base class, try casting
-//    static_assert(castable..., "not specialized and not castable")
-// };
-//
-// template< typename T >
-// struct converter <unique_ptr<T>, ut::observer_ptr<T>>
-// {
-//      auto convert(const unique_ptr<T>& p_ptr) -> const ut::observer_ptr<T>
-//      {  return { p_ptr.ptr() } }
-//
 class process_manager
 	: public global_system
 {
@@ -48,19 +52,23 @@ class process_manager
 	using process_map = ::std::unordered_map<process_id, process_ptr>;
 	using process_list = ::std::vector<process_view>;
 	
+	// Container type aliases
+	using iterator = boost::transform_iterator<
+						internal::convert_ptr<process>,
+						process_map::iterator
+					>;
+					
+	using const_iterator = boost::transform_iterator<
+								internal::convert_ptr<const process>,
+								process_map::const_iterator
+							>;
+							
+	using size_type = process_map::size_type;
+	using value_type = process_view;
+	
 	// Allow process base class methods to access housekeeping methods
 	friend class process;
 	
-	public:
-		auto initialize()
-			-> void;
-			
-		auto frame()
-			-> void;
-			
-		auto tick()
-			-> void;
-		
 	public:
 		// TODO put as much as possible of this method into a
 		// non-template method. (one that takes unique_ptr<process>)
@@ -78,6 +86,17 @@ class process_manager
 		}
 		
 	public:
+		auto initialize()
+			-> void;
+			
+		auto frame()
+			-> void;
+			
+		auto tick()
+			-> void;
+		
+		
+	public:
 		auto kill_process(process_id)	
 			-> void;
 				
@@ -85,7 +104,26 @@ class process_manager
 			-> process_state;
 			
 		auto get_process(process_id)
-			-> process_view;	
+			-> process_view;
+			
+	public:
+		auto begin()
+			-> iterator;
+			
+		auto end()
+			-> iterator;
+			
+		/*auto begin() const
+			-> const_iterator;
+			
+		auto end()
+			-> const_iterator;
+			
+		auto cbegin()
+			-> const_iterator;
+			
+		auto cend()
+			-> const_iterator;*/
 			
 	private:
 		// TODO really return view here? The view can be constructed

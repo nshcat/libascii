@@ -239,4 +239,14 @@ auto process_manager::proc_list(process_type p_type)
 			m_PerFrameProcs : m_PerTickProcs);
 }
 
+auto process_manager::begin()
+	-> iterator
+{
+	return { m_ProcMap.begin(), { } };
+}
 
+auto process_manager::end()
+	-> iterator
+{
+	return { m_ProcMap.end(), { } };
+}
