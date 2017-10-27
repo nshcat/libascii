@@ -250,3 +250,27 @@ auto process_manager::end()
 {
 	return { m_ProcMap.end(), { } };
 }
+
+auto process_manager::begin() const
+	-> const_iterator
+{
+	return { m_ProcMap.cbegin(), { } };
+}
+
+auto process_manager::end() const
+	-> const_iterator
+{
+	return { m_ProcMap.cend(), { } };
+}
+
+auto process_manager::cbegin() const
+	-> const_iterator
+{
+	return { m_ProcMap.cbegin(), { } };
+}
+
+auto process_manager::cend() const
+	-> const_iterator
+{
+	return { m_ProcMap.cend(), { } };
+}

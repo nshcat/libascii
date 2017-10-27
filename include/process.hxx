@@ -148,9 +148,6 @@ class process
 			
 		auto set_flags(process_flags)
 			-> void;
-			
-		auto set_parent(process_id)
-			-> void;
 		
 		auto set_periodic_duration(::std::size_t)
 			-> void;
@@ -187,22 +184,26 @@ class process
 		auto wait_for(process_id)
 			-> void;
 			
+		auto wait_for_parent()
+			-> void;
+						
 		// TODO: better name?
 		auto kill_after(::std::size_t)
 			-> void;
 		
 	protected:
-		process_id m_Pid;										//< Unique process identificator
-		process_id m_Parent{no_process};						//< PID of parent process
-		process_id m_WaitPid{no_process};						//< Process this process is waiting for
-		process_priority m_Priority{process_priority::normal};	//< Priority of this process
-		process_type m_Type{process_type::per_frame};			//< Type of this process
-		process_state m_State{process_state::inactive}; 		//< Current state of the process
-		process_flags m_Flags{process_flags::none};				//< Additional process flags
-		::std::size_t m_SleepDuration{no_sleep};				//< Duration the process still has to sleep
-		::std::size_t m_Runtime{};								//< Current process runtime duration
-		::std::size_t m_RuntimeLimit{no_limit};					//< Process runtime limitation used by auto kill.
-		::std::size_t m_PeriodicDuration{no_sleep};				//< Duration used to reset the sleep duration with periodic_sleep.
+		// TODO: maybe refactor-out data like sleep duration, runtime limit etc.	
+		const process_id m_Pid;										//< Unique process identificator
+		const process_id m_Parent{no_process};						//< PID of parent process
+		process_id m_WaitPid{no_process};							//< Process this process is waiting for
+		const process_priority m_Priority{process_priority::normal};//< Priority of this process
+		const process_type m_Type{process_type::per_frame};			//< Type of this process
+		process_state m_State{process_state::inactive}; 			//< Current state of the process
+		process_flags m_Flags{process_flags::none};					//< Additional process flags
+		::std::size_t m_SleepDuration{no_sleep};					//< Duration the process still has to sleep
+		::std::size_t m_Runtime{};									//< Current process runtime duration
+		::std::size_t m_RuntimeLimit{no_limit};						//< Process runtime limitation used by auto kill.
+		::std::size_t m_PeriodicDuration{no_sleep};					//< Duration used to reset the sleep duration with periodic_sleep.
 };
 
 

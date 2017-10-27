@@ -14,6 +14,17 @@ auto process::kill()
 	global_state().process_manager().kill_process(pid());
 }
 
+auto process::wait_for_parent()
+	-> void
+{
+	// Do not wait for a nonexistant parent
+	if(parent() == no_process)
+		return;
+		
+	// Delegate to wait_for. This will check all other preconditions.
+	wait_for(parent());
+}
+
 auto process::wait_for(process_id p_id)
 	-> void
 {
@@ -193,12 +204,6 @@ auto process::inc_runtime()
 	-> void
 {
 	++m_Runtime;
-}
-
-auto process::set_parent(process_id p_id)
-	-> void
-{
-	m_Parent = p_id;
 }
 
 auto process::set_flags(process_flags p_flags)

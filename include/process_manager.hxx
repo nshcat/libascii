@@ -93,8 +93,7 @@ class process_manager
 			-> void;
 			
 		auto tick()
-			-> void;
-		
+			-> void;	
 		
 	public:
 		auto kill_process(process_id)	
@@ -113,17 +112,17 @@ class process_manager
 		auto end()
 			-> iterator;
 			
-		/*auto begin() const
+		auto begin() const
 			-> const_iterator;
 			
-		auto end()
+		auto end() const
 			-> const_iterator;
 			
-		auto cbegin()
+		auto cbegin() const
 			-> const_iterator;
 			
-		auto cend()
-			-> const_iterator;*/
+		auto cend() const
+			-> const_iterator;
 			
 	private:
 		// TODO really return view here? The view can be constructed
