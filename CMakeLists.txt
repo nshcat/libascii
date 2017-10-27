@@ -2,7 +2,6 @@
 cmake_minimum_required(VERSION 3.1.3)
 project(roguelike)
 
-
 ## === BUILD OPTIONS ===
 ##
 
@@ -12,12 +11,42 @@ set(USE_HOME_DIR	OFF		CACHE BOOL 		"Use home directory for user data"	)
 
 ## =====================
 
+# Setup module path
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
+
+# Import required CMake modules
+include(Color)
+
+# Show current build options to user
+macro(print_switch sw desc)
+	if(${sw})
+		message("${BoldWhite} ${desc}${Green}ON${ColourReset}")
+	else()
+		message("${BoldWhite} ${desc}${Red}OFF${ColourReset}")
+	endif()
+endmacro()
+
+macro(print_str val desc)
+	message("${BoldWhite} ${desc}${ColourReset}${val}")
+endmacro()
+
+
+message("${BoldWhite}Build settings =================================${ColourReset}")
+print_str(${PREFIX} "PREFIX:          ")
+print_switch(${USE_HOME_DIR} "USE_HOME_DIR:    ")
+
+# The distribute switch is only useful when using mingw
+if(MINGW)
+	print_switch(${Distribute} "DISTRIBUTE:      ")
+endif()
+message("${BoldWhite}================================================${ColourReset}")
+#
+
 
 # Search for OpenGL
 find_package(OpenGL REQUIRED)
 
 # Search for SDL2 and SDL2_Image
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
 find_package(SDL2 REQUIRED)
 find_package(SDL2_image REQUIRED)
 
