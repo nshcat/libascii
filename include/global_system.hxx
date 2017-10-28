@@ -16,6 +16,7 @@ class global_system
 {
 	public:
 		global_system() = default;
+		~global_system() = default;
 		
 		global_system(const global_system&) = delete;
 		global_system(global_system&&) = default;
@@ -60,9 +61,9 @@ constexpr bool has_shutdown_v = has_shutdown<T>::value;
 template< typename T >
 using is_global_system = ::std::conjunction<
 							has_shutdown<T>,
-							has_initialize<T>,
-							::std::is_trivially_default_constructible<T>,
-							::std::is_trivially_destructible<T>
+							has_initialize<T>//,
+							//::std::is_trivially_default_constructible<T>//,
+							//::std::is_trivially_destructible<T>
 						>;
 
 template< typename T >

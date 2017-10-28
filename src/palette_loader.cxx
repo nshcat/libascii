@@ -7,7 +7,7 @@ auto asset_loader<palette>::load_asset(const ::std::string& p_name) const
 	-> palette
 {
 	// Retrieve data path
-	const auto t_dataPath = global_state().path_manager().data_path();
+	const auto t_dataPath = global_state<path_manager>().data_path();
 	
 	// Build path to requested palette file
 	const auto t_palPath = (t_dataPath / "palettes" / (p_name + ".json"));

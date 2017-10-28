@@ -23,7 +23,7 @@ namespace internal
 	};
 	
 	template< typename T >
-	using reversed = typename sequence_reverser<T>::type;
+	using reversed = typename index_list_reverser<T>::type;
 	//
 	
 	

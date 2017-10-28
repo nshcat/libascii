@@ -1,5 +1,3 @@
-#pragma once
-
 #include <global_system.hxx>
 
 auto global_system::initialize()
