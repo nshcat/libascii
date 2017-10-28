@@ -22,6 +22,14 @@ class global_system
 		
 		global_system& operator=(const global_system&) = delete;
 		global_system& operator=(global_system&&) = delete;
+		
+	public:
+		// These are intentionally not defined as "virtual".
+		auto initialize()
+			-> void;
+			
+		auto shutdown()
+			-> void;		
 };
 
 
