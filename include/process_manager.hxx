@@ -38,7 +38,7 @@ namespace internal
 		auto operator()(const U& p_result) const
 			-> to_type
 		{
-			return { p_result->second.get() };
+			return { p_result.second.get() };
 		}
 	};
 }
