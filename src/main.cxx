@@ -7,6 +7,7 @@
 #include <iostream>
 #include <utility>
 #include <random>
+#include <iomanip>
 #include <cstdlib>
 #include <fstream>
 #include <vector>
@@ -59,7 +60,8 @@ struct test_process
 					p_id,
 					p_parent,
 					process_type::per_frame,
-					process_priority::normal
+					process_priority::normal,
+					process_info{ "test_process", "" }
 				)
 		{
 		}
@@ -89,7 +91,8 @@ struct periodic_process
 					p_id,
 					p_parent,
 					process_type::per_frame,
-					process_priority::normal
+					process_priority::normal,
+					{ "periodic_process", "A process that shows the usage of periodic sleep." }
 				)
 		{
 		}
@@ -119,7 +122,8 @@ struct chained_process
 					p_id,
 					p_parent,
 					process_type::per_frame,
-					process_priority::normal
+					process_priority::normal,
+					process_info{ "chained_process", "" }
 				)
 		{
 		}
@@ -329,6 +333,22 @@ int main()
 		
 			
 		//===----------------------------------------------------------------------===//
+		
+		::std::cout << ::std::endl;
+		::std::fill_n(::std::ostream_iterator<char>{::std::cout}, 85+6, '-');
+		::std::cout << std::endl;
+		::std::cout << " " << ::std::left << ::std::setw(5) << "PID" << "  " << ::std::left << ::std::setw(16) << "Title" << "  " << ::std::left << ::std::setw(64) << "Description" << ::std::endl;
+		::std::fill_n(::std::ostream_iterator<char>{::std::cout}, 85+6, '-');
+		::std::cout << std::endl;
+		for(const auto& t_proc: global_state<process_manager>())
+		{
+			::std::cout << " " << ::std::left << ::std::setw(5) << t_proc->pid() << "  "
+						<< ::std::left << ::std::setw(16) << t_proc->info().title() << "  "
+						<< ::std::left << ::std::setw(32) << t_proc->info().description() << "  " << ::std::endl;
+		}
+		::std::fill_n(::std::ostream_iterator<char>{::std::cout}, 85+6, '-');
+		::std::cout << std::endl;
+		::std::cout << ::std::endl;
 		
 		
 				

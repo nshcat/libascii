@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <stdexcept>
+#include <iostream>
 #include <boost/filesystem/operations.hpp>
 #include <ut/platform.hxx>
 

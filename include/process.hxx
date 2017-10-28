@@ -7,7 +7,7 @@
 
 #include <ut/bitmask.hxx>
 
-// TODO process title and description
+#include "process_info.hxx"
 
 
 using process_id = ::std::uint64_t;
@@ -89,7 +89,7 @@ enum class process_priority
 class process
 {
 	public:
-		process(process_id p_id, process_id p_parent, process_type p_type, process_priority p_prio);
+		process(process_id p_id, process_id p_parent, process_type p_type, process_priority p_prio, const process_info& p_info);
 		
 	public:
 		// Copying a process does not make any sense
@@ -104,6 +104,9 @@ class process
 		virtual auto update() -> void = 0;
 		
 	public:
+		auto info() const
+			-> const process_info&;
+	
 		auto pid() const
 			-> process_id;
 			
@@ -195,6 +198,7 @@ class process
 		// TODO: maybe refactor-out data like sleep duration, runtime limit etc.	
 		const process_id m_Pid;										//< Unique process identificator
 		const process_id m_Parent{no_process};						//< PID of parent process
+		const process_info m_Info;									//< Detailed information about this process
 		process_id m_WaitPid{no_process};							//< Process this process is waiting for
 		const process_priority m_Priority{process_priority::normal};//< Priority of this process
 		const process_type m_Type{process_type::per_frame};			//< Type of this process

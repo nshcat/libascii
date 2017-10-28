@@ -1,8 +1,8 @@
 #include <process.hxx>
 #include <global_state.hxx>
 
-process::process(process_id p_id, process_id p_parent, process_type p_type, process_priority p_prio)
-	: m_Pid{p_id}, m_Parent{p_parent}, m_Priority{p_prio}, m_Type{p_type}
+process::process(process_id p_id, process_id p_parent, process_type p_type, process_priority p_prio, const process_info& p_info)
+	: m_Pid{p_id}, m_Parent{p_parent}, m_Priority{p_prio}, m_Type{p_type}, m_Info{p_info}
 {
 }
 
@@ -98,6 +98,12 @@ auto process::pid() const
 	-> process_id
 {
 	return m_Pid;
+}
+
+auto process::info() const
+	-> const process_info&
+{
+	return m_Info;
 }
 
 auto process::parent() const
