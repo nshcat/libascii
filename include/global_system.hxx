@@ -50,7 +50,7 @@ constexpr bool has_shutdown_v = has_shutdown<T>::value;
 // A trait that determines whether a type can be classified as 
 // a "global system"
 template< typename T >
-using is_global_system = ut::conjunction<
+using is_global_system = ::std::conjunction<
 							has_shutdown<T>,
 							has_initialize<T>,
 							::std::is_trivially_default_constructible<T>,
