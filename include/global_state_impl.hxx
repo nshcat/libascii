@@ -30,6 +30,8 @@ namespace internal
 	template< typename... Ts >
 	class global_state_impl
 	{
+		// TODO assert that all types are unique
+	
 		// Assert that all given types are actually global systems
 		static_assert(::std::conjunction_v<is_global_system<Ts>...>,
 			"global_state_impl: All given types have to adhere to the"
