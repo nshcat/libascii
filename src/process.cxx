@@ -11,7 +11,7 @@ auto process::kill()
 {
 	// Killing a process has to be delegated to the scheduler,
 	// since it involves changing global data structures
-	global_state().process_manager().kill_process(pid());
+	global_state<process_manager>().kill_process(pid());
 }
 
 auto process::wait_for_parent()
@@ -39,7 +39,7 @@ auto process::wait_for(process_id p_id)
 		
 	// If the other process is already dead or nonexistent,
 	// this operation is a nop.
-	if(const auto t_state = global_state().process_manager().get_state(p_id);
+	if(const auto t_state = global_state<process_manager>().get_state(p_id);
 		t_state == process_state::nonexistent || t_state == process_state::dead)
 	{
 		return;

@@ -9,7 +9,7 @@ auto configuration::initialize()
 	-> void
 {
 	// Retrieve config file path
-	const auto t_path = global_state().path_manager().config_path();
+	const auto t_path = global_state<path_manager>().config_path();
 	
 	// Check if the file exists. If not we need to
 	// restore the defaults.
@@ -33,7 +33,7 @@ auto configuration::reset()
 	-> void
 {
 	// Retrieve data path
-	const auto t_dataPath = global_state().path_manager().data_path();
+	const auto t_dataPath = global_state<path_manager>().data_path();
 	
 	// Load property tree from default config file
 	pt::read_json((t_dataPath / "config" / "default.json").string(), m_DataTree);
@@ -45,7 +45,7 @@ auto configuration::reset()
 auto configuration::save() const
 	-> void
 {
-	const auto t_path = global_state().path_manager().config_path();
+	const auto t_path = global_state<path_manager>().config_path();
 	
 	pt::write_json(t_path.string(), m_DataTree);
 }

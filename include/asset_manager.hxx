@@ -14,11 +14,7 @@ struct asset_loader
 
 class asset_manager
 	: public global_system
-{
-	public:
-		auto initialize()
-			-> void;
-			
+{		
 	public:
 		template< typename T, typename... Ts >
 		auto load_asset(Ts&&... p_args)

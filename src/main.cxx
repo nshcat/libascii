@@ -32,7 +32,6 @@
 #include <screen.hxx>
 #include <actions.hxx>
 #include <shapes.hxx>
-#include <frame_guard.hxx>
 #include <palette.hxx>
 #include <build_settings.hxx>
 #include <path_manager.hxx>
@@ -128,7 +127,7 @@ struct chained_process
 	public:
 		virtual auto initialize() -> void override
 		{
-			const auto t_procView = global_state().process_manager().create_process<test_process>(this->pid());
+			const auto t_procView = global_state<process_manager>().create_process<test_process>(this->pid());
 			t_procView->wait_for(this->pid());
 			this->kill_after(10U);
 		}
@@ -193,20 +192,20 @@ int main()
 {
 	global_state().initialize();
 	
-	::std::cout << "User data path: " << global_state().path_manager().user_path() << ::std::endl;
-	::std::cout << "Game data path: " << global_state().path_manager().data_path() << ::std::endl;
-	::std::cout << "Config file path: " << global_state().path_manager().config_path() << ::std::endl << ::std::endl;
+	::std::cout << "User data path: " << global_state<path_manager>().user_path() << ::std::endl;
+	::std::cout << "Game data path: " << global_state<path_manager>().data_path() << ::std::endl;
+	::std::cout << "Config file path: " << global_state<path_manager>().config_path() << ::std::endl << ::std::endl;
 	
 	nk_context* t_nkctx;
 	nk_color t_nkbg;
 
 	try
 	{
-		global_state().process_manager().create_process<chained_process>(no_process);
-		global_state().process_manager().create_process<periodic_process>(no_process);
+		global_state<process_manager>().create_process<chained_process>(no_process);
+		global_state<process_manager>().create_process<periodic_process>(no_process);
 		
 	
-		auto t_palette = global_state().asset_manager().load_asset<palette>("c64");//{ "assets/palettes/c64.json" };
+		auto t_palette = global_state<asset_manager>().load_asset<palette>("c64");//{ "assets/palettes/c64.json" };
 	
 		//global_state().context().initialize();
 		
@@ -218,13 +217,13 @@ int main()
 		};
 		
 		render_manager t_renderer{
-			global_state().context(),
+			global_state<render_context>(),
 			{ 60, 30 },
 			t_texSet
 		};
 		
 		
-		t_nkctx = nk_glfw3_init(global_state().context().handle(), NK_GLFW3_INSTALL_CALLBACKS);
+		t_nkctx = nk_glfw3_init(global_state<render_context>().handle(), NK_GLFW3_INSTALL_CALLBACKS);
 		nk_font_atlas* atlas;
     	nk_glfw3_font_stash_begin(&atlas);
     	nk_font* t_fontMenlo = nk_font_atlas_add_from_file(atlas, "assets/fonts/menlo.ttf", 17, 0);
@@ -339,13 +338,13 @@ int main()
 		::std::size_t animCounter = 0;
 		const ::std::size_t animPeriod = 6;
 
-		auto& t_context = global_state().context();
+		auto& t_context = global_state<render_context>();
 
 		while (!t_context.should_close())
 		{	
 			t_context.pump_events();
 			
-			global_state().process_manager().frame();
+			global_state<process_manager>().frame();
 			::std::cout << "Frame" << ::std::endl;
 			
 			nk_glfw3_new_frame();		
