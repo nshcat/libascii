@@ -19,3 +19,6 @@
 [submodule "minitrace"]
 	path = minitrace
 	url = https://github.com/nshcat/minitrace
+[submodule "microprofile"]
+	path = microprofile
+	url = git@github.com:nshcat/microprofile.git
