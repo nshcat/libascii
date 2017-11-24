@@ -37,7 +37,7 @@ print_switch(${USE_HOME_DIR} "USE_HOME_DIR:    ")
 
 # The distribute switch is only useful when using mingw
 if(MINGW)
-	print_switch(${Distribute} "DISTRIBUTE:      ")
+	print_switch(${DISTRIBUTE} "DISTRIBUTE:      ")
 endif()
 message("${BoldWhite}================================================${ColourReset}")
 #
