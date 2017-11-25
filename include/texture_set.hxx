@@ -86,7 +86,14 @@ class texture_set
 			use();
 		}
 		
+		texture_set() = default;
 		~texture_set();
+		
+		texture_set(texture_set&&);
+		texture_set(const texture_set&) = delete;
+		
+		texture_set& operator=(texture_set&&);
+		texture_set& operator=(const texture_set&) = delete;
 
 	private:
 		void dispatch(const internal::shadow_texture_t&);
