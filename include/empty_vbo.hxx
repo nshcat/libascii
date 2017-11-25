@@ -7,7 +7,11 @@ class empty_vbo
 	using handle_type = GLuint;
 
 	public:
-		empty_vbo();
+		empty_vbo() = default;
+		
+	public:
+		auto initialize()
+			-> void;
 		
 	public:
 		auto use() const
