@@ -73,6 +73,13 @@ class configuration
 			else return { };
 		}
 		
+		// TODO
+		// get_default()..  // Have a tree_tyoe m_Defaults that has the default values loaded.
+		// This will return default value if requested value was not found.
+		
+		// TODO
+		// get_checked().. Return type, if not there show error message
+		
 	
 	private:
 		tree_type m_DataTree;		//< Tree containg configuration read from file
