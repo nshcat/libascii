@@ -4,6 +4,8 @@
 #include "global_state_impl.hxx"
 
 #include "render_context.hxx"
+#include "renderer.hxx"
+#include "lighting.hxx"
 #include "path_manager.hxx"
 #include "configuration.hxx"
 #include "asset_manager.hxx"
@@ -19,7 +21,9 @@ using global_state_t = internal::global_state_impl<
 	configuration,
 	process_manager,
 	render_context,
-	asset_manager
+	asset_manager,
+	render_manager,
+	light_manager
 >;
 
 
