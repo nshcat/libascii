@@ -121,7 +121,8 @@ class screen_manager
 		using container_type = ::std::vector<cell>;
 
 	public:
-		screen_manager(dimension_type p_screenSize);
+		//screen_manager(dimension_type p_screenSize);
+		screen_manager() = default;
 		
 	public:
 		screen_manager(const screen_manager&) = delete;
@@ -129,12 +130,16 @@ class screen_manager
 		
 		screen_manager& operator=(const screen_manager&) = delete;
 		screen_manager& operator=(screen_manager&&) = delete;
+		
+	public:
+		void initialize();
 	
 	public:
 		// Sync buffer on GPU with state contained in this object
 		void sync();
 		
 		void clear();
+		dimension_type screen_size() const;
 		void clear_cell(position_type);
 		cell& modify_cell(position_type);
 		const cell& read_cell(position_type) const;
@@ -180,6 +185,6 @@ class screen_manager
 		bool m_Dirty{false}; 						//< Whether the data was modified this frame
 		GLuint m_GPUBuffer;							//< Handle of GPU Buffer
 		GLuint m_GPUTexture;						//< Handle of the GPU texture
-		const dimension_type m_ScreenDims;			//< Dimensions of screen, in glyphs
+		dimension_type m_ScreenDims;			//< Dimensions of screen, in glyphs
 		container_type m_Data;						//< Actual screen data
 };

@@ -2,11 +2,17 @@
 
 #include <stdexcept>
 #include <GLXW/glxw.h>
+#include <ut/format.hxx>
+#include <diagnostics.hxx>
 #include "shader.hxx"
 
 
 namespace gl
 {
+	struct defer_creation_t{ };
+	
+	constexpr defer_creation_t defer_creation{ };
+
 	// Shader program abstraction
 	class program final
 	{
@@ -19,6 +25,8 @@ namespace gl
 				(void)x;
 				
 				link();
+				
+				::post_diagnostic(message_type::info, "gl::program", ut::sprintf("linked shader program with handle %u", this->m_Handle));
 			}
 			
 			program()
@@ -28,18 +36,45 @@ namespace gl
 					throw ::std::runtime_error("Failed to create program!");
 			}
 			
+			program(defer_creation_t)
+				: m_Handle{ }
+			{
+			}
+			
 		public:
 			~program()
 			{
 				if(m_Handle)
+				{
+					::post_diagnostic(message_type::info, "gl::program", ut::sprintf("deleting shader program with handle %u", this->m_Handle));
 					glDeleteProgram(m_Handle);
+				}
 			}
 		
 			program(const program&) = delete;
 			program& operator=(const program&) = delete;
 			
-			program(program&&) = default;
-			program& operator=(program&&) = default;
+			/*program(program&&) = default;
+			program& operator=(program&&) = default;*/
+			
+			program(program&& p_prog)
+				: m_Handle{ }
+			{
+				::std::swap(this->m_Handle, p_prog.m_Handle);
+			}
+			
+			program& operator=(program&& p_prog)
+			{
+				if(this->m_Handle)
+					glDeleteProgram(this->m_Handle);
+					
+				this->m_Handle = { };
+			
+				::std::swap(this->m_Handle, p_prog.m_Handle);
+			
+				return *this;
+			}
+		
 		
 		public:
 			template< internal::shader_type Type >
@@ -67,6 +102,8 @@ namespace gl
 			auto use() const
 				-> void
 			{
+				//post_diagnostic(message_type::info, "gl::program", ut::sprintf("glUseProgram with shader program handle %u", this->m_Handle));
+				
 				glUseProgram(m_Handle);
 			}
 			
@@ -101,6 +138,6 @@ namespace gl
 			}
 	
 		private:
-			GLuint m_Handle;
+			GLuint m_Handle{ };
 	};
 }
