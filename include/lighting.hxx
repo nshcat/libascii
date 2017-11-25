@@ -12,6 +12,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <global_system.hxx>
 
 using gpu_bool = ::std::uint32_t;
 
@@ -43,6 +44,7 @@ struct light
 // TODO use different dirty bits to only update whats necessary
 // TODO cleanup destructor
 class light_manager
+	: public global_system
 {
 	static constexpr ::std::size_t max_lights = 25;
 	static constexpr ::std::size_t light_size = 8 + 4 + 4 + 16 + 12 + 4;
@@ -58,7 +60,8 @@ class light_manager
 		using size_type = ::std::uint32_t;
 	
 	public:
-		light_manager();
+		light_manager() = default;
+		~light_manager() = default;
 		
 	public:
 		light_manager(const light_manager&) = delete;
@@ -66,6 +69,9 @@ class light_manager
 		
 		light_manager& operator=(const light_manager&) = delete;
 		light_manager& operator=(light_manager&&) = delete;
+	
+	public:
+		void initialize();
 	
 	public:
 		// Sync buffer on GPU with state contained in this object
@@ -99,7 +105,7 @@ class light_manager
 	
 	private:
 		bool m_Dirty{true}; 						//< Whether the data was modified this frame
-		unsigned m_GPUBuffer;						//< Handle of GPU Buffer
+		unsigned m_GPUBuffer{};						//< Handle of GPU Buffer
 		
 		size_type m_LightCount{0U};						//< Current number of lights
 		::std::array<bool, max_lights> m_Used{false};	//< Contains info about which entries are used
