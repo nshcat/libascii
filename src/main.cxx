@@ -51,6 +51,38 @@
 #include <nuklear.h>
 #include <nuklear_glfw_gl3.h>
 
+/*struct light_example_process
+	: public process
+{
+	public:
+		test_process(process_id p_id, process_id p_parent)
+			: 	process(
+					p_id,
+					p_parent,
+					process_type::per_frame,
+					process_priority::normal,
+					process_info{ "test_process", "" }
+				)
+		{
+		}
+		
+	public:
+		virtual auto initialize() -> void override
+		{
+			this->kill_after(5U);
+		}
+		
+		virtual auto update() -> void override
+		{
+			::std::cout << m_Counter << ' ';
+			++m_Counter;
+		}
+		
+	private:
+		::std::size_t m_Counter{1};
+};*/
+
+
 struct test_process
 	: public process
 {
@@ -214,7 +246,7 @@ int main()
 		//global_state().context().initialize();
 		
 		// Load texture
-		texture_set t_texSet{
+		/*texture_set t_texSet{
 			shadow_texture("assets/textures/default/shadows.png"),
 			text_texture("assets/textures/default/text.png"),
 			graphics_texture("assets/textures/default/graphics.png")
@@ -224,7 +256,7 @@ int main()
 			global_state<render_context>(),
 			{ 60, 30 },
 			t_texSet
-		};
+		};*/
 		
 		
 		t_nkctx = nk_glfw3_init(global_state<render_context>().handle(), NK_GLFW3_INSTALL_CALLBACKS);
@@ -265,7 +297,7 @@ int main()
 		//===----------------------------------------------------------------------===//
 		// Screen
 		//
-		auto& t_screenManager = t_renderer.screen();
+		auto& t_screenManager = global_state<render_manager>().screen();
 		t_screenManager.modify(draw_border<thin_border_style>({0, 0}, {21, 21}, set(glyph_set::graphics)));
 		t_screenManager.modify(draw_string({1, 0}, "Fog"));
 		
@@ -302,8 +334,8 @@ int main()
 		// Lighting
 		//	
 		
-		// Create light manager
-		auto& t_lightManager = t_renderer.light_manager();	
+		
+		auto& t_lightManager = global_state<light_manager>();
 		
 		// Create one light
 		light t_light{
@@ -460,7 +492,7 @@ int main()
 			//frame_guard t_frame{ };
 			t_context.begin_frame();
 			{		
-				t_renderer.render();
+				global_state<render_manager>().render();
 				nk_glfw3_render(NK_ANTI_ALIASING_ON, 512 * 1024, 128 * 1024);
 			}
 			t_context.end_frame();

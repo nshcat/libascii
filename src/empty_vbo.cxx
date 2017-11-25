@@ -1,7 +1,9 @@
 #include <empty_vbo.hxx>
 
-empty_vbo::empty_vbo()
+auto empty_vbo::initialize()
+	-> void
 {
+	// TODO error handling
 	glGenBuffers(1, &m_VBOHandle);
 	glGenVertexArrays(1, &m_VAOHandle);
 	use();

@@ -68,12 +68,33 @@ GLuint make_gl_texture(const ::std::string& p_path)
 	return TextureID;
 }
 
+texture_set::texture_set(texture_set&& p_set)
+{
+	::std::swap(m_TextTex, p_set.m_TextTex);
+	::std::swap(m_GfxTex, p_set.m_GfxTex);
+	::std::swap(m_ShadowTex, p_set.m_ShadowTex);
+	::std::swap(m_GlyphDim, p_set.m_GlyphDim);
+}
+
+texture_set& texture_set::operator=(texture_set&& p_set)
+{
+	::std::swap(m_TextTex, p_set.m_TextTex);
+	::std::swap(m_GfxTex, p_set.m_GfxTex);
+	::std::swap(m_ShadowTex, p_set.m_ShadowTex);
+	::std::swap(m_GlyphDim, p_set.m_GlyphDim);
+	
+	return *this;
+}
+
 texture_set::~texture_set()
 {
-	glDeleteTextures(1, &m_TextTex);
-	glDeleteTextures(1, &m_ShadowTex);
+	if(m_TextTex)
+		glDeleteTextures(1, &m_TextTex);
+		
+	if(m_ShadowTex)
+		glDeleteTextures(1, &m_ShadowTex);
 	
-	if(m_GfxTex != 0)
+	if(m_GfxTex)
 		glDeleteTextures(1, &m_GfxTex);
 }
 

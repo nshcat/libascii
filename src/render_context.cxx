@@ -51,6 +51,8 @@ render_context::~render_context()
 auto render_context::initialize()
 	-> void
 {
+	post_diagnostic(message_type::info, "render_context", "initialization started");
+
 	init_glfw();
 	init_glxw();
 	init_debug();
@@ -125,6 +127,8 @@ auto render_context::handle() const
 auto render_context::resize(const dimension_type& p_dim)
 	-> void
 {
+	post_diagnostic(message_type::info, "render_context", ut::sprintf("resizing window to (%u, %u)", p_dim.x, p_dim.y));
+
 	glfwSetWindowSize(m_WindowHandle, p_dim.x, p_dim.y);
 	
 	// Reset viewport
