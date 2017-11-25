@@ -1,0 +1,9 @@
+- rgb_color	// Stores as integral 0..255
+- hsv_color
+- device_color (or uvec_color, vec_color, ivec_color..) // these are RGB(A)
+
+=> Converting constructors! (to glm::uvec3...)
+	to_uvec(), to_ivec(), to_vec() // last one: 0.0..1.0 vector
+	to_uvec4(), to_ivec4(), to_vec4() // with alpha=1.0
+		=> these only on rgb_color
+		
