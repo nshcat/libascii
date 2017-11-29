@@ -102,6 +102,7 @@ auto sequence(Ts&&... p_funcs)
 	return [p_funcs...](cell& p_cell) -> void
 	{
 		const auto t_x = { (p_funcs(p_cell), 0)... };
+		(void)t_x;
 	};
 }
 
