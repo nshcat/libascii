@@ -7,6 +7,7 @@
 #include <type_traits>
 #include <ut/observer_ptr.hxx>
 #include <ut/cast.hxx>
+#include <ut/small_vector.hxx>
 #include <boost/iterator/transform_iterator.hpp>
 
 #include "global_system.hxx"
@@ -47,10 +48,13 @@ namespace internal
 class process_manager
 	: public global_system
 {
+	static constexpr ::std::size_t pid_reserve_size = 32U;
+
 	using process_ptr = ::std::unique_ptr<process>;
 	using process_view = ut::observer_ptr<process>;
 	using process_map = ::std::unordered_map<process_id, process_ptr>;
 	using process_list = ::std::vector<process_view>;
+	using pid_list = ut::small_vector<process_id, pid_reserve_size>;
 	
 	// Container type aliases
 	using iterator = boost::transform_iterator<
@@ -132,6 +136,9 @@ class process_manager
 	
 		auto next_pid()
 			-> process_id;
+			
+		auto free_pid(process_id)
+			-> void;
 		
 		// Assigns every process of the given type
 		// a time slice.
@@ -148,6 +155,7 @@ class process_manager
 			-> process_list&;
 			
 	private:
+		pid_list m_FreePids{ };			//< List for recycled PIDs
 		process_id	m_NextPid{1U};		//< The next pid that may be used for a process
 		process_map m_ProcMap;			//< Fast lookup map that owns all processes
 		process_list m_PerFrameProcs;	//< Ordered (by priority) list of process views (per frame)

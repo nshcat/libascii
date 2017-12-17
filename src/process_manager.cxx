@@ -1,4 +1,5 @@
 #include <stdexcept>
+#include <limits>
 #include <ut/small_vector.hxx>
 
 #include <process_manager.hxx>
@@ -80,8 +81,26 @@ auto process_manager::get_process(process_id p_id)
 auto process_manager::next_pid()
 	-> process_id
 {
-	// TODO better strategy (see notes)
-	return m_NextPid++;
+	// Check if there is a free pid stored in the pid reserve list
+	if(m_FreePids.size() > 0U)
+	{
+		const auto t_pid = m_FreePids.back();
+		m_FreePids.pop_back();
+		return t_pid;
+	}
+	else
+	{
+		// Check for PID exhaustion
+		if(m_NextPid >= ::std::numeric_limits<process_id>::max())
+			throw ::std::runtime_error("Exceeded maximum number of process ids");	
+		else return m_NextPid++; //< Otherwise return new pid.
+	}
+}
+
+auto process_manager::free_pid(process_id p_pid)
+	-> void
+{
+	m_FreePids.push_back(p_pid);
 }
 
 auto process_manager::kill_process(process_id p_id)
@@ -113,6 +132,9 @@ auto process_manager::kill_process(process_id p_id)
 		
 		// Remove process entry from main map
 		m_ProcMap.erase(p_id);
+		
+		// Free process id
+		free_pid(p_id);
 	}
 
 	// Process is either now known or was deleted, work is done.
