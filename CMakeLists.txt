@@ -1,5 +1,5 @@
 # Version requirement and project info
-cmake_minimum_required(VERSION 3.1.3)
+cmake_minimum_required(VERSION 3.6)
 project(roguelike)
 
 ## === BUILD OPTIONS ===
@@ -8,6 +8,7 @@ project(roguelike)
 set(DISTRIBUTE 		OFF		CACHE BOOL 		"Create distribution folder"		)
 set(PREFIX 			"/usr" 	CACHE STRING 	"Game install prefix"				)	# This is unused if the game is used in portable (distribute) form.
 set(USE_HOME_DIR	OFF		CACHE BOOL 		"Use home directory for user data"	)
+set(CLANG_TIDY 		OFF		CACHE BOOL 		"Analyze source with clang-tidy"	)
 
 ## =====================
 
@@ -34,6 +35,7 @@ endmacro()
 message("${BoldWhite}Build settings =================================${ColourReset}")
 print_str(${PREFIX} "PREFIX:          ")
 print_switch(${USE_HOME_DIR} "USE_HOME_DIR:    ")
+print_switch(${CLANG_TIDY} "CLANG_TIDY:      ")
 
 # The distribute switch is only useful when using mingw
 if(MINGW)
@@ -54,6 +56,25 @@ find_package(SDL2_image REQUIRED)
 # Note that for header-only libraries like boost::property_tree,
 # no component has to be specified here
 find_package(Boost 1.56 REQUIRED COMPONENTS filesystem)
+
+# Search for clang-tidy if enabled by user
+if(CLANG_TIDY)
+	find_program(
+  		CLANG_TIDY_EXE
+  		NAMES "clang-tidy"
+  		DOC "Path to clang-tidy executable"
+  	)
+  	
+  	# Check if clang-tidy was actually found
+  	if(NOT CLANG_TIDY_EXE)
+  		message(STATUS "/!\ clang-tidy not found!")
+ 	else()
+ 		message(STATUS "clang-tidy found: ${CLANG_TIDY_EXE}")
+ 		
+ 		# Create clang-tidy command
+ 		set(DO_CLANG_TIDY "${CLANG_TIDY_EXE}" "-checks=*,-readability-braces-around-statements,-google-readability-braces-around-statements,-google-readability-todo,-clang-analyzer-alpha.*")
+ 	endif()
+endif()
 
 # Disable glfw examples and tests
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "bla")
@@ -125,6 +146,11 @@ add_custom_command(
 # Require support for at least C++14.
 set_property(TARGET roguelike PROPERTY CXX_STANDARD 17)
 set_property(TARGET roguelike PROPERTY CXX_STANDARD_REQUIRED ON)
+
+# Attach clang-tidy operation to target if requested by user
+if(CLANG_TIDY)
+	set_property(TARGET roguelike PROPERTY CXX_CLANG_TIDY "${DO_CLANG_TIDY}")
+endif()
 
 # Bundle dependencies on mingw
 if(MINGW AND DISTRIBUTE)
