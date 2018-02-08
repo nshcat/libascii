@@ -93,7 +93,7 @@ namespace std
 		auto operator()(const argument_type& p_res)
 			-> ::std::size_t
 		{
-			return ::std::hash<argument_type>{ }(p_res.get());
+			return ::std::hash<typename argument_type::handle_type>{ }(p_res.get());
 		}
 	};
 }
