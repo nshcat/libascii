@@ -85,6 +85,7 @@ set(GLFW_INSTALL OFF CACHE BOOL "bla")
 # Add openGL support libraries
 add_subdirectory(glfw)
 add_subdirectory(glxw)
+add_subdirectory(cl)
 add_subdirectory(ut)
 add_subdirectory(nuklear_cmake)
 add_subdirectory(minitrace)
@@ -122,6 +123,7 @@ target_link_libraries(	roguelike glfw glxw ${LIBMINITRACE_LIBRARIES}
 						${NUKLEAR_LIBRARIES} ${NUKLEAR_GLFW_OPENGL3_LIBRARIES}
 						${GLFW_LIBRARIES} ${GLXW_LIBRARY} ${OPENGL_LIBRARY}
 						${LIBUT_LIBRARIES} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARY}
+						${LIBCL_LIBRARIES}
 						Boost::filesystem)
 						
 # Set definitions

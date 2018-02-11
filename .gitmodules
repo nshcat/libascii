@@ -22,3 +22,6 @@
 [submodule "microprofile"]
 	path = microprofile
 	url = git@github.com:nshcat/microprofile.git
+[submodule "cl"]
+	path = cl
+	url = https://github.com/nshcat/cl
