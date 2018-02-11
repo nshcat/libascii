@@ -226,7 +226,7 @@ auto process_manager::update_processes(process_type p_type)
 	ut::small_vector<process_id, 16> t_pidsToKill{ };
 	
 	// Iterate through processes of matching type, from high to
-	// low priority. (hight priority is a low numerical value)
+	// low priority. (high priority is a low numerical value)
 	for(auto t_procView: t_procList)
 	{
 		// Only give time slice to processes that are in active
