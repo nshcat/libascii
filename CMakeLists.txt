@@ -90,6 +90,10 @@ add_subdirectory(ut)
 add_subdirectory(nuklear_cmake)
 add_subdirectory(minitrace)
 
+# Disable tests for the json library because they take a long time to build
+set(JSON_BuildTests OFF)
+add_subdirectory(json)
+
 # Source files
 file(GLOB SOURCE_FILES src/*.cxx)
 
@@ -123,7 +127,7 @@ target_link_libraries(	roguelike glfw glxw ${LIBMINITRACE_LIBRARIES}
 						${NUKLEAR_LIBRARIES} ${NUKLEAR_GLFW_OPENGL3_LIBRARIES}
 						${GLFW_LIBRARIES} ${GLXW_LIBRARY} ${OPENGL_LIBRARY}
 						${LIBUT_LIBRARIES} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARY}
-						${LIBCL_LIBRARIES}
+						${LIBCL_LIBRARIES} nlohmann_json
 						Boost::filesystem)
 						
 # Set definitions
