@@ -91,7 +91,7 @@ add_subdirectory(nuklear_cmake)
 add_subdirectory(minitrace)
 
 # Disable tests for the json library because they take a long time to build
-set(JSON_BuildTests OFF)
+set(JSON_BuildTests OFF CACHE BOOL "Tests")
 add_subdirectory(json)
 
 # Source files
