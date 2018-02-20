@@ -1,12 +1,13 @@
 #include <iostream>
 #include <stdexcept>
 #include <type_traits>
+#include <cl.hxx>
 #include <application_layer/config/cl_source.hxx>
 
 
 namespace application_layer::config
 {
-	cl_source::cl_source(const config_scheme& p_scheme, const cl::handler& p_handler)
+	cl_source::cl_source(const config_scheme& p_scheme, const cl::internal::command_base& p_handler)
 		: m_Scheme{p_scheme}, m_Handler{p_handler}
 	{
 	}

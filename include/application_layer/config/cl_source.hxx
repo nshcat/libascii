@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cl.hxx>
+#include <cl/command_base.hxx>
 #include "config_source.hxx"
 #include "config_scheme.hxx"
 
@@ -13,7 +13,7 @@ namespace application_layer::config
 	{
 		public:
 			// The handler is only saved by reference.
-			cl_source(const config_scheme& p_scheme, const cl::handler& p_handler);
+			cl_source(const config_scheme& p_scheme, const cl::internal::command_base& p_handler);
 			
 			cl_source(const cl_source&) = default;
 			cl_source(cl_source&&) = default;
@@ -26,7 +26,7 @@ namespace application_layer::config
 				-> boost::property_tree::ptree& override;
 				
 		protected:
-			config_scheme m_Scheme{ };		//< We do store a copy of the scheme
-			const cl::handler& m_Handler;	//< Reference to commandline argument parser
+			config_scheme m_Scheme{ };						//< We do store a copy of the scheme
+			const cl::internal::command_base& m_Handler;	//< Reference to commandline argument parser
 	};
 }
