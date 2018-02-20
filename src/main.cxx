@@ -7,6 +7,7 @@
 #include <iostream>
 #include <utility>
 #include <random>
+#include <optional>
 #include <iomanip>
 #include <cstdlib>
 #include <fstream>
@@ -36,8 +37,11 @@
 #include <palette.hxx>
 #include <build_settings.hxx>
 #include <path_manager.hxx>
+#include <application_layer/config/config_entry.hxx>
+#include <application_layer/config/config_scheme.hxx>
+#include <nlohmann/json.hpp>
 
-
+using json = nlohmann::json;
 
 #define NK_INCLUDE_FIXED_TYPES
 #define NK_INCLUDE_STANDARD_IO
@@ -51,39 +55,57 @@
 #include <nuklear.h>
 #include <nuklear_glfw_gl3.h>
 
-/*struct light_example_process
+struct light_example_process
 	: public process
 {
 	public:
-		test_process(process_id p_id, process_id p_parent)
+		light_example_process(process_id p_id, process_id p_parent)
 			: 	process(
 					p_id,
 					p_parent,
 					process_type::per_frame,
 					process_priority::normal,
-					process_info{ "test_process", "" }
-				)
+					process_info{ "light_example", "" }
+				),
+				m_Screen{ global_state<render_manager>().screen() },
+				m_Lights{ global_state<light_manager>() }
 		{
+	
 		}
 		
 	public:
 		virtual auto initialize() -> void override
 		{
-			this->kill_after(5U);
+			/*t_screenManager.modify(area({t_ix, 1}, {t_ix+1, 20}),
+				sequence(
+					sample_background(t_groundClr, rd),
+					set_depth(t_ix/2)
+				)
+			);*/
 		}
 		
 		virtual auto update() -> void override
 		{
-			::std::cout << m_Counter << ' ';
-			++m_Counter;
+			// Draw
+			m_Screen.modify(draw_border<thin_border_style>({34, 0}, {56, 21}, set(glyph_set::graphics)));
+			m_Screen.modify(draw_string({35, 0}, "Lighting"));
+			
+			
+			m_Screen.modify(rectangle({35, 1}, {55, 20}),
+				sequence(
+					draw(219, { 41, 41, 41 }, { 84, 84, 84 }),
+					set_light_mode(light_mode::none)
+				)
+			);
 		}
 		
 	private:
-		::std::size_t m_Counter{1};
-};*/
+		screen_manager& m_Screen;
+		light_manager& m_Lights;
+};
 
 
-struct test_process
+/*struct test_process
 	: public process
 {
 	public:
@@ -176,7 +198,7 @@ struct chained_process
 		
 	private:
 		::std::size_t m_Counter{1};
-};
+};*/
 
 
 bool clear_ = true;
@@ -224,10 +246,15 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     }
 }
 
+void test_()
+{
+	auto x = application_layer::config::config_entry<int>{"bla", "bla", "bla", 1, 0, 16, "bla" };
+}
+
 int main()
 {
 	global_state().initialize();
-	
+		
 	::std::cout << "User data path: " << global_state<path_manager>().user_path() << ::std::endl;
 	::std::cout << "Game data path: " << global_state<path_manager>().data_path() << ::std::endl;
 	::std::cout << "Config file path: " << global_state<path_manager>().config_path() << ::std::endl << ::std::endl;
@@ -237,9 +264,9 @@ int main()
 
 	try
 	{
-		global_state<process_manager>().create_process<chained_process>(no_process);
-		global_state<process_manager>().create_process<periodic_process>(no_process);
-		
+		//global_state<process_manager>().create_process<chained_process>(no_process);
+		//global_state<process_manager>().create_process<periodic_process>(no_process);
+		global_state<process_manager>().create_process<light_example_process>(no_process);
 	
 		auto t_palette = global_state<asset_manager>().load_asset<palette>("c64");//{ "assets/palettes/c64.json" };
 	
@@ -397,7 +424,6 @@ int main()
 			t_context.pump_events();
 			
 			global_state<process_manager>().frame();
-			::std::cout << "Frame" << ::std::endl;
 			
 			nk_glfw3_new_frame();		
 			if (nk_begin(t_nkctx, "Debug", nk_rect(700, 100, 330, 350),

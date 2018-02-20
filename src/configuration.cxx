@@ -5,9 +5,37 @@
 #include <configuration.hxx>
 #include <global_state.hxx>
 
+auto configuration::tree()
+	-> tree_type&
+{
+	return m_DataTree;
+}
+
+auto configuration::override_tree() const
+	-> const tree_type&
+{
+	return m_OverrideTree;
+}
+
+auto configuration::scheme() const
+	-> const scheme_type&
+{
+	return m_CfgScheme;
+}
+
 auto configuration::initialize()
 	-> void
 {
+	// Retrieve configuration scheme file path
+	const auto t_schemepath = global_state<path_manager>().data_path() / "config" / "scheme.json";
+	
+	// Load scheme
+	m_CfgScheme = scheme_type{ t_schemepath };
+	
+	// Populate data tree with default settings. This way missing entries
+	// in the configuration file will fall back to default values.
+	// TODO
+
 	// Retrieve config file path
 	const auto t_path = global_state<path_manager>().config_path();
 	

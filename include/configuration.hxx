@@ -6,7 +6,9 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
+#include <application_layer/config/config_scheme.hxx>
 #include "global_system.hxx"
+
 
 namespace pt = boost::property_tree;
 
@@ -26,6 +28,7 @@ class configuration
 {
 	using tree_type = pt::ptree;
 	using path_type = typename tree_type::path_type;
+	using scheme_type = application_layer::config::config_scheme;
 	
 	public:
 		auto initialize()
@@ -35,8 +38,11 @@ class configuration
 		auto tree()
 			-> tree_type&;
 		
-		auto override_tree()
-			-> tree_type&;
+		auto override_tree() const
+			-> const tree_type&;
+			
+		auto scheme() const
+			-> const scheme_type&;
 			
 	public:
 		// Write configuration data back to file.
@@ -82,6 +88,7 @@ class configuration
 		
 	
 	private:
+		scheme_type m_CfgScheme;	//< Scheme describing what configuration options are available
 		tree_type m_DataTree;		//< Tree containg configuration read from file
 		tree_type m_OverrideTree;	//< Tree containg configuration read from command line.
 									//  This separation is done to allow users to change
