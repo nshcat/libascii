@@ -33,6 +33,9 @@ namespace application_layer::config
 		{
 			protected:
 				using mapping_type = ::std::variant<::std::string, ::std::size_t>;
+		
+			public:
+				using value_type = T;
 			
 			public:
 				entry_base(const ::std::string& p_path,
