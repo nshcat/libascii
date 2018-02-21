@@ -21,8 +21,8 @@
 		"name" : "Window height",
 		"type" : "int",
 		"description" : "Sets the window height",
-		"default" : 60,
-		"min" : 60,
+		"default" : 30,
+		"min" : 30,
 		"max" : 200,
 		"mapping" : {
 			"long_name" : "height"
@@ -33,8 +33,8 @@
 		"name" : "Window width",
 		"type" : "int",
 		"description" : "Sets the window width",
-		"default" : 30,
-		"min" : 30,
+		"default" : 60,
+		"min" : 60,
 		"max" : 200,
 		"mapping" : {
 			"long_name" : "width"

@@ -36,10 +36,10 @@ void screen_manager::initialize()
 		throw ::std::runtime_error("screen dimensions not included in config file");
 	}
 	
-	m_ScreenDims = dimension_type{*t_h, *t_w};
-	m_Data.resize(*t_h * *t_w);
+	m_ScreenDims = dimension_type{*t_w, *t_h};
+	m_Data.resize(*t_w * *t_h);
 	
-	post_diagnostic(message_type::info, "screen_manager", ut::sprintf("creating screen with dimensions (%u,%u)", *t_h, *t_w));
+	post_diagnostic(message_type::info, "screen_manager", ut::sprintf("creating screen with dimensions (%u,%u)", *t_w, *t_h));
 
 	glActiveTexture(GL_TEXTURE3);
 	glGenTextures(1, &m_GPUTexture);
