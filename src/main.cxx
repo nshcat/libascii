@@ -37,6 +37,7 @@
 #include <palette.hxx>
 #include <build_settings.hxx>
 #include <path_manager.hxx>
+#include <commandline.hxx>
 #include <application_layer/config/config_entry.hxx>
 #include <application_layer/config/config_scheme.hxx>
 #include <nlohmann/json.hpp>
@@ -251,8 +252,10 @@ void test_()
 	auto x = application_layer::config::config_entry<int>{"bla", "bla", "bla", 1, 0, 16, "bla" };
 }
 
-int main()
+int main(int argc, const char** argv)
 {
+	g_clHandler.read(argc, argv);
+
 	global_state().initialize();
 		
 	::std::cout << "User data path: " << global_state<path_manager>().user_path() << ::std::endl;
