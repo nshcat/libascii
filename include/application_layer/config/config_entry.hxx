@@ -4,7 +4,9 @@
 #include <string>
 #include <optional>
 #include <variant>
+#include <stdexcept>
 #include <limits>
+#include <ut/throwf.hxx>
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
@@ -114,6 +116,7 @@ namespace application_layer::config
 				           		 T p_max)
 					: base_type{p_path, p_name, p_desc, p_default}, m_Min{p_min}, m_Max{p_max}
 				{
+					check_bounds();
 				}
 				
 				arithmetic_entry(const ::std::string& p_path,
@@ -125,10 +128,12 @@ namespace application_layer::config
 				           		 const typename base_type::mapping_type& p_map)
 					: base_type{p_path, p_name, p_desc, p_default, p_map}, m_Min{p_min}, m_Max{p_max}
 				{
+					check_bounds();
 				}
 				
 				arithmetic_entry()
 				{
+					
 				}
 		
 			public:
@@ -142,6 +147,22 @@ namespace application_layer::config
 					-> T
 				{
 					return m_Min;
+				}
+				
+			protected:
+				// Check if the given bounds (min and max value) are legal.
+				// This means that min < max.
+				auto check_bounds() const
+					-> void
+				{
+					if(m_Min >= m_Max)
+					{
+						ut::throwf<::std::runtime_error>(
+							"could not read scheme entry for \"%s\": invalid bounds given (min >= max)",
+							this->m_Name
+						);
+					}
+						
 				}
 		
 			protected:
