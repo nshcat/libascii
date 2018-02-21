@@ -51,10 +51,11 @@ class configuration
 		auto save() const
 			-> void;
 			
-		// Resets the configuration to known defaults.
-		// This will override the configuration file on disk,
-		// if present.
-		auto reset()
+	private:
+		// Perform bounds checks on all configuration values.
+		// This ensures that values set via manually modifying the
+		// config files will not crash the game.
+		auto check_bounds()
 			-> void;
 			
 	public:

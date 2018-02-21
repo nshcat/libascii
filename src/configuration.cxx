@@ -1,9 +1,21 @@
 #include <string>
 #include <stdexcept>
+#include <iostream>
+#include <type_traits>
 #include <boost/filesystem/operations.hpp>
+#include <ut/utility.hxx>
 
 #include <configuration.hxx>
+#include <commandline.hxx>
 #include <global_state.hxx>
+
+#include <application_layer/config/config_entry.hxx>
+#include <application_layer/config/cl_source.hxx>
+#include <application_layer/config/default_source.hxx>
+#include <application_layer/config/file_source.hxx>
+
+using namespace application_layer::config;
+using namespace application_layer::config::internal;
 
 auto configuration::tree()
 	-> tree_type&
@@ -34,40 +46,32 @@ auto configuration::initialize()
 	
 	// Populate data tree with default settings. This way missing entries
 	// in the configuration file will fall back to default values.
-	// TODO
+	default_source t_defSrc{ scheme() };
+	t_defSrc.populate(m_DataTree);
 
 	// Retrieve config file path
 	const auto t_path = global_state<path_manager>().config_path();
 	
-	// Check if the file exists. If not we need to
-	// restore the defaults.
+	// Check if the file exists. We only want to try to load it
+	// if it actually exists.
 	if(boost::filesystem::exists(t_path))
 	{
-		// Check that it is not, in fact, a directory.
-		if(boost::filesystem::is_directory(t_path))
-			throw ::std::runtime_error("configuration: Could not open configuration file: Is a directory");
-			
-		// Load the property tree from file
-		pt::read_json(t_path.string(), m_DataTree);
+		file_source t_fileSrc{ t_path };
+		t_fileSrc.populate(m_DataTree);
 	}
-	else
-	{
-		// Create new configuration file populated with default values
-		reset();
-	}
-}
-
-auto configuration::reset()
-	-> void
-{
-	// Retrieve data path
-	const auto t_dataPath = global_state<path_manager>().data_path();
 	
-	// Load property tree from default config file
-	pt::read_json((t_dataPath / "config" / "default.json").string(), m_DataTree);
+	// Perform bounds checking on all configuration entries
+	check_bounds();
 	
-	// Write back to file
+	// Save back the configuration file. This makes sure that missing values
+	// are replaced with their defaults.
 	save();
+	
+	// Load values from the command line. These are stored in a separate
+	// tree to avoid writing them out to disk. They are only meant as a temporary
+	// overwrite.
+	cl_source t_clSrc{ scheme(), g_clHandler };
+	t_clSrc.populate(m_OverrideTree);
 }
 
 auto configuration::save() const
@@ -76,4 +80,43 @@ auto configuration::save() const
 	const auto t_path = global_state<path_manager>().config_path();
 	
 	pt::write_json(t_path.string(), m_DataTree);
+}
+
+auto configuration::check_bounds()
+	-> void
+{
+	// Check all config entries described by the scheme
+	for(const auto& t_entry: scheme())
+	{
+		// The stored value is always of type `config_entry<T>`, where `T` is unknown to
+		// us at this point.
+		::std::visit(
+			[this](auto t_elem) -> void
+			{
+				using elem_type = ::std::decay_t<decltype(t_elem)>;
+				using value_type = typename elem_type::value_type;
+				
+				// We are only interested in values that have min/max values defined for them
+				if constexpr(::std::is_base_of_v<arithmetic_entry<value_type>, elem_type>)
+				{
+					// Retrieve actual value from the tree.
+					// This operation is guarantueed to succeed.
+					const auto t_val = *tree().get_optional<value_type>(t_elem.path());
+				
+					// Check if given value is in range given by configuration scheme
+					if(!ut::in_range<value_type>(t_val, t_elem.min(), t_elem.max()))
+					{
+						::std::cout << "configuration: error: Given value for \""
+								  	<< t_elem.name() << "\" (" << t_val
+								  	<< ") is out of range ["
+								  	<< t_elem.min() << ", " << t_elem.max() << "]. Using default value instead"
+								  	<< ::std::endl;
+								  	
+						tree().put(t_elem.path(), t_elem.default_value());
+					}
+				}
+			},
+			t_entry
+		);
+	}
 }
