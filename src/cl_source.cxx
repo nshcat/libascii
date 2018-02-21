@@ -55,8 +55,13 @@ namespace application_layer::config
 							if(!t_arg->template is<handler_type>())
 								throw ::std::runtime_error("incorrect argument handler type");							
 						
-							// Write value to tree.
-							p_src.put(t_elem.path(), t_arg->template as<handler_type>()->value());
+							// Only accept value if the commandline argument was actually given.
+							// This stops commandline default arguments from screwing things up.
+							if(t_arg->supplied())
+							{
+								// Write value to tree.
+								p_src.put(t_elem.path(), t_arg->template as<handler_type>()->value());
+							}
 						}
 						catch(const ::std::exception& p_ex)
 						{
