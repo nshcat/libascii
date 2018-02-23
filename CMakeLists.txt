@@ -5,10 +5,11 @@ project(roguelike)
 ## === BUILD OPTIONS ===
 ##
 
-set(DISTRIBUTE 		OFF		CACHE BOOL 		"Create distribution folder"		)
-set(PREFIX 			"/usr" 	CACHE STRING 	"Game install prefix"				)	# This is unused if the game is used in portable (distribute) form.
-set(USE_HOME_DIR	OFF		CACHE BOOL 		"Use home directory for user data"	)
-set(CLANG_TIDY 		OFF		CACHE BOOL 		"Analyze source with clang-tidy"	)
+set(DISTRIBUTE 		OFF		CACHE BOOL 		"Create distribution folder"						)
+set(PREFIX 			"/usr" 	CACHE STRING 	"Game install prefix"								)	# This is unused if the game is used in portable (distribute) form.
+set(USE_HOME_DIR	OFF		CACHE BOOL 		"Use home directory for user data"					)
+set(CLANG_TIDY 		OFF		CACHE BOOL 		"Analyze source with clang-tidy"					)
+set(USE_FIXED_STL 	OFF		CACHE BOOL 		"Use fixed version of libstdcxx <variant> header"	)
 
 ## =====================
 
@@ -44,6 +45,10 @@ endif()
 message("${BoldWhite}================================================${ColourReset}")
 #
 
+# Check if we are using clang
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  set(CLANG 1)
+endif()
 
 # Search for OpenGL
 find_package(OpenGL REQUIRED)
@@ -123,13 +128,20 @@ target_include_directories(roguelike PRIVATE ${SDL2_IMAGE_INCLUDE_DIR})
 # Boost headers
 target_include_directories(roguelike PRIVATE ${Boost_INCLUDE_DIRS})
 
+# Use fixed STL headers if requested
+if(USE_FIXED_STL)
+	target_include_directories(roguelike PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/fixed_stl)
+	target_compile_definitions(roguelike PUBLIC -DROGUELIKE_FIXED_STL=1)
+endif()
+
+
 # Link dependencies
 target_link_libraries(	roguelike glfw glxw ${LIBMINITRACE_LIBRARIES}
 						${NUKLEAR_LIBRARIES} ${NUKLEAR_GLFW_OPENGL3_LIBRARIES}
 						${GLFW_LIBRARIES} ${GLXW_LIBRARY} ${OPENGL_LIBRARY}
 						${LIBUT_LIBRARIES} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARY}
 						${LIBCL_LIBRARIES} ${LIBLOG_LIBRARIES} nlohmann_json
-						Boost::filesystem)
+						Boost::filesystem)						
 						
 # Set definitions
 if(USE_HOME_DIR)
