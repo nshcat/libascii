@@ -96,6 +96,8 @@ class process
 		process(const process&) = delete;
 		process& operator=(const process&) = delete;	
 		
+		virtual ~process() = default;
+		
 	public:
 		// Is called once to setup the process
 		virtual auto initialize() -> void = 0;
