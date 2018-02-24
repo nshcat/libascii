@@ -3,9 +3,15 @@
 #include <type_traits>
 #include <string>
 #include <optional>
-#include <variant>
 #include <stdexcept>
 #include <limits>
+
+#ifdef ROGUELIKE_FIXED_STL
+#	include <variant_fixed>
+#else
+#	include <variant>
+#endif
+
 #include <ut/throwf.hxx>
 #include <nlohmann/json.hpp>
 

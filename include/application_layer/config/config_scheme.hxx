@@ -3,8 +3,14 @@
 #pragma once
 
 #include <stdexcept>
-#include <variant>
 #include <vector>
+
+#ifdef ROGUELIKE_FIXED_STL
+#	include <variant_fixed>
+#else
+#	include <variant>
+#endif
+
 #include <boost/filesystem/operations.hpp>
 #include <ut/throwf.hxx>
 #include <ut/array_view.hxx>
