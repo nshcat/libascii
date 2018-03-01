@@ -90,6 +90,7 @@ add_subdirectory(cl)
 add_subdirectory(ut)
 add_subdirectory(log)
 add_subdirectory(nuklear_cmake)
+add_subdirectory(Remotery)
 add_subdirectory(minitrace)
 
 # Disable tests for the json library because they take a long time to build
@@ -137,7 +138,7 @@ target_link_libraries(	roguelike glfw glxw ${LIBMINITRACE_LIBRARIES}
 						${GLFW_LIBRARIES} ${GLXW_LIBRARY} ${OPENGL_LIBRARY}
 						${LIBUT_LIBRARIES} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARY}
 						${LIBCL_LIBRARIES} ${LIBLOG_LIBRARIES} nlohmann_json
-						Boost::filesystem)						
+						${LIBREMOTERY_LIBRARIES} Boost::filesystem)						
 						
 # Set definitions
 if(USE_HOME_DIR)
