@@ -16,6 +16,7 @@
 
 #include "enum.hxx"
 #include "node_base.hxx"
+#include "automaton_base.hxx"
 #include "node.hxx"
 #include "utility.hxx"
 #include "edge_base.hxx"
@@ -29,41 +30,6 @@
 
 namespace utility::pnfa
 {
-	namespace internal
-	{
-		// The base for the automaton class. It is used to mix-in API methods
-		// that differ in their signature based on whether Tinput is equals to
-		// `no_input` or not.
-		// This is the base case, where the input type is not `no_input`.
-		template<	typename Tinput,
-					typename... Tstate
-		>
-		class automaton_base
-		{
-			public:
-				// Disallow construction of this class
-				virtual ~automaton_base() = 0;
-		
-			public:
-				auto step(const Tinput&, Tstate&...)
-					-> automaton_result;
-		};
-		
-		// Special case where the input type is `no_input`, which means that
-		// no input values are expected.
-		template< typename... Tstate >
-		class automaton_base<no_input, Tstate...>
-		{		
-			public:
-				// Disallow construction of this class
-				virtual ~automaton_base() = 0;
-				
-			public:
-				auto step(Tstate&...)
-					-> automaton_result;
-		};
-	}
-	
 	template<
 		typename 	Tinput,	//< Later: automaton_traits, this class being internal, different public aliases that fill the traits
 		typename... Tstate  //< Later: Custom hash function for node ids!
@@ -263,14 +229,7 @@ namespace utility::pnfa
 				-> void
 			{
 				this->add_edge(p_from, p_to, p_prob, always_true(), nothing());
-			}
-			
-		/*public:
-			auto step( )
-				-> automaton_result
-			
-			auto run( )
-				-> automaton_result*/
+			}		
 				
 		protected:
 			// This method is used as the base of all step() methods.
@@ -439,35 +398,7 @@ namespace utility::pnfa
 			adjacency_list m_Edges{ };
 			::std::default_random_engine m_RNG{ };	//< PRNG
 	};
-	
-	namespace internal
-	{
-		template<typename... Tstate>
-		automaton_base<no_input, Tstate...>::~automaton_base()
-		{
-		}
-		
-		template<typename Tinput, typename... Tstate>
-		automaton_base<Tinput, Tstate...>::~automaton_base()
-		{
-		}	
-	
-		template< typename... Tstate >
-		auto automaton_base<no_input, Tstate...>::step(Tstate&... p_states)
-			-> automaton_result
-		{
-			auto t_ptr = dynamic_cast<automaton<no_input, Tstate...>*>(this);
-		
-			return t_ptr->step_impl(no_input{ }, p_states...);
-		}
-		
-		template< typename Tinput, typename... Tstate >
-		auto automaton_base<Tinput, Tstate...>::step(const Tinput& p_in, Tstate&... p_states)
-			-> automaton_result
-		{
-			auto t_ptr = dynamic_cast<automaton<Tinput, Tstate...>*>(this);
-		
-			return t_ptr->step_impl(p_in, p_states...);
-		}
-	}
 }
+
+// Include implementation of automaton_base
+#include "automaton_base.txx"
