@@ -89,6 +89,19 @@ namespace utility::pnfa
 			}
 			
 		public:
+			// Reset the automaton. This will cause the state to change to stopped
+			// and the current node set to the starting node
+			auto reset()
+				-> void
+			{
+				if(m_StartNode == no_node)
+					throw ::std::runtime_error("automaton::reset: no starting node set");
+					
+				m_State = automaton_state::stopped;
+				m_CurrentNode = m_StartNode;
+			}
+			
+		public:
 			// Set existing node with given identifier to be a final (aka
 			// accepting) node
 			template<	typename T,
@@ -401,4 +414,4 @@ namespace utility::pnfa
 }
 
 // Include implementation of automaton_base
-#include "automaton_base.txx"
+#include "automaton_base_impl.hxx"

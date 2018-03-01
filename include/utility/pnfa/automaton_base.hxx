@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ut/array_view.hxx>
+
 #include "enum.hxx"
 #include "utility.hxx"
 
@@ -23,6 +25,9 @@ namespace utility::pnfa
 			public:
 				auto step(const Tinput&, Tstate&...)
 					-> automaton_result;
+					
+				auto run(ut::array_view<const Tinput>, Tstate&...)
+					-> automaton_result;
 		};
 		
 		// Special case where the input type is `no_input`, which means that
@@ -36,6 +41,9 @@ namespace utility::pnfa
 				
 			public:
 				auto step(Tstate&...)
+					-> automaton_result;
+					
+				auto run(Tstate&...)
 					-> automaton_result;
 		};
 	}
