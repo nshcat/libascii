@@ -1,5 +1,5 @@
 # Version requirement and project info
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.9)
 project(roguelike)
 
 ## === BUILD OPTIONS ===
@@ -10,6 +10,7 @@ set(PREFIX 			"/usr" 	CACHE STRING 	"Game install prefix"								)	# This is unu
 set(USE_HOME_DIR	OFF		CACHE BOOL 		"Use home directory for user data"					)
 set(CLANG_TIDY 		OFF		CACHE BOOL 		"Analyze source with clang-tidy"					)
 set(USE_FIXED_STL 	OFF		CACHE BOOL 		"Use fixed version of libstdcxx <variant> header"	)
+set(USE_LOT		 	OFF		CACHE BOOL 		"Utilize Link-Time-Optimization"					)
 
 ## =====================
 
@@ -44,11 +45,6 @@ if(MINGW)
 endif()
 message("${BoldWhite}================================================${ColourReset}")
 #
-
-# Check if we are using clang
-if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  set(CLANG 1)
-endif()
 
 # Search for OpenGL
 find_package(OpenGL REQUIRED)
@@ -183,4 +179,19 @@ if(MINGW AND DISTRIBUTE)
 		COMMAND ${CMAKE_BINARY_DIR}/distrib/mingw-bundledlls --copy "${CMAKE_BINARY_DIR}/distrib/roguelike.exe"
 		COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_BINARY_DIR}/distrib/mingw-bundledlls
 	)
+endif()
+
+# Enable LTO if requested by user
+if(USE_LTO)
+	# Check for LTO support
+	include(CheckIPOSupported)
+	check_ipo_supported()
+	
+	# Enable it for roguelike. The used libraries do not really need it.
+	set_target_properties(roguelike PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
+
+	# Append special linker flags. This both sets the linker to gold (which is required to use LTO) and
+	# enable caching for faster recompiles.
+	set(LTO_FLAGS "-fuse-ld=gold -Wl,--no-threads,--plugin-opt,cache-dir=${PROJECT_BINARY_DIR}/lto.cache")
+	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${LTO_FLAGS}")
 endif()
