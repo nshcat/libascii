@@ -19,7 +19,7 @@ namespace application_layer::config
 		for(const auto& t_entry: m_Scheme)
 		{
 			::std::visit(
-				[&p_src, this](auto t_elem) -> void	//< Note: t_elem is always of type `configuration_entry<T>`, where T is unknown.
+				[&p_src, this](auto t_elem) -> void	//< t_elem is always of type `configuration_entry<T>`, where T is unknown.
 				{
 					// We need to painfully extract the actual type of configuration value we
 					// are dealing with here. To our luck, `configuration_entry<T>` defines

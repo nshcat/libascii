@@ -8,12 +8,15 @@
 #include <stdexcept>
 #include <initializer_list>
 #include <ut/type_traits.hxx>
+#include <ut/array_view.hxx>
 
+// TODO: Better interface
 template< typename T >
 class weighted_distribution
 {
 	using pair_type = ::std::pair<T, float>;
 	using list_type = ::std::initializer_list<pair_type>;
+	using container_type = ::std::vector<pair_type>;
 
 	public:
 		weighted_distribution(const list_type& p_list)
@@ -48,8 +51,15 @@ class weighted_distribution
 			// the last propability to sum up to 1.
 			return ::std::prev(m_Data.end())->first;
 		}
+		
+	public:
+		auto container()
+			-> container_type&
+		{
+			return m_Data;
+		}
 	
 	private:
-		::std::vector<pair_type> m_Data;
+		container_type m_Data;
 		::std::uniform_real_distribution<float> m_Distrib{0.f, 1.f};
 };
