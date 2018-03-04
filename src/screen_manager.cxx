@@ -2,9 +2,9 @@
 #include <ut/throwf.hxx>
 #include <GLXW/glxw.h>
 #include <ut/format.hxx>
+#include <log.hxx>
 #include <screen.hxx>
 #include <uniform.hxx>
-#include <diagnostics.hxx>
 #include <global_state.hxx>
 
 
@@ -29,17 +29,19 @@ void screen_manager::initialize()
 	const auto t_h = global_state<configuration>().get<unsigned int>("graphics.height");
 	const auto t_w = global_state<configuration>().get<unsigned int>("graphics.width");
 	
-	if(!t_h || !t_w)
+	// This can't happen anymore, since we now automatically obtain default
+	// values if the configuration file does not contain an entry for the screen size
+	/*if(!t_h || !t_w)
 	{
 		// TODO replace with .get_default<...>! (above)
 		post_diagnostic(message_type::error, "screen_manager", "could not obtain screen dimensions from config file");
 		throw ::std::runtime_error("screen dimensions not included in config file");
-	}
+	}*/
 	
 	m_ScreenDims = dimension_type{*t_w, *t_h};
 	m_Data.resize(*t_w * *t_h);
 	
-	post_diagnostic(message_type::info, "screen_manager", ut::sprintf("creating screen with dimensions (%u,%u)", *t_w, *t_h));
+	LOG_D_TAG("screen_manager") << "creating screen with dimensions (" << *t_w << ", " << *t_h << ")";
 
 	glActiveTexture(GL_TEXTURE3);
 	glGenTextures(1, &m_GPUTexture);

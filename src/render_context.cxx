@@ -1,16 +1,18 @@
 #include <iostream>
 #include <cstdlib>
+#include <log.hxx>
 #include <ut/cast.hxx>
 #include <ut/format.hxx>
 #include <render_context.hxx>
-#include <diagnostics.hxx>
 
 
 auto glfw_error_callback(int p_error, const char* p_description)
 	-> void
 {
-	::std::cerr << "glfw: error: " << p_description << ::std::endl;
-	::std::exit(EXIT_FAILURE);
+	LOG_F_TAG("render_context") << "GLFW error occured: \"" << p_description << "\"";
+	
+	// Throw exception to be handled in the main function
+	throw ::std::runtime_error("fatal GLFW error");
 }
 
 auto opengl_message_callback(	GLenum p_source, GLenum p_type, GLuint p_id,
@@ -18,19 +20,35 @@ auto opengl_message_callback(	GLenum p_source, GLenum p_type, GLuint p_id,
    								const GLchar* p_message, const void* p_userParam )
 {
 	// Determine message severity level
-	message_type t_msgType{ };
+	lg::severity_level t_msgType{ };
 	
 	if(p_severity == GL_DEBUG_SEVERITY_NOTIFICATION)
-		t_msgType = message_type::info;
+		t_msgType = lg::severity_level::info;
 	else if(p_type == GL_DEBUG_TYPE_ERROR)
-		t_msgType = message_type::error;
+		t_msgType = lg::severity_level::error;
 	else
-		t_msgType = message_type::warning;
+		t_msgType = lg::severity_level::warning;
 	
 	// User parameter is a threshold.
-	if(ut::enum_cast(t_msgType) <= ut::enum_cast(*static_cast<const message_type*>(p_userParam)))
+	if(ut::enum_cast(t_msgType) <= ut::enum_cast(*static_cast<const lg::severity_level*>(p_userParam)))
 	{
-		post_diagnostic(t_msgType, "opengl", p_message);
+		switch(t_msgType)
+		{
+			case lg::severity_level::info:
+				LOG_I_TAG("opengl") << p_message;
+				break;
+				
+			case lg::severity_level::error:
+				LOG_E_TAG("opengl") << p_message;
+				break;
+				
+			case lg::severity_level::warning:
+				LOG_W_TAG("opengl") << p_message;
+				break;
+				
+			default:
+				break;
+		}
 	}
 }
 
@@ -51,7 +69,7 @@ render_context::~render_context()
 auto render_context::initialize()
 	-> void
 {
-	post_diagnostic(message_type::info, "render_context", "initialization started");
+	LOG_D_TAG("render_context") << "initialization started";
 
 	init_glfw();
 	init_glxw();
@@ -63,7 +81,7 @@ auto render_context::initialize()
 auto render_context::init_debug()
 	-> void
 {
-	static message_type g_Threshold{ message_type::warning };
+	static lg::severity_level g_Threshold{ lg::severity_level::warning };
 
 	glDebugMessageCallback(opengl_message_callback, &g_Threshold);
 }
@@ -73,8 +91,8 @@ auto render_context::init_glfw()
 {
 	if(!glfwInit())
 	{
-		post_diagnostic(message_type::error, "glfw", "failed to initialize");
-		::std::exit(EXIT_FAILURE);
+		LOG_F_TAG("render_context") << "failed to initialize GLFW";
+		throw ::std::runtime_error("fatal GLFW error");
 	}
 	
 	glfwSetErrorCallback(glfw_error_callback);
@@ -86,9 +104,9 @@ auto render_context::init_glfw()
 	
 	if(!(m_WindowHandle = glfwCreateWindow(100, 100, "gl_app", 0, 0)))
 	{
-		post_diagnostic(message_type::error, "glfw", "failed to create window");
+		LOG_F_TAG("render_context") << "failed to create window";
 		glfwTerminate();
-		::std::exit(EXIT_FAILURE);
+		throw ::std::runtime_error("fatal GLFW error");
 	}
 	
 	glfwMakeContextCurrent(m_WindowHandle);
@@ -99,10 +117,10 @@ auto render_context::init_glxw()
 {
 	if(glxwInit())
 	{
-		post_diagnostic(message_type::error, "glxw", "failed to initialize");
+		LOG_F_TAG("render_context") << "failed to initialize GLXW";
 		glfwDestroyWindow(m_WindowHandle);
 		glfwTerminate();
-		::std::exit(EXIT_FAILURE);
+		throw ::std::runtime_error("fatal GLXW error");
 	}
 	
 	// Enable VSync
@@ -115,7 +133,8 @@ auto render_context::report_version()
 	-> void
 {
 	const char* t_glStr = reinterpret_cast<const char*>(glGetString(GL_VERSION));
-	post_diagnostic(message_type::info, "glxw", ut::sprintf("OpenGL version %s", t_glStr));
+	
+	LOG_I_TAG("render_context") << "OpenGl version " << t_glStr;
 }
 
 auto render_context::handle() const
@@ -127,8 +146,7 @@ auto render_context::handle() const
 auto render_context::resize(const dimension_type& p_dim)
 	-> void
 {
-	post_diagnostic(message_type::info, "render_context", ut::sprintf("resizing window to (%u, %u)", p_dim.x, p_dim.y));
-
+	LOG_D_TAG("render_context") << "window size is (" << p_dim.x << ", " << p_dim.y << ")";
 	glfwSetWindowSize(m_WindowHandle, p_dim.x, p_dim.y);
 	
 	// Reset viewport

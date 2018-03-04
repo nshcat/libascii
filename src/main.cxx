@@ -42,6 +42,7 @@
 #include <application_layer/config/config_scheme.hxx>
 #include <utility/pnfa/automaton.hxx>
 #include <nlohmann/json.hpp>
+#include <Remotery.h>
 
 using json = nlohmann::json;
 
@@ -255,30 +256,10 @@ void test_()
 
 int main(int argc, const char** argv)
 {
-	using namespace utility;
-	
-	enum class nodes
-	{
-		v1,
-		v2
-	};
-	
-	pnfa::automaton<char, ::std::string> t_nfa{ };
-	
-	t_nfa.add_start_node(nodes::v1);
-	t_nfa.add_accepting_node(nodes::v2);
-	
-	t_nfa.add_edge(nodes::v1, nodes::v2, pnfa::match('c'), [](const char& c, ::std::string&){ ::std::cout << "Consumed " << c << ::std::endl; });
-
-	::std::string s{ };
-	const auto t_res = t_nfa.step('c', s);
-	
-	std::cout << (t_res == pnfa::automaton_result::accepted) << std::endl;
-
 	g_clHandler.read(argc, argv);
 
 	global_state().initialize();
-		
+	
 	::std::cout << "User data path: " << global_state<path_manager>().user_path() << ::std::endl;
 	::std::cout << "Game data path: " << global_state<path_manager>().data_path() << ::std::endl;
 	::std::cout << "Config file path: " << global_state<path_manager>().config_path() << ::std::endl << ::std::endl;
@@ -538,11 +519,14 @@ int main(int argc, const char** argv)
 			}
 			else ++animCounter;
 		
-
-			//frame_guard t_frame{ };
 			t_context.begin_frame();
-			{		
+			{
+				// Static background renderer
 				global_state<render_manager>().render();
+				
+				// TODO particle renderer
+							
+				// NK gui renderer
 				nk_glfw3_render(NK_ANTI_ALIASING_ON, 512 * 1024, 128 * 1024);
 			}
 			t_context.end_frame();

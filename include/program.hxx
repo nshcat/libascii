@@ -3,7 +3,6 @@
 #include <stdexcept>
 #include <GLXW/glxw.h>
 #include <ut/format.hxx>
-#include <diagnostics.hxx>
 #include "shader.hxx"
 
 
@@ -25,8 +24,6 @@ namespace gl
 				(void)x;
 				
 				link();
-				
-				::post_diagnostic(message_type::info, "gl::program", ut::sprintf("linked shader program with handle %u", this->m_Handle));
 			}
 			
 			program()
@@ -46,7 +43,6 @@ namespace gl
 			{
 				if(m_Handle)
 				{
-					::post_diagnostic(message_type::info, "gl::program", ut::sprintf("deleting shader program with handle %u", this->m_Handle));
 					glDeleteProgram(m_Handle);
 				}
 			}
@@ -101,9 +97,7 @@ namespace gl
 			
 			auto use() const
 				-> void
-			{
-				//post_diagnostic(message_type::info, "gl::program", ut::sprintf("glUseProgram with shader program handle %u", this->m_Handle));
-				
+			{	
 				glUseProgram(m_Handle);
 			}
 			

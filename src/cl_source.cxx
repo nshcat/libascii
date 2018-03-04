@@ -1,6 +1,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <type_traits>
+#include <log.hxx>
 #include <cl.hxx>
 #include <application_layer/config/cl_source.hxx>
 
@@ -65,11 +66,7 @@ namespace application_layer::config
 						}
 						catch(const ::std::exception& p_ex)
 						{
-							::std::cout << "cl_source: error: could not load value for config entry \""
-										<< t_elem.name()
-										<< "\": "
-										<< p_ex.what()
-										<< ::std::endl;
+							LOG_E_TAG("commandline") << "could not load value for " << ::std::quoted(t_elem.name()) << ": " << p_ex.what();
 						}
 					}
 				},

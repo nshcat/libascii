@@ -4,7 +4,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/transform.hpp>
 #include <ut/format.hxx>
-#include <diagnostics.hxx>
+#include <log.hxx>
 #include <renderer.hxx>
 #include <global_state.hxx>
 
@@ -30,7 +30,7 @@
 auto render_manager::initialize()
 	-> void
 {
-	post_diagnostic(message_type::info, "render_manager", "initialization started");
+	LOG_D_TAG("render_manager") << "initialization started";
 
 	// TODO texture_set_loader
 	m_Tex = texture_set{
@@ -39,8 +39,8 @@ auto render_manager::initialize()
 		graphics_texture("assets/textures/default/graphics.png")
 	};
 	
-	post_diagnostic(message_type::info, "render_manager", ut::sprintf("texture glyph size: (%u, %u)", m_Tex.glyph_size().x, m_Tex.glyph_size().y));
-	
+	LOG_D_TAG("render_manager") << "texture glyph size is (" << m_Tex.glyph_size().x << ", " << m_Tex.glyph_size().y << ")";
+
 	// TODO program_loader
 	m_Program = gl::program{
 		gl::vertex_shader{ gl::from_file, "assets/shaders/ascii.vs.glsl" },
