@@ -11,6 +11,7 @@
 #include "asset_manager.hxx"
 #include "palette_loader.hxx"
 #include "process_manager.hxx"
+#include "log_manager.hxx"
 
 
 // Define global state type by providing initialization
@@ -18,6 +19,7 @@
 // in reverse order.
 using global_state_t = internal::global_state_impl<
 	path_manager,
+	log_manager,
 	configuration,
 	process_manager,
 	render_context,
