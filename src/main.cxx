@@ -61,6 +61,8 @@ using json = nlohmann::json;
 struct light_example_process
 	: public process
 {
+	using light_handle = light_manager::handle_type;
+
 	public:
 		light_example_process(process_id p_id, process_id p_parent)
 			: 	process(
@@ -71,7 +73,8 @@ struct light_example_process
 					process_info{ "light_example", "" }
 				),
 				m_Screen{ global_state<render_manager>().screen() },
-				m_Lights{ global_state<light_manager>() }
+				m_Lights{ global_state<light_manager>() },
+				m_Gen{ std::random_device{}() }
 		{
 	
 		}
@@ -79,129 +82,118 @@ struct light_example_process
 	public:
 		virtual auto initialize() -> void override
 		{
-			/*t_screenManager.modify(area({t_ix, 1}, {t_ix+1, 20}),
-				sequence(
-					sample_background(t_groundClr, rd),
-					set_depth(t_ix/2)
-				)
-			);*/
-		}
+			m_Light = m_Lights.create_light(
+				light{
+					{ 36, 2 },
+					0.7f,
+					gpu_bool(true),
+					glm::vec4{ 1.f, .647f, 0.f, 1.f },
+					glm::vec3{ 0.f },
+					3.5f//1.5f		
+				}
+			);
 		
-		virtual auto update() -> void override
-		{
-			// Draw
-			m_Screen.modify(draw_border<thin_border_style>({34, 0}, {56, 21}, set(glyph_set::graphics)));
-			m_Screen.modify(draw_string({35, 0}, "Lighting"));
+			weighted_distribution<glm::uvec3> t_groundClr{
+				{ { 84, 84, 84 }, 0.3f },		
+				{ { 94, 94, 94 }, 0.3f },		
+				{ { 56, 56, 56 }, 0.2f },		
+				{ { 75, 75, 75 }, 0.2f }
+			};
 			
+			m_Screen.modify(area({36, 2}, {54, 19}),
+				sequence(
+					sample_background(t_groundClr, m_Gen),
+					set_light_mode(light_mode::full)
+				)
+			);
+			
+			m_Screen.modify(draw_border<thin_border_style>({34, 0}, {56, 21}, set(glyph_set::graphics)));
+			m_Screen.modify(draw_string({35, 0}, "Lighting"));		
 			
 			m_Screen.modify(rectangle({35, 1}, {55, 20}),
 				sequence(
-					draw(219, { 41, 41, 41 }, { 84, 84, 84 }),
-					set_light_mode(light_mode::none)
+					draw(177, { 84, 84, 84 }, { 41, 41, 41 }),
+					set_light_mode(light_mode::none),
+					set_glyph_set(glyph_set::graphics)
+				)
+			);
+			
+			m_Screen.modify(rectangle({39, 5}, {51, 16}),
+				sequence(
+					draw(177, { 84, 84, 84 }, { 41, 41, 41 }),
+					set_light_mode(light_mode::none),
+					set_glyph_set(glyph_set::graphics)
+				)
+			);
+			
+			m_Screen.modify(line({39, 7}, {39, 14}),
+				sequence(
+					draw(glyph{0}),
+					sample_background(t_groundClr, m_Gen),
+					set_light_mode(light_mode::full)
+				)
+			);
+			
+			m_Screen.modify(line({39, 9}, {39, 12}),
+				sequence(
+					draw(177, { 84, 84, 84 }, { 41, 41, 41 }),
+					set_light_mode(light_mode::none),
+					set_glyph_set(glyph_set::graphics)
 				)
 			);
 		}
 		
+		virtual auto update() -> void override
+		{
+			static ::std::size_t t_frameCount{ };
+			
+			static ::std::size_t t_frameCount2{ };
+			
+			
+			if(t_frameCount >= 4U)	// TODO process delay, every nth frame
+			{	
+				// Update light position	
+				m_LightPos += m_Direction;
+				
+				if(m_LightPos == glm::ivec2{53, 3})	// TR
+					m_Direction = { 0, 1 };
+				else if(m_LightPos == glm::ivec2{53, 18})   // BR
+					m_Direction = { -1, 0 };
+				else if(m_LightPos == glm::ivec2{37, 18}) // BL
+					m_Direction = { 0, -1 };
+				else if(m_LightPos == glm::ivec2{37, 3}) // TL
+					m_Direction = { 1, 0 };		
+				
+				// Update light data on GPU
+				m_Lights.modify_light(m_Light).m_Position = m_LightPos;
+			
+				// Reset counter
+				t_frameCount = 0U;
+			}
+			else
+				++t_frameCount;
+				
+				
+			if(t_frameCount2 >= 6U)
+			{
+				m_Lights.modify_light(m_Light).m_Intensity = m_Intensity * m_IntensityDistrib(m_Gen);
+				
+				t_frameCount2 = 0U;
+			}
+			else
+				++t_frameCount2;
+		}
+		
 	private:
+		float m_Intensity{ 0.7f };
+		std::uniform_real_distribution<float> m_IntensityDistrib{0.4f, 1.0f}; 
+		std::mt19937 m_Gen;
+		glm::ivec2 m_Direction{ 1, 0 };
+		glm::ivec2 m_LightPos{ 37, 3 };
+		light_handle m_Light;
 		screen_manager& m_Screen;
 		light_manager& m_Lights;
 };
-
-
-/*struct test_process
-	: public process
-{
-	public:
-		test_process(process_id p_id, process_id p_parent)
-			: 	process(
-					p_id,
-					p_parent,
-					process_type::per_frame,
-					process_priority::normal,
-					process_info{ "test_process", "" }
-				)
-		{
-		}
-		
-	public:
-		virtual auto initialize() -> void override
-		{
-			this->kill_after(5U);
-		}
-		
-		virtual auto update() -> void override
-		{
-			::std::cout << m_Counter << ' ';
-			++m_Counter;
-		}
-		
-	private:
-		::std::size_t m_Counter{1};
-};
-
-struct periodic_process
-	: public process
-{
-	public:
-		periodic_process(process_id p_id, process_id p_parent)
-			: 	process(
-					p_id,
-					p_parent,
-					process_type::per_frame,
-					process_priority::normal,
-					{ "periodic_process", "A process that shows the usage of periodic sleep." }
-				)
-		{
-		}
-		
-	public:
-		virtual auto initialize() -> void override
-		{
-			this->periodic_sleep(2U);
-		}
-		
-		virtual auto update() -> void override
-		{
-			::std::cout << "* ";
-			++m_Counter;
-		}
-		
-	private:
-		::std::size_t m_Counter{1};
-};
-
-struct chained_process
-	: public process
-{
-	public:
-		chained_process(process_id p_id, process_id p_parent)
-			: 	process(
-					p_id,
-					p_parent,
-					process_type::per_frame,
-					process_priority::normal,
-					process_info{ "chained_process", "" }
-				)
-		{
-		}
-		
-	public:
-		virtual auto initialize() -> void override
-		{
-			const auto t_procView = global_state<process_manager>().create_process<test_process>(this->pid());
-			t_procView->wait_for(this->pid());
-			this->kill_after(10U);
-		}
-		
-		virtual auto update() -> void override
-		{
-			::std::cout << static_cast<char>('a' + m_Counter) << ' ';
-			++m_Counter;
-		}
-		
-	private:
-		::std::size_t m_Counter{1};
-};*/
 
 
 bool clear_ = true;
