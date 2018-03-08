@@ -30,6 +30,23 @@ namespace utility::pnfa
 			return t_ptr->step_impl(p_in, p_states...);
 		}
 		
+		
+		// Run until rejected or upon reaching accepting node.
+		template< typename... Tstate >
+		auto automaton_base<no_input, Tstate...>::run(Tstate&... p_states)
+			-> automaton_result
+		{
+			auto t_ptr = dynamic_cast<automaton<no_input, Tstate...>*>(this);
+		
+			while(true)
+			{
+				const auto t_res = this->step(p_states...);
+				
+				if(t_res == automaton_result::rejected || t_res == automaton_result::accepted)
+					return t_res;
+			}
+		}
+		
 		template< typename Tinput, typename... Tstate >
 		auto automaton_base<Tinput, Tstate...>::run(ut::array_view<const Tinput> p_in, Tstate&... p_states)
 			-> automaton_result
