@@ -20,7 +20,7 @@ namespace utility::pnfa::internal
 		
 		public:
 			probabilistic_edge(cond_fn&& p_cond, action_fn&& p_action, probability p_prob)
-				: base_type(::std::move(p_cond), ::std::move(p_action)), m_Prob{p_prob}
+				: base_type(edge_type::probabilistic, ::std::move(p_cond), ::std::move(p_action)), m_Prob{p_prob}
 			{
 				this->m_Type = edge_type::probabilistic;
 			}
