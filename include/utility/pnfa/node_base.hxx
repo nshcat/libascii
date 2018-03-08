@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdexcept>
+
 namespace utility::pnfa::internal
 {
 	// An enumeration used to dynamically identify the actual, concrete
@@ -51,6 +53,9 @@ namespace utility::pnfa::internal
 			auto set_accepting(bool p_val)
 				-> void
 			{
+				if(type() == node_type::sub_automaton)
+					throw ::std::runtime_error("node_base::set_accepting: Sub automaton cannot be marked as accepting");
+				
 				m_IsAccepting = p_val;
 			}
 	

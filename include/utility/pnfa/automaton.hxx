@@ -26,6 +26,7 @@
 #include "edge.hxx"
 #include "probability.hxx"
 #include "probabilistic_edge.hxx"
+#include "sub_automaton.hxx"
 
 
 namespace utility::pnfa
@@ -51,9 +52,10 @@ namespace utility::pnfa
 		using node_edge_pair = ::std::pair<node_id, edge_ptr>;
 		using node_edge_pair_view = ut::observer_ptr<node_edge_pair>;
 		using adjacency_list = ::std::unordered_map<node_id, ::std::vector<node_edge_pair>>;
-			
+		using parent_view = ::ut::observer_ptr<automaton<Tinput, Tstate...>>;
 			
 		friend class internal::automaton_base<Tinput, Tstate...>;
+		friend class internal::sub_automaton<Tinput, Tstate...>;
 			
 		public:
 			constexpr static node_id no_node = ::std::numeric_limits<node_id>::max();
@@ -123,6 +125,7 @@ namespace utility::pnfa
 			
 			// Set existing node with given identifier to be the start node of this automaton
 			// If there already is a start node defined, it will be overwritten.
+			// Note that a sub automaton cannot be the start node.
 			template<	typename T,
 						typename = ::std::enable_if_t<ut::is_static_castable_v<T, node_id>>
 			>
@@ -134,7 +137,12 @@ namespace utility::pnfa
 				if(m_Nodes.count(t_id) == 0U)
 					throw ::std::runtime_error("automaton::set_start: node not found");
 				else
-					m_StartNode = t_id;
+				{
+					if(get_node(t_id)->type() == internal::node_type::sub_automaton)
+						throw ::std::runtime_error("automaton::set_start: Start node cannot be a sub automaton");
+					else
+						m_StartNode = t_id;
+				}
 			}
 		
 		
@@ -150,6 +158,43 @@ namespace utility::pnfa
 			}
 			
 			
+			// Add subautomaton		
+			template<	typename T,
+						typename = ::std::enable_if_t<ut::is_static_castable_v<T, node_id>>
+			>
+			auto add_node(const T& p_id, automaton<Tinput, Tstate...>&& p_sub)
+				-> void
+			{
+				// TODO check node id beforehand to avoid changing p_sub in case of exepction
+				const auto t_id = static_cast<node_id>(p_id);
+				
+				// Configure the subautomaton
+				p_sub.set_id(t_id);
+				p_sub.set_is_sub(true);
+				p_sub.set_parent({this});
+				
+				this->add_node(::std::make_unique<internal::sub_automaton<Tinput, Tstate...>>(t_id, ::std::move(p_sub)));		
+			}
+			
+			// TODO lvalue overlaod for subautomaton => needs deep copy (NOT_IMPLEMENTED)
+			
+			
+			// Add multiple nodes at once
+			template<	typename... Ts,
+						typename = ::std::enable_if_t<
+										std::conjunction_v<
+											ut::is_static_castable<Ts, node_id>...
+										>
+									>
+			>
+			auto add_nodes(const Ts&... p_ids)
+				-> void
+			{
+				(this->add_node(p_ids), ...);
+			}
+							
+			
+			// Add node and set it to be accepting
 			template<	typename T,
 						typename = ::std::enable_if_t<ut::is_static_castable_v<T, node_id>>
 			>
@@ -274,117 +319,250 @@ namespace utility::pnfa
 				if(m_CurrentNode == no_node)
 					throw ::std::runtime_error("automaton::step: No current node");
 				
-				// Retrieve list of edges starting from current node
-				auto& t_outgoing = m_Edges.at(m_CurrentNode);	
-				
-				// Set of transitions that can be taken
-				// Note that saving pointers to elements of the data structure is
-				// valid here, since we are not modifying it in any way in this
-				// method, so no reallocation/rehash is ever triggered here.
-				using edge_container = ut::small_vector<node_edge_pair_view, 16U>;
-				edge_container t_edges{ };
-				
-				// Find all edges that can be taken
-				for(auto& t_pair: t_outgoing)
+				// Check if we are actually in a sub automaton
+				if(m_State == automaton_state::in_sub_automaton)
 				{
-					auto& t_edge = t_pair.second;
+					// Retrieve view to current node
+					const auto t_view = get_node(current_node());
 					
-					// Check if the edge is traversable with given input
-					if constexpr(t_hasInput)
-					{
-						if(t_edge->condition()(p_in, p_state...))
-							t_edges.push_back({ &t_pair });
-					}
-					else
-					{
-						if(t_edge->condition()(p_state...))
-							t_edges.push_back({ &t_pair });
-					}
-				}
-				
-				// If there are no edges to traverse, the input is rejected.
-				if(t_edges.empty())
-					return automaton_result::rejected;
-					
-				// Chosen edge. Will be initialized later.
-				node_edge_pair_view t_chosenEdge{ };
-				
-				// Determine if there are any non-probabilistic edges in the set 
-				// of valid transitions. If there are, the automaton will only decide
-				// between those. This is the defined action.
-				// Only if there are only probabilistic edges they will be chosen based
-				// on their respective probabilities.
-				// This design decision is based on the notion of non-probabilistic edges
-				// having an implicit probability of 1.
-				const auto t_filter = [](const auto& t_entry){ return !(t_entry->second->is_probabilistic()); };								
+					// Check that it really is a sub automaton
+					if(t_view->type() != internal::node_type::sub_automaton)
+						throw ::std::runtime_error("automaton::step_impl: Expected node to be sub automaton");
 						
-				if(::std::any_of(t_edges.begin(), t_edges.end(), t_filter))
-				{
-					// Filter out all probabilistic edges
-					const auto t_begin = ::std::remove_if(t_edges.begin(), t_edges.end(), ::std::not_fn(t_filter));	
-					t_edges.erase(t_begin, t_edges.end());
+					// Retrieve automaton view
+					using sub_type = internal::sub_automaton<Tinput, Tstate...>;
+					const auto t_sub = dynamic_cast<sub_type*>(t_view.get())->view();
 					
-					// Pick random number in [0, N-1], where N is the amount of edges left
-					// and use it to pick transition
-					::std::uniform_int_distribution<::std::size_t> t_distr{0, t_edges.size() - 1U};
-					t_chosenEdge = {t_edges.at(t_distr(m_RNG))};			
-				}
-				else // Select transition based on probabilities
-				{
-					// We are just saving the index here.
-					weighted_distribution<::std::size_t> t_distr{ };
+					// Perform step in sub automaton
+					const auto t_ret = t_sub->step_impl(p_in, p_state...);
 					
-					// Retrieve container reference
-					auto& t_distrCont = t_distr.container();
-					
-					// Fill it with entries. We are not using a range-based for loop
-					// here since we need the indices of the elements.
-					for(::std::size_t t_ix = 0; t_ix < t_edges.size(); ++t_ix)
+					// Handle case that we exited from sub automaton
+					if(t_ret == automaton_result::exit_from_sub)
 					{
-						auto t_pair = t_edges[t_ix];
+						// Retrieve last node of sub automaton. This resembles the node we need to continue running at.
+						const auto t_last = t_sub->current_node();
+						m_CurrentNode = t_last;						
 						
-						if(t_pair->second->is_probabilistic())
+						// We no longer are inside of a sub automaton.
+						m_State = automaton_state::running;
+						
+						// Reset the sub automaton.
+						t_sub->m_State = automaton_state::stopped;
+						
+						// Check if the node we arrived at is actually an accepting node.
+						if(get_node(current_node())->is_accepting())
+							return automaton_result::accepted;
+						else return automaton_result::running;
+					}
+					else return t_ret;
+				}
+				else // We are not in a sub automaton. Perform normal step
+				{			
+					// Retrieve list of edges starting from current node
+					auto& t_outgoing = m_Edges[m_CurrentNode];	
+					
+					// Set of transitions that can be taken
+					// Note that saving pointers to elements of the data structure is
+					// valid here, since we are not modifying it in any way in this
+					// method, so no reallocation/rehash is ever triggered here.
+					using edge_container = ut::small_vector<node_edge_pair_view, 16U>;
+					edge_container t_edges{ };
+					
+					// Container of all edges that can be taken and are leaving this subautomaton.
+					// This not used to select an edge, just as a reference to check if
+					// the taken edge was leaving. TODO solve better
+					edge_container t_leavingEdges{ };
+					
+					// Find all edges that can be taken
+					for(auto& t_pair: t_outgoing)
+					{
+						auto& t_edge = t_pair.second;
+						
+						// Check if the edge is traversable with given input
+						if constexpr(t_hasInput)
 						{
-							 auto t_probEdge = dynamic_cast<internal::probabilistic_edge<Tinput, Tstate...>*>(
-							 	t_pair->second.get()
-							 );
-						
-							t_distrCont.push_back({t_ix, t_probEdge->probability()});
+							if(t_edge->condition()(p_in, p_state...))
+								t_edges.push_back({ &t_pair });
+						}
+						else
+						{
+							if(t_edge->condition()(p_state...))
+								t_edges.push_back({ &t_pair });
 						}
 					}
 					
-					// Pick one entry randomly
-					t_chosenEdge = t_edges[t_distr(m_RNG)];				
-				}		
-				
-				// Call action. This needs to be done using static if since the signatures differ
-				// based on whether we expect a real input value or not.
-				if constexpr(t_hasInput)	
-					t_chosenEdge->second->action()(p_in, p_state...);
-				else
-					t_chosenEdge->second->action()(p_state...);
+					// If we are a subautomaton, we have to consider edges leaving us aswell
+					if(m_IsSub)
+					{
+						// Retrieve edges that are outgoing with the origin bein us
+						auto& t_parentOutgoing = m_Parent->m_Edges[m_Id];
+						
+						// Collect edges that can be taken
+						for(auto& t_pair: t_parentOutgoing)
+						{
+							auto& t_edge = t_pair.second;
+						
+							// Check if the edge is traversable with given input
+							if constexpr(t_hasInput)
+							{
+								if(t_edge->condition()(p_in, p_state...))
+								{
+									t_edges.push_back({ &t_pair });
+									t_leavingEdges.push_back({ &t_pair });
+								}
+							}
+							else
+							{
+								if(t_edge->condition()(p_state...))
+								{
+									t_edges.push_back({ &t_pair });
+									t_leavingEdges.push_back({ &t_pair });
+								}
+							}
+						}
+					}
 					
-				// Switch current node to chosen node
-				m_CurrentNode = t_chosenEdge->first;
-				
-				// Check if we arrived at an accepting node
-				if(m_Nodes.at(m_CurrentNode)->is_accepting())
-				{
-					return automaton_result::accepted;
-				}
-				else
-				{
-					// We are still expecting input
-					return automaton_result::running;
-				}				
+					// If there are no edges to traverse, the input is rejected.
+					if(t_edges.empty())
+						return automaton_result::rejected;
+						
+					// Chosen edge. Will be initialized later.
+					node_edge_pair_view t_chosenEdge{ };
+					
+					// Determine if there are any non-probabilistic edges in the set 
+					// of valid transitions. If there are, the automaton will only decide
+					// between those. This is the defined action.
+					// Only if there are only probabilistic edges they will be chosen based
+					// on their respective probabilities.
+					// This design decision is based on the notion of non-probabilistic edges
+					// having an implicit probability of 1.
+					const auto t_filter = [](const auto& t_entry){ return !(t_entry->second->is_probabilistic()); };								
+							
+					if(::std::any_of(t_edges.begin(), t_edges.end(), t_filter))
+					{
+						// Filter out all probabilistic edges
+						const auto t_begin = ::std::remove_if(t_edges.begin(), t_edges.end(), ::std::not_fn(t_filter));	
+						t_edges.erase(t_begin, t_edges.end());
+						
+						// Pick random number in [0, N-1], where N is the amount of edges left
+						// and use it to pick transition
+						::std::uniform_int_distribution<::std::size_t> t_distr{0, t_edges.size() - 1U};
+						t_chosenEdge = {t_edges.at(t_distr(m_RNG))};			
+					}
+					else // Select transition based on probabilities
+					{
+						// We are just saving the index here.
+						weighted_distribution<::std::size_t> t_distr{ };
+						
+						// Retrieve container reference
+						auto& t_distrCont = t_distr.container();
+						
+						// Fill it with entries. We are not using a range-based for loop
+						// here since we need the indices of the elements.
+						for(::std::size_t t_ix = 0; t_ix < t_edges.size(); ++t_ix)
+						{
+							auto t_pair = t_edges[t_ix];
+							
+							if(t_pair->second->is_probabilistic())
+							{
+								 auto t_probEdge = dynamic_cast<internal::probabilistic_edge<Tinput, Tstate...>*>(
+								 	t_pair->second.get()
+								 );
+							
+								t_distrCont.push_back({t_ix, t_probEdge->probability()});
+							}
+						}
+						
+						// Pick one entry randomly
+						t_chosenEdge = t_edges[t_distr(m_RNG)];				
+					}		
+					
+					// Call action. This needs to be done using static if since the signatures differ
+					// based on whether we expect a real input value or not.
+					if constexpr(t_hasInput)	
+						t_chosenEdge->second->action()(p_in, p_state...);
+					else
+						t_chosenEdge->second->action()(p_state...);
+						
+					// Switch current node to chosen node
+					m_CurrentNode = t_chosenEdge->first;
+					
+					// Check if took an edge that is leaving this sub automaton, if it is one.
+					if(m_IsSub)
+					{
+						if(::std::any_of(t_leavingEdges.begin(), t_leavingEdges.end(),
+							[&t_chosenEdge](const auto& p_edge) -> bool
+							{
+								// Comparing adresses is fine here, since none of the containers
+								// are changed in any way, so no iterator or adress invalidation
+								// occurs.
+								return p_edge.get() == t_chosenEdge.get();
+							}))
+						{
+							return automaton_result::exit_from_sub;
+						}
+					}
+					
+					// Check if the new current node is a sub automaton
+					if(get_node(current_node())->type() == internal::node_type::sub_automaton)
+					{
+						// Since we transitioned into a sub automaton, the state needs to indicate
+						// this to later steps.
+						m_State = automaton_state::in_sub_automaton;
+						
+						// A sub automaton can never be an accepting node, so no need to perform
+						// further checks.
+						return automaton_result::running;
+					} 
+							
+					// Check if we arrived at an accepting node
+					if(get_node(current_node())->is_accepting())
+					{
+						return automaton_result::accepted;
+					}
+					else
+					{
+						// We are still expecting input
+						return automaton_result::running;
+					}
+				}		
 			}
 			
 		protected:
-			// TODO maybe these two methods should throw if they are called when the automaton is not in
-			// `stopped` state
+			auto get_node(node_id p_id)
+				-> node_view
+			{
+				// No validation of input is performed here, since this method is only used internally,
+				// and all entry points of the API do have input validation. So no invalid node id
+				// can appear here.
+				return {m_Nodes.at(p_id).get()};
+			}
+			
+			auto set_is_sub(bool p_flag)
+				-> void
+			{
+				m_IsSub = p_flag;
+			}
+			
+			auto set_parent(parent_view p_view)
+				-> void
+			{
+				m_Parent = p_view;
+			}
+			
+			auto set_id(node_id p_id)
+				-> void
+			{
+				m_Id = p_id;
+			}
+			
+		protected:
 			auto add_edge(node_id p_from, node_id p_to, edge_ptr&& p_edge)
 				-> void
 			{
+				if(m_State != automaton_state::stopped)
+					throw ::std::runtime_error("automaton::add_edge: can't add edge to running automaton");
+			
 				if(!m_Nodes.count(p_from) || !m_Nodes.count(p_to))
 					throw ::std::runtime_error("automaton::add_edge: unknown node");
 			
@@ -394,6 +572,9 @@ namespace utility::pnfa
 			auto add_node(node_ptr&& p_node)
 				-> void
 			{
+				if(m_State != automaton_state::stopped)
+					throw ::std::runtime_error("automaton::add_node: can't add node to running automaton");
+			
 				const auto t_id = p_node->id();
 				
 				if(m_Nodes.count(t_id) == 0U)
@@ -410,8 +591,14 @@ namespace utility::pnfa
 			node_container m_Nodes{ };
 			adjacency_list m_Edges{ };
 			::std::default_random_engine m_RNG{ };	//< PRNG
+			
+		protected:
+			bool m_IsSub{ false };		//< Whether this automaton is a sub automaton to some other one
+			parent_view m_Parent{ };	//< View to parent automaton, if this is a sub automaton.
+			node_id m_Id{ no_node };	//< Id of this automaton from the view of the parent automaton
 	};
 }
 
-// Include implementation of automaton_base
+// Include implementation of automaton_base and sub_automaton
 #include "automaton_base_impl.hxx"
+#include "sub_automaton_impl.hxx"

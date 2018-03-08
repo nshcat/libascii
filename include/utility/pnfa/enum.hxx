@@ -15,6 +15,7 @@ namespace utility::pnfa
 	{
 		accepted,
 		rejected,
+		exit_from_sub,	//< Exited from sub automaton
 		running		//< This result is returned if the automaton neither rejected nor accepted
 					//  the input. This might happen when the automaton is executed step-by-step.
 					//  It signals that the automaton expects more input values to determine

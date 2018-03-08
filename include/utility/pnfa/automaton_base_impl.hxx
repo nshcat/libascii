@@ -54,7 +54,7 @@ namespace utility::pnfa
 			// that could be taken. If the last step ended on an accepting node,
 			// the `step` call returned `accepted`, and so do we.
 			if(t_res != automaton_result::accepted)
-				t_res = automaton_result::rejected;	//< We also reject if result is `running`, since
+				t_res = automaton_result::rejected;	//< We also reject if result is `running`, or `exit_sub` since
 													//  we didn't reach an accepting node with the input
 													//	we got.												
 					

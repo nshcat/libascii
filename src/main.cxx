@@ -58,6 +58,38 @@ using json = nlohmann::json;
 #include <nuklear.h>
 #include <nuklear_glfw_gl3.h>
 
+
+auto test_automaton()
+	-> void
+{
+	using namespace utility;
+	
+	pnfa::automaton<char> t_inner{ };
+	
+	t_inner.add_nodes(1, 2, 3);
+	t_inner.set_start(1);
+	t_inner.add_edge(1, 2, pnfa::match('b'));
+	t_inner.add_edge(1, 3, pnfa::match('z'));
+	t_inner.set_accepting(3);
+	
+	pnfa::automaton<char> t_outer{ };
+	t_outer.add_nodes(1, 3);
+	t_outer.add_node(2, ::std::move(t_inner));
+	t_outer.set_start(1);
+	t_outer.set_accepting(3);
+	
+	t_outer.add_edge(1, 2, pnfa::match('a'));
+	t_outer.add_edge(2, 3, pnfa::match('c'));
+	
+	
+	const ::std::string t_input{ "az" };
+	
+	::std::cout << ::std::boolalpha
+				<< ut::enum_cast(t_outer.run({t_input.begin(), t_input.end()}))
+				<< ::std::endl;	
+}
+
+
 struct light_example_process
 	: public process
 {
@@ -241,13 +273,10 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     }
 }
 
-void test_()
-{
-	auto x = application_layer::config::config_entry<int>{"bla", "bla", "bla", 1, 0, 16, "bla" };
-}
-
 int main(int argc, const char** argv)
 {
+	test_automaton();
+
 	g_clHandler.read(argc, argv);
 
 	global_state().initialize();
