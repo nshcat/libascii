@@ -30,6 +30,13 @@ namespace utility::pnfa::internal
 	
 			virtual ~node_base() = 0;
 	
+			node_base(const node_base&) = delete;
+			node_base& operator=(const node_base&) = delete;
+			
+		public:
+			virtual auto clone() const
+				-> ::std::unique_ptr<node_base> = 0;
+	
 		public:
 			auto type() const
 				-> node_type

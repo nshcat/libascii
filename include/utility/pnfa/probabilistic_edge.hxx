@@ -14,6 +14,7 @@ namespace utility::pnfa::internal
 	class probabilistic_edge
 		: public edge_base<Tinput, Tstate...>
 	{
+		using this_type = probabilistic_edge<Tinput, Tstate...>;
 		using base_type = edge_base<Tinput, Tstate...>;
 		using action_fn = typename base_type::action_fn;
 		using cond_fn = typename base_type::cond_fn;	
@@ -30,6 +31,13 @@ namespace utility::pnfa::internal
 				-> double
 			{
 				return m_Prob.value();
+			}
+			
+		public:
+			virtual auto clone() const 
+				-> ::std::unique_ptr<base_type>
+			{
+				return ::std::make_unique<this_type>(cond_fn{this->m_Cond}, action_fn{this->m_Action}, m_Prob);
 			}
 	
 		protected:

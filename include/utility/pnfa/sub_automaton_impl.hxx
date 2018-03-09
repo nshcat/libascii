@@ -21,5 +21,16 @@ namespace utility::pnfa::internal
 	{
 		return { dynamic_cast<automaton_type*>(m_Child.get()) };
 	}
+	
+	
+	template<	typename Tinput,
+				typename... Tstate
+	>
+	auto sub_automaton<Tinput, Tstate...>::clone() const
+		-> ::std::unique_ptr<node_base>
+	{
+		const auto t_ptr = dynamic_cast<automaton_type*>(m_Child.get());
+		return ::std::make_unique<this_type>(this->id(), automaton_type{*t_ptr});
+	}
 }
 

@@ -38,6 +38,8 @@ namespace utility::pnfa
 	class automaton // Main automaton class
 		: public internal::automaton_base<Tinput, Tstate...>
 	{
+		using this_type = automaton<Tinput, Tstate...>;
+	
 		// Type aliases that are commonly used in this class
 		using input_type = Tinput;		
 		using node_view = ut::observer_ptr<internal::node_base>;
@@ -70,9 +72,41 @@ namespace utility::pnfa
 			automaton(automaton&&) = default;
 			automaton& operator=(automaton&&) = default;
 			
-			
-			// TODO: copy is not trivial! Deep copy edges and nodes => clone() method in node_base and edge
-			// => random cannot be copied, it needs to constructed freshly.
+			automaton(const this_type& p_other)
+				: 	m_RNG{::std::random_device{}()},
+					m_State{p_other.m_State},
+					m_CurrentNode{p_other.m_CurrentNode},
+					m_IsSub{p_other.m_IsSub},
+					m_Parent{p_other.m_Parent},	//< This is wrong, but will we corrected by the parent automatons copy routine
+					m_Id{p_other.m_Id}
+			{
+				// Clone nodes
+				for(const auto& t_node: p_other.m_Nodes)
+				{
+					auto t_cloned = t_node.second->clone();
+					
+					// Update references if this is a sub automaton
+					using sub_type = internal::sub_automaton<Tinput, Tstate...>;
+					if(auto t_ptr = dynamic_cast<sub_type*>(t_cloned.get()); t_ptr)
+					{
+						t_ptr->view()->set_parent({this});	
+					}			
+				
+					m_Nodes[t_node.first] = ::std::move(t_cloned);
+				}
+				
+				// Clone edges
+				for(const auto& t_entry: p_other.m_Edges)
+				{
+					const auto t_src = t_entry.first;
+					const auto& t_edges = t_entry.second;
+					
+					for(const auto& t_edge: t_edges)
+					{
+						m_Edges[t_src].push_back(node_edge_pair{ t_edge.first, t_edge.second->clone() });
+					}
+				}
+			}
 			
 		public:
 			auto current_state() const

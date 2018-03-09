@@ -17,6 +17,8 @@ namespace utility::pnfa::internal
 	>
 	class edge_base
 	{
+		using this_type = edge_base<Tinput, Tstate...>;
+	
 		protected:
 			using action_fn = ::std::function<action_fn_t<Tinput, Tstate...>>;
 			using cond_fn = ::std::function<condition_fn_t<Tinput, Tstate...>>;
@@ -27,7 +29,13 @@ namespace utility::pnfa::internal
 			{
 			}
 			
+			edge_base(const edge_base&) = delete;
+			edge_base& operator=(const edge_base&) = delete;
+			
 			virtual ~edge_base() = 0;
+			
+		public:
+			virtual auto clone() const -> ::std::unique_ptr<this_type> = 0;
 			
 		public:
 			auto is_probabilistic() const

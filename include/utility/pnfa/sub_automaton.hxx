@@ -21,6 +21,8 @@ namespace utility::pnfa
 		class sub_automaton
 			: public node_base
 		{
+			using this_type = sub_automaton<Tinput, Tstate...>;
+		
 			protected:
 				using node_id = node_base::node_id;
 				using automaton_type = automaton<Tinput, Tstate...>;
@@ -33,6 +35,10 @@ namespace utility::pnfa
 				// API will use this class. No other overloads are needed since this is just
 				// an internal class that is not exposed to the user.
 				sub_automaton(node_id, automaton_type&&);
+			
+			public:
+				virtual auto clone() const
+					-> ::std::unique_ptr<node_base>;
 			
 			public:
 				auto view()
