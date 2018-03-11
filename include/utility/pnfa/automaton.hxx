@@ -76,6 +76,7 @@ namespace utility::pnfa
 				: 	m_RNG{::std::random_device{}()},
 					m_State{p_other.m_State},
 					m_CurrentNode{p_other.m_CurrentNode},
+					m_StartNode{p_other.m_StartNode},
 					m_IsSub{p_other.m_IsSub},
 					m_Parent{p_other.m_Parent},	//< This is wrong, but will we corrected by the parent automatons copy routine
 					m_Id{p_other.m_Id}

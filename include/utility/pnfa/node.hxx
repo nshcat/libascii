@@ -25,7 +25,12 @@ namespace utility::pnfa::internal
 			virtual auto clone() const
 				-> ::std::unique_ptr<node_base>
 			{
-				return ::std::make_unique<this_type>(this->id());
+				auto t_ptr = ::std::make_unique<this_type>(this->id());
+				
+				if(this->is_accepting())
+					t_ptr->set_accepting(true);
+				
+				return t_ptr;
 			}
 	};
 }
