@@ -125,6 +125,22 @@ namespace utility::pnfa
 				return static_cast<T>(m_CurrentNode);
 			}
 			
+			auto swap(this_type& p_other) noexcept
+				-> void
+			{
+				using ::std::swap;
+				
+				swap(m_State, p_other.m_State);
+				swap(m_CurrentNode, p_other.m_CurrentNode);
+				swap(m_StartNode, p_other.m_StartNode);
+				swap(m_Nodes, p_other.m_Nodes);
+				swap(m_Edges, p_other.m_Edges);
+				swap(m_RNG, p_other.m_RNG);
+				swap(m_IsSub, p_other.m_IsSub);
+				swap(m_Parent, p_other.m_Parent);
+				swap(m_Id, p_other.m_Id);
+			}
+			
 		public:
 			// Reset the automaton. This will cause the state to change to stopped
 			// and the current node set to the starting node
