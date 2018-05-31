@@ -91,6 +91,11 @@ namespace internal
 
 extern "C"
 {
+	void free_memory(void* ptr)
+	{
+		free(ptr);
+	}
+	
 	void engine_initialize(::std::int64_t argc, const char** argv)
 	{
 		// Populate command line handler
