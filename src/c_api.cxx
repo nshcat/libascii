@@ -1,6 +1,7 @@
 #include <cstdint>
 #include <random>
 #include <iostream>
+#include <algorithm>
 #include <cstring>
 #include <ut/cast.hxx>
 
@@ -12,6 +13,80 @@
 #include <global_state.hxx>
 #include <actions.hxx>
 #include <shapes.hxx>
+
+
+enum class config_value_type
+{
+	t_float = 0,
+	t_double,
+	t_int,
+	t_uint,
+	t_string,
+	t_bool
+};
+
+namespace internal
+{
+	auto level_color(lg::severity_level p_lvl)
+		-> ut::console_color
+	{
+		switch(p_lvl)
+		{
+			case lg::severity_level::fatal:
+				return ut::console_color::bright_red;
+				break;
+			case lg::severity_level::error:
+				return ut::console_color::bright_red;
+				break;
+			case lg::severity_level::warning:
+				return ut::console_color::bright_yellow;
+				break;
+			case lg::severity_level::info:
+				return ut::console_color::bright_white;
+				break;	
+			case lg::severity_level::debug:
+				return ut::console_color::bright_cyan;
+				break;
+			default:
+				LOG_F_TAG("libascii") << "Invalid log message severity supplied: " << ut::enum_cast(p_lvl);
+				::std::exit(EXIT_FAILURE);	
+		}
+	}
+	
+	template< typename T >
+	void* alloc_config_entry(ut::string_view p_path)
+	{
+		const auto t_val = global_state<configuration>().get<T>({p_path.to_string()});
+		
+		if(!t_val)
+		{
+			LOG_F_TAG("libascii") << "Requested configuration entry does not exist: " << p_path;
+			::std::exit(EXIT_FAILURE);
+		}
+		
+		auto t_ptr = ::std::make_unique<T>(*t_val);
+		return t_ptr.release();
+	}
+	
+	template< >
+	void* alloc_config_entry<::std::string>(ut::string_view p_path)
+	{
+		const auto t_val = global_state<configuration>().get<::std::string>({p_path.to_string()});
+		
+		if(!t_val)
+		{
+			LOG_F_TAG("libascii") << "Requested configuration entry does not exist: " << p_path;
+			::std::exit(EXIT_FAILURE);
+		}
+		
+		char* t_str = new char[t_val->size() + 1];
+		
+		::std::copy(t_val->begin(), t_val->end(), t_str);
+		t_str[t_val->size()] = '\0';
+		
+		return t_str;
+	}
+}
 
 
 extern "C"
@@ -43,30 +118,7 @@ extern "C"
 	void logger_post_message(int lvl, const char* tag, const char* msg)
 	{
 		const auto t_lvl = ut::enum_cast<lg::severity_level>(lvl);
-		ut::console_color t_clr{ };
-		
-		switch(t_lvl)
-		{
-			case lg::severity_level::fatal:
-				t_clr = ut::console_color::bright_red;
-				break;
-			case lg::severity_level::error:
-				t_clr = ut::console_color::bright_red;
-				break;
-			case lg::severity_level::warning:
-				t_clr = ut::console_color::bright_yellow;
-				break;
-			case lg::severity_level::info:
-				t_clr = ut::console_color::bright_white;
-				break;	
-			case lg::severity_level::debug:
-				t_clr = ut::console_color::bright_cyan;
-				break;
-			default:
-				LOG_F_TAG("libascii") << "Invalid log message severity supplied: " << lvl;
-				::std::exit(EXIT_FAILURE);	
-		}
-		
+		const auto t_clr = internal::level_color(t_lvl);	
 		
 		if(tag == nullptr || ::std::strlen(tag) == 0)
 			LOGGER() += lg::log_entry("libascii", 0) << t_lvl << t_clr << msg;
@@ -131,6 +183,29 @@ extern "C"
 	void renderer_render()
 	{
 		global_state<render_manager>().render();
+	}
+	
+	void* configuration_get(config_value_type type, const char* path)
+	{
+		switch(type)
+		{
+			case config_value_type::t_float:
+				return internal::alloc_config_entry<float>({path});
+			case config_value_type::t_double:
+				return internal::alloc_config_entry<double>({path});
+			case config_value_type::t_int:
+				return internal::alloc_config_entry<int>({path});
+			case config_value_type::t_uint:
+				return internal::alloc_config_entry<unsigned>({path});
+			case config_value_type::t_bool:
+				return internal::alloc_config_entry<bool>({path});
+			case config_value_type::t_string:
+				return internal::alloc_config_entry<::std::string>({path});
+			default:
+				LOG_F_TAG("libascii") << "Invalid configuration entry type: " << ut::enum_cast(type);
+				::std::exit(EXIT_FAILURE);
+				
+		}
 	}
 }
 
