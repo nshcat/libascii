@@ -120,6 +120,11 @@ extern "C"
 		global_state<render_context>().end_frame();
 	}
 	
+	void render_context_pump_events()
+	{
+		global_state<render_context>().pump_events();
+	}
+	
 	void logger_post_message(int lvl, const char* tag, const char* msg)
 	{
 		const auto t_lvl = ut::enum_cast<lg::severity_level>(lvl);
@@ -233,14 +238,36 @@ extern "C"
 		return str;
 	}
 	
-	/*void* get_current_screen()
+	void screen_get_dimensions(glm::uvec2* out)
 	{
-		return global_state<screen_manager>()
-	}*/
+		const auto& t_dims = global_state<render_manager>().screen().screen_size();
+		
+		out->x = t_dims.x;
+		out->y = t_dims.y;
+	}
 	
-	void test_color(const glm::uvec3* vec)
+	void screen_set_tile(glm::uvec2* pos, glm::uvec3* front, glm::uvec3* back, ::std::uint8_t glyph)
 	{
-		std::cout << "[" << vec->r << ", " << vec->g << ", " << vec->b << "]" << ::std::endl;
+		auto& t_cell = global_state<render_manager>().screen().modify_cell(*pos);
+		
+		t_cell.set_fg(*front);
+		t_cell.set_bg(*back);
+		t_cell.set_glyph(glyph);
+	}
+	
+	void screen_clear_tile(glm::uvec2* pos)
+	{
+		global_state<render_manager>().screen().clear_cell(*pos);
+	}
+	
+	void screen_clear()
+	{
+		global_state<render_manager>().screen().clear();
+	}
+	
+	void screen_set_depth(glm::uvec2* pos, ::std::uint8_t depth)
+	{
+		global_state<render_manager>().screen().modify_cell(*pos).set_depth(depth);
 	}
 }
 
