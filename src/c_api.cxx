@@ -227,6 +227,16 @@ extern "C"
 		
 		return str;
 	}
+	
+	/*void* get_current_screen()
+	{
+		return global_state<screen_manager>()
+	}*/
+	
+	void test_color(const glm::uvec3* vec)
+	{
+		std::cout << "[" << vec->r << ", " << vec->g << ", " << vec->b << "]" << ::std::endl;
+	}
 }
 
 
