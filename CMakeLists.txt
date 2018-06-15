@@ -1,11 +1,9 @@
 # Version requirement and project info
 cmake_minimum_required(VERSION 3.9)
-project(roguelike)
+project(ascii)
 
 ## === BUILD OPTIONS ===
 ##
-
-set(DISTRIBUTE 			OFF		CACHE BOOL 		"Create distribution folder"						)
 set(PREFIX 				"/usr" 	CACHE STRING 	"Game install prefix"								)	# This is unused if the game is used in portable (distribute) form.
 set(USE_HOME_DIR		OFF		CACHE BOOL 		"Use home directory for user data"					)
 set(CLANG_TIDY 			OFF		CACHE BOOL 		"Analyze source with clang-tidy"					)
@@ -39,11 +37,6 @@ message("${BoldWhite}Build settings =================================${ColourRes
 print_str(${PREFIX} "PREFIX:          ")
 print_switch(${USE_HOME_DIR} "USE_HOME_DIR:    ")
 print_switch(${CLANG_TIDY} "CLANG_TIDY:      ")
-
-# The distribute switch is only useful when using mingw
-if(MINGW)
-	print_switch(${DISTRIBUTE} "DISTRIBUTE:      ")
-endif()
 message("${BoldWhite}================================================${ColourReset}")
 #
 
@@ -114,8 +107,8 @@ if(BUILD_SHARED_LIB)
 	set_property(TARGET glxw PROPERTY POSITION_INDEPENDENT_CODE ON)
 	set(TARGET_NAME ascii)
 else()
-	add_executable(roguelike ${SOURCE_FILES} ${HEADER_FILES})
-	set(TARGET_NAME roguelike)
+	add_library(ascii ${SOURCE_FILES} ${HEADER_FILES})
+	set(TARGET_NAME ascii)
 endif()
 
 
@@ -164,14 +157,6 @@ endif()
 # point to the asset folder.
 target_compile_definitions(${TARGET_NAME} PUBLIC -DROGUELIKE_DATA_PATH=${PREFIX}/share/${TARGET_NAME}/assets)
 
-
-# Copy assets to output path
-add_custom_command(
-	TARGET ${TARGET_NAME}
-	POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/assets $<TARGET_FILE_DIR:${TARGET_NAME}>/assets
-)
-
 # Require support for at least C++14.
 set_property(TARGET ${TARGET_NAME} PROPERTY CXX_STANDARD 17)
 set_property(TARGET ${TARGET_NAME} PROPERTY CXX_STANDARD_REQUIRED ON)
@@ -179,21 +164,6 @@ set_property(TARGET ${TARGET_NAME} PROPERTY CXX_STANDARD_REQUIRED ON)
 # Attach clang-tidy operation to target if requested by user
 if(CLANG_TIDY)
 	set_property(TARGET ${TARGET_NAME} PROPERTY CXX_CLANG_TIDY "${DO_CLANG_TIDY}")
-endif()
-
-# Bundle dependencies on mingw
-# TODO fix for BUILD_WITH_LIB
-if(MINGW AND DISTRIBUTE AND NOT BUILD_SHARED_LIB)
-	add_custom_command(
-		TARGET ${TARGET_NAME}
-		POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E make_directory "distrib"
-		COMMAND ${CMAKE_COMMAND} -E copy  ${CMAKE_SOURCE_DIR}/mingw-bundledlls/mingw-bundledlls ${CMAKE_BINARY_DIR}/distrib/mingw-bundledlls
-		COMMAND ${CMAKE_COMMAND} -E copy  ${CMAKE_BINARY_DIR}/${TARGET_NAME}.exe ${CMAKE_BINARY_DIR}/distrib/${TARGET_NAME}.exe
-		COMMAND ${CMAKE_COMMAND} -E copy_directory  ${CMAKE_BINARY_DIR}/assets ${CMAKE_BINARY_DIR}/distrib/assets
-		COMMAND ${CMAKE_BINARY_DIR}/distrib/mingw-bundledlls --copy "${CMAKE_BINARY_DIR}/distrib/${TARGET_NAME}.exe"
-		COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_BINARY_DIR}/distrib/mingw-bundledlls
-	)
 endif()
 
 # Enable LTO if requested by user
