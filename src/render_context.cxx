@@ -180,9 +180,3 @@ auto render_context::should_close() const
 {
 	return glfwWindowShouldClose(m_WindowHandle);
 }
-
-auto render_context::pump_events()
-	-> void
-{
-	glfwPollEvents();
-}

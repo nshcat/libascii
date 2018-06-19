@@ -120,11 +120,6 @@ extern "C"
 		global_state<render_context>().end_frame();
 	}
 	
-	void render_context_pump_events()
-	{
-		global_state<render_context>().pump_events();
-	}
-	
 	void logger_post_message(int lvl, const char* tag, const char* msg)
 	{
 		const auto t_lvl = ut::enum_cast<lg::severity_level>(lvl);
