@@ -264,6 +264,21 @@ extern "C"
 	{
 		global_state<render_manager>().screen().modify_cell(*pos).set_depth(depth);
 	}
+	
+	void input_begin()
+	{
+		global_state<input_manager>().begin_input();
+	}
+	
+	void input_end()
+	{
+		global_state<input_manager>().end_input();
+	}
+	
+	bool input_has_key(int key)
+	{
+		return global_state<input_manager>().has_key(key);
+	}
 }
 
 
