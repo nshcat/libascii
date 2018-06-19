@@ -13,6 +13,9 @@ auto input_manager::initialize()
 	// This is not strictly needed, since the callback functions could just use global_state,
 	// but this saves the calls and is a commonly used idiom.
 	glfwSetWindowUserPointer(t_window, this);
+	
+	// Set key press callback function
+	glfwSetKeyCallback(t_window, key_callback);
 }
 
 auto input_manager::begin_input()
