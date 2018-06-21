@@ -12,34 +12,6 @@ cl::handler g_clHandler{
 	// Enable help display
 	cl::help_argument{ },
 	
-	// Window width in glyphs
-	/*cl::integer_argument<int>{
-		cl::default_value(80),
-		cl::max(255),
-		cl::min(50),
-		cl::long_name("width"),
-		cl::short_name('W'),
-		cl::description("The width of the game window, in glyphs"),
-		cl::category("Game settings")
-	},
-	
-	cl::integer_argument<int>{
-		cl::default_value(80),
-		cl::max(255),
-		cl::min(50),
-		cl::long_name("height"),
-		cl::short_name('H'),
-		cl::description("The height of the game window, in glyphs"),
-		cl::category("Game settings")
-	},
-	
-	cl::string_argument{
-		cl::default_value("default"s),
-		cl::long_name("tileset"),
-		cl::description("Sets the tileset used by the game"),
-		cl::category("Game settings")
-	},*/
-	
 	cl::enum_argument<lg::severity_level>{
 		cl::id(cl_argument::logger_verbosity),
 		cl::long_name("verbosity"),
