@@ -25,6 +25,27 @@ enum class config_value_type
 	t_bool
 };
 
+enum class command_type
+{
+	set_glyph,
+	set_bg,
+	set_fg,
+	set_depth,
+	clear_tile
+};
+
+struct command
+{
+	command_type m_Type;
+	glm::uvec2 m_Position;
+	
+	union
+	{
+		glm::uvec3 m_Color;
+		::std::uint8_t m_Value;
+	};
+};
+
 namespace internal
 {
 	auto level_color(lg::severity_level p_lvl)
@@ -253,6 +274,52 @@ extern "C"
 	void screen_clear_tile(glm::uvec2* pos)
 	{
 		global_state<render_manager>().screen().clear_cell(*pos);
+	}
+	
+	void screen_apply_commands(command* p_cmdbuf, int p_count)
+	{
+		auto& t_scr = global_state<render_manager>().screen();
+	
+		for(int i = 0; i < p_count; ++i)
+		{
+			auto& t_cmd = p_cmdbuf[i];
+			
+			auto& t_cell = t_scr.modify_cell(t_cmd.m_Position);
+			
+			switch(t_cmd.m_Type)
+			{
+				case command_type::set_glyph:
+				{
+					t_cell.set_glyph(t_cmd.m_Value);
+					break;
+				}
+				case command_type::set_fg:
+				{
+					t_cell.set_fg(t_cmd.m_Color);
+					break;
+				}
+				case command_type::set_bg:
+				{
+					t_cell.set_bg(t_cmd.m_Color);
+					break;
+				}
+				case command_type::set_depth:
+				{
+					t_cell.set_depth(t_cmd.m_Value);
+					break;
+				}
+				case command_type::clear_tile:
+				{
+					t_scr.clear_cell(t_cmd.m_Position);
+					break;
+				}
+				default:
+				{
+					LOG_F_TAG("libascii") << "apply_commands: Invalid command type \"" << ut::enum_cast(t_cmd.m_Type) << "\"";
+					break;
+				}
+			}
+		}
 	}
 	
 	void screen_clear()
