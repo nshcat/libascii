@@ -1,5 +1,6 @@
 #include <log.hxx>
 #include <commandline.hxx>
+#include <global_state.hxx>
 
 using namespace std::literals::string_literals;
 
@@ -12,7 +13,7 @@ cl::handler g_clHandler{
 	cl::help_argument{ },
 	
 	// Window width in glyphs
-	cl::integer_argument<int>{
+	/*cl::integer_argument<int>{
 		cl::default_value(80),
 		cl::max(255),
 		cl::min(50),
@@ -37,10 +38,10 @@ cl::handler g_clHandler{
 		cl::long_name("tileset"),
 		cl::description("Sets the tileset used by the game"),
 		cl::category("Game settings")
-	},
+	},*/
 	
 	cl::enum_argument<lg::severity_level>{
-		cl::id(commandline::logger_verbosity),
+		cl::id(cl_argument::logger_verbosity),
 		cl::long_name("verbosity"),
 		cl::category("Logger"),
 		cl::short_name('V'),
@@ -58,7 +59,7 @@ cl::handler g_clHandler{
 	
 	cl::boolean_argument
 	{
-		cl::id(commandline::logger_verbose),
+		cl::id(cl_argument::logger_verbose),
 		cl::long_name("verbose"),
 		cl::category("Logger"),
 		cl::short_name('v'),
@@ -68,7 +69,7 @@ cl::handler g_clHandler{
 	
 	cl::boolean_argument
 	{
-		cl::id(commandline::logger_append_file),
+		cl::id(cl_argument::logger_append_file),
 		cl::long_name("append-log"),
 		cl::category("Logger"),
 		cl::short_name('A'),
@@ -78,7 +79,7 @@ cl::handler g_clHandler{
 	
 	cl::boolean_argument
 	{
-		cl::id(commandline::logger_enable_file),
+		cl::id(cl_argument::logger_enable_file),
 		cl::long_name("log-to-file"),
 		cl::category("Logger"),
 		cl::short_name('F'),
@@ -86,3 +87,31 @@ cl::handler g_clHandler{
 		cl::description("Determines if the logger also writes its output to a file")
 	}
 };
+
+
+::std::vector<::std::string> g_argv;
+
+
+auto populate_argv(int argc, const char** argv)
+	-> void
+{
+	for(int i = 0; i < argc; ++i)
+	{
+		g_argv.push_back(::std::string{argv[i]});
+	}
+}
+
+auto commandline::initialize()
+	-> void
+{
+	// Our only job here is to parse the commandline arguments stored in the global
+	// variables in this translation unit.
+	::std::vector<const char*> t_ptrs{ };
+	for(int i = 0; i < g_argv.size(); ++i)
+		t_ptrs.push_back(g_argv[i].c_str());
+	
+	g_clHandler.read({ t_ptrs.begin(), t_ptrs.end() });
+	
+	// Read overrides
+	global_state<configuration>().populate_overrides();
+}

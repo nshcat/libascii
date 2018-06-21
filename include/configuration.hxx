@@ -5,6 +5,8 @@
 #include <type_traits>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
+#include <cl.hxx>
+#include <ut/type_traits.hxx>
 
 #include <application_layer/config/config_scheme.hxx>
 #include "global_system.hxx"
@@ -51,11 +53,20 @@ class configuration
 		auto save() const
 			-> void;
 			
+		// Causes the configuration manager to load overrides from the command line handlers.
+		// This is directly called by the commandline system.
+		auto populate_overrides()
+			-> void;
+			
 	private:
 		// Perform bounds checks on all configuration values.
 		// This ensures that values set via manually modifying the
 		// config files will not crash the game.
 		auto check_bounds()
+			-> void;		
+			
+		// Use scheme to add all mappings to the command line handler as arguments
+		auto populate_cl_arguments()
 			-> void;
 			
 	public:

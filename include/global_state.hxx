@@ -13,14 +13,16 @@
 #include "process_manager.hxx"
 #include "log_manager.hxx"
 #include "input_manager.hxx"
+#include "commandline.hxx"
 
 // Define global state type by providing initialization
 // sequence of the subsystems. They will be deinitialized
 // in reverse order.
 using global_state_t = internal::global_state_impl<
 	path_manager,
-	log_manager,
 	configuration,
+	commandline,
+	log_manager,
 	process_manager,
 	render_context,
 	input_manager,

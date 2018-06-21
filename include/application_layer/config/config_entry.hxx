@@ -13,6 +13,7 @@
 #endif
 
 #include <ut/throwf.hxx>
+#include <cl.hxx>
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
@@ -34,14 +35,70 @@ namespace application_layer::config
 		};
 		
 		template< typename T >
+		using is_int = ::std::is_same<T, int>;
+		
+		template< typename T >
+		using is_float = ::std::is_same<T, float>;
+		
+		template< typename T >
+		using is_bool = ::std::is_same<T, bool>;
+		
+		template< typename T >
+		using is_string = ::std::is_same<T, ::std::string>;
+		
+		template< typename T >
+		using cl_argument_type_for_t =
+			ut::category_of_t<
+				T,
+				ut::category<cl::integer_argument<int>, is_int>,
+				ut::category<cl::string_argument, is_string>,
+				ut::category<cl::boolean_argument, is_bool>,
+				ut::category<cl::floating_argument<float>, is_float>
+			>;
+		
+		
+		template< typename T >
 		constexpr bool is_valid_entry_type_v = is_valid_entry_type<T>::value;
 		
+		class mapping
+		{
+			public:	
+				mapping(const ::std::string& p_c, const ::std::string& p_ln, const ::std::optional<char>& p_sn)
+					: m_Category{p_c}, m_LongName{p_ln}, m_ShortName{p_sn}
+				{
+				}
+			
+			public:
+				auto category() const
+					-> const ::std::string&
+				{
+					return m_Category;
+				}
+				
+				auto long_name() const
+					-> const ::std::string&
+				{
+					return m_LongName;
+				}
+				
+				auto short_name() const
+					-> const ::std::optional<char>&
+				{
+					return m_ShortName;
+				}
+		
+			private:
+				::std::string m_Category;
+				::std::string m_LongName;
+				::std::optional<char> m_ShortName;
+		};
+				
 		template< typename T >
 		class entry_base
 		{
 			protected:
-				using mapping_type = ::std::variant<::std::string, ::std::size_t>;
-		
+				using mapping_type = mapping;
+				
 			public:
 				using value_type = T;
 			
@@ -102,7 +159,6 @@ namespace application_layer::config
 				::std::string m_Path{ };			//< Actual absolute path in the property tree / json document
 				::std::string m_Name{ };			//< Fancy name shown to the user
 				::std::string m_Description{ };		//< Description shown to the user
-				/*::std::string m_Group{ };*/
 				::std::optional<mapping_type> m_Mapping{ };			//< Optional command line argument mapping
 				T m_Default{ };						//< Default value
 		};

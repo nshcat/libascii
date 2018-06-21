@@ -42,13 +42,7 @@ namespace application_layer::config
 						{
 							// Obtain pointer to argument that handles this particular configuration entry.
 							// This could either be by long name, or by ID number.
-							const auto t_arg = ::std::visit(
-								[this](auto t_key)
-								{
-									return m_Handler.get(t_key);
-								},
-								*t_elem.mapping()
-							);
+							const auto t_arg = m_Handler.get(t_elem.mapping()->long_name());
 							
 							// For obvious reasons, the argument we get needs to be able to
 							// parse values of the type we are dealing with in this configuration
