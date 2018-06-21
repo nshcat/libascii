@@ -119,8 +119,9 @@ extern "C"
 	
 	void engine_initialize(::std::int64_t argc, const char** argv)
 	{
-		// Populate command line handler
-		g_clHandler.read(static_cast<int>(argc), argv);
+		// Populate command line data for later use.
+		// The commandline global system will later use this data to populate the handler.
+		populate_argv(static_cast<int>(argc), argv);
 		
 		// Init global state
 		global_state().initialize();	
