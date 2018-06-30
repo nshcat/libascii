@@ -6,6 +6,7 @@
 #include <ut/cast.hxx>
 
 #include <commandline.hxx>
+#include <engine.hxx>
 #include <weighted_distribution.hxx>
 #include <log_manager.hxx>
 #include <application_layer/config/config_entry.hxx>
@@ -44,6 +45,13 @@ struct command
 		glm::uvec3 m_Color;
 		::std::uint8_t m_Value;
 	};
+};
+
+struct game_info_t
+{
+	const char* m_Name;
+	const char* m_Version;
+	const char* m_Description;
 };
 
 namespace internal
@@ -117,14 +125,15 @@ extern "C"
 		free(ptr);
 	}
 	
-	void engine_initialize(::std::int64_t argc, const char** argv)
+	void engine_initialize(game_info_t* info, ::std::int64_t argc, const char** argv)
 	{
-		// Populate command line data for later use.
-		// The commandline global system will later use this data to populate the handler.
-		populate_argv(static_cast<int>(argc), argv);
-		
-		// Init global state
-		global_state().initialize();	
+		game_info t_info{
+			{ info->m_Name },
+			{ info->m_Version },
+			{ info->m_Description }
+		};
+	
+		engine::initialize(t_info, static_cast<int>(argc), argv);
 	}
 	
 	bool render_context_should_close()

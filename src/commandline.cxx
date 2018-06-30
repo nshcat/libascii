@@ -73,6 +73,14 @@ auto populate_argv(int argc, const char** argv)
 	}
 }
 
+auto populate_info(const game_info& p_info)
+	-> void
+{
+	g_clHandler.cl::internal::handler_base::dispatch(cl::application_name(p_info.name()));
+	g_clHandler.cl::internal::handler_base::dispatch(cl::application_version(p_info.version()));
+	g_clHandler.cl::command<cl::internal::placeholder>::dispatch(cl::application_version(p_info.version()));
+}
+
 auto commandline::initialize()
 	-> void
 {
