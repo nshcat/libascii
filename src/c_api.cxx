@@ -356,7 +356,19 @@ extern "C"
 	
 	void screen_clear()
 	{
-		global_state<render_manager>().screen().clear();
+		auto& t_screen = global_state<render_manager>().screen();
+		t_screen.clear();
+		
+		const auto t_screenDims = t_screen.screen_size();
+		
+		for(int iy = 0; iy < t_screenDims.y; ++iy)
+		{
+			for(int ix = 0; ix < t_screenDims.x; ++ix)
+			{
+				t_screen.modify_cell({ix, iy}).set_gui_mode(true);
+			}
+		}
+		
 	}
 	
 	void screen_set_depth(glm::uvec2* pos, ::std::uint8_t depth)
@@ -392,6 +404,12 @@ extern "C"
 	bool lighting_has_space(int count)
 	{
 		return global_state<light_manager>().has_space(count);
+	}
+	
+	void lighting_set_ambient(glm::uvec3* clr)
+	{
+		glm::vec4 nativeClr{ clr->r / 255.f, clr->g / 255.f, clr->b / 255.f, 1.f };
+		global_state<light_manager>().modify_state().m_AmbientLight = nativeClr;
 	}
 }
 
