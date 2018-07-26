@@ -32,7 +32,9 @@ enum class command_type
 	set_bg,
 	set_fg,
 	set_depth,
-	clear_tile
+	clear_tile,
+	set_gui_mode,
+	set_light_mode
 };
 
 struct command
@@ -42,6 +44,8 @@ struct command
 	
 	union
 	{
+		bool m_Flag;
+		::std::uint32_t m_IntegralValue;
 		glm::uvec3 m_Color;
 		::std::uint8_t m_Value;
 	};
@@ -323,6 +327,16 @@ extern "C"
 					t_scr.clear_cell(t_cmd.m_Position);
 					break;
 				}
+				case command_type::set_light_mode:
+				{
+					t_cell.set_light_mode(ut::enum_cast<light_mode>(t_cmd.m_IntegralValue));
+					break;
+				}
+				case command_type::set_gui_mode:
+				{
+					t_cell.set_gui_mode(t_cmd.m_Flag);
+					break;
+				}
 				default:
 				{
 					LOG_F_TAG("libascii") << "apply_commands: Invalid command type \"" << ut::enum_cast(t_cmd.m_Type) << "\"";
@@ -330,6 +344,16 @@ extern "C"
 				}
 			}
 		}
+	}
+	
+	void screen_set_light_mode(glm::uvec2* pos, int mode)
+	{
+		global_state<render_manager>().screen().modify_cell(*pos).set_light_mode(ut::enum_cast<light_mode>(mode));
+	}
+	
+	void screen_set_gui_mode(glm::uvec2* pos, bool flag)
+	{
+		global_state<render_manager>().screen().modify_cell(*pos).set_gui_mode(flag);
 	}
 	
 	void screen_clear()
@@ -355,6 +379,21 @@ extern "C"
 	bool input_has_key(int key)
 	{
 		return global_state<input_manager>().has_key(key);
+	}
+	
+	::std::uint64_t lighting_create_light(light* light)
+	{
+		return global_state<light_manager>().create_light(*light);
+	}
+	
+	void lighting_destroy_light(::std::uint64_t handle)
+	{
+		global_state<light_manager>().destroy_light(handle);
+	}
+	
+	bool lighting_has_space(int count)
+	{
+		return global_state<light_manager>().has_space(count);
 	}
 }
 
