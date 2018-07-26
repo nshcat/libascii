@@ -44,10 +44,8 @@ struct command
 	
 	union
 	{
-		bool m_Flag;
-		::std::uint32_t m_IntegralValue;
+		::std::uint32_t m_Value;
 		glm::uvec3 m_Color;
-		::std::uint8_t m_Value;
 	};
 };
 
@@ -304,7 +302,7 @@ extern "C"
 			{
 				case command_type::set_glyph:
 				{
-					t_cell.set_glyph(t_cmd.m_Value);
+					t_cell.set_glyph((::std::uint8_t)t_cmd.m_Value);
 					break;
 				}
 				case command_type::set_fg:
@@ -319,7 +317,7 @@ extern "C"
 				}
 				case command_type::set_depth:
 				{
-					t_cell.set_depth(t_cmd.m_Value);
+					t_cell.set_depth((::std::uint8_t)t_cmd.m_Value);
 					break;
 				}
 				case command_type::clear_tile:
@@ -329,12 +327,12 @@ extern "C"
 				}
 				case command_type::set_light_mode:
 				{
-					t_cell.set_light_mode(ut::enum_cast<light_mode>(t_cmd.m_IntegralValue));
+					t_cell.set_light_mode(ut::enum_cast<light_mode>(t_cmd.m_Value));
 					break;
 				}
 				case command_type::set_gui_mode:
 				{
-					t_cell.set_gui_mode(t_cmd.m_Flag);
+					t_cell.set_gui_mode(t_cmd.m_Value);
 					break;
 				}
 				default:
