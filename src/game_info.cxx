@@ -17,3 +17,9 @@ auto game_info::description() const
 {
 	return m_Description;
 }
+
+auto game_info::window_title() const
+	-> const ::std::string&
+{
+	return m_WindowTitle;
+}

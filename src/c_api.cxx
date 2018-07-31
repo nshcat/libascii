@@ -54,6 +54,7 @@ struct game_info_t
 	const char* m_Name;
 	const char* m_Version;
 	const char* m_Description;
+	const char* m_WindowTitle;
 };
 
 namespace internal
@@ -132,7 +133,8 @@ extern "C"
 		game_info t_info{
 			{ info->m_Name },
 			{ info->m_Version },
-			{ info->m_Description }
+			{ info->m_Description },
+			{ info->m_WindowTitle }
 		};
 	
 		engine::initialize(t_info, static_cast<int>(argc), argv);
