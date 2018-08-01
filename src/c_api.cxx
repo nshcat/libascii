@@ -155,15 +155,25 @@ extern "C"
 		global_state<render_context>().end_frame();
 	}
 	
-	void logger_post_message(int lvl, const char* tag, const char* msg)
+	void logger_post_message(int lvl, const char* tag, const char* msg, bool bare)
 	{
 		const auto t_lvl = ut::enum_cast<lg::severity_level>(lvl);
 		const auto t_clr = internal::level_color(t_lvl);	
 		
 		if(tag == nullptr || ::std::strlen(tag) == 0)
-			LOGGER() += lg::log_entry("libascii", 0) << t_lvl << t_clr << msg;
+			LOGGER() += lg::log_entry("libascii", 0, bare) << t_lvl << t_clr << msg;
 		else
-			LOGGER() += lg::log_entry("libascii", 0) << t_lvl << t_clr << lg::tag(::std::string{tag}) << msg;
+			LOGGER() += lg::log_entry("libascii", 0, bare) << t_lvl << t_clr << lg::tag(::std::string{tag}) << msg;
+	}
+	
+	void logger_lock()
+	{
+		LOG_LOCK();
+	}
+	
+	void logger_unlock()
+	{
+		LOG_UNLOCK();
 	}
 	
 	void debug_create_test_scene()
