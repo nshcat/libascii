@@ -1,9 +1,12 @@
 #include <stdexcept>
 
+#include <log.hxx>
 #include <GLXW/glxw.h>
 #include <SDL2/SDL.h>
+#include <ut/format.hxx>
 #include <SDL2/SDL_image.h>
 #include <texture_set.hxx>
+
 
 // TODO SDL error handling from sdl_cpu
 
@@ -41,7 +44,11 @@ SDL_Surface* load_texture(const ::std::string& p_path)
 	SDL_Surface* image = IMG_Load(p_path.c_str());
 	
 	if(!image)
-		throw ::std::runtime_error("Texture not found!");
+	{
+		LOG_F_TAG("texture_set") << ut::sprintf("Failed to load texture with path \"%s\"", p_path);
+		throw ::std::runtime_error("Failed to load texture");
+	}
+		
 	
 	// Determine glyph dimensions
 	//m_GlyphDim = glm::uvec2{ image->w / texture::sheet_width, image->h / texture::sheet_height };

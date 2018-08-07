@@ -26,7 +26,9 @@ class game_info
 			-> const ::std::string&;
 
 	protected:
-		::std::string m_Name;			//< Title of the game
+		::std::string m_Name;			//< Title of the game. This is supposed to be an internal name without any spaces.
+										//  It will also be used as the name of the user configuration directory.
+										//  Examples: "dragon-hoard"
 		::std::string m_Version;		//< Current version of the game
 		::std::string m_Description;	//< Short description. This is shown as part of the command line help
 		::std::string m_WindowTitle;	//< Title of the game window

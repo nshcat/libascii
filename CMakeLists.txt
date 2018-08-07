@@ -4,7 +4,7 @@ project(ascii)
 
 ## === BUILD OPTIONS ===
 ##
-set(PREFIX 				"/usr" 	CACHE STRING 	"Game install prefix"								)	# This is unused if the game is used in portable (distribute) form.
+set(PREFIX 				"/usr" 	CACHE STRING 	"Game install prefix"						)	# This is unused if the game is used in portable (distribute) form.
 set(USE_HOME_DIR		OFF		CACHE BOOL 		"Use home directory for user data"					)
 set(CLANG_TIDY 			OFF		CACHE BOOL 		"Analyze source with clang-tidy"					)
 set(USE_FIXED_STL 		OFF		CACHE BOOL 		"Use fixed version of libstdcxx <variant> header"	)
@@ -153,7 +153,8 @@ endif()
 
 # PREFIX only sets the install prefix, but ROGUELIKE_DATA_PATH has to directly
 # point to the asset folder.
-target_compile_definitions(${TARGET_NAME} PUBLIC -DROGUELIKE_DATA_PATH=${PREFIX}/share/${TARGET_NAME}/assets)
+# target_compile_definitions(${TARGET_NAME} PUBLIC -DROGUELIKE_DATA_PATH=${PREFIX}/share/${TARGET_NAME}/assets)
+target_compile_definitions(${TARGET_NAME} PUBLIC -DROGUELIKE_DATA_PATH=\"${PREFIX}/share\")
 
 # Require support for at least C++14.
 set_property(TARGET ${TARGET_NAME} PROPERTY CXX_STANDARD 17)

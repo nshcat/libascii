@@ -32,19 +32,22 @@ auto render_manager::initialize()
 {
 	LOG_D_TAG("render_manager") << "initialization started";
 
+	// Retrieve asset path
+	const auto& t_assetPath = global_state<path_manager>().data_path();
+
 	// TODO texture_set_loader
 	m_Tex = texture_set{
-		shadow_texture("assets/textures/default/shadows.png"),
-		text_texture("assets/textures/default/text.png"),
-		graphics_texture("assets/textures/default/graphics.png")
+		shadow_texture((t_assetPath / "textures" / "default" / "shadows.png").string()),
+		text_texture((t_assetPath / "textures" / "default" / "text.png").string()),
+		graphics_texture((t_assetPath / "textures" / "default" / "graphics.png").string())
 	};
 	
 	LOG_D_TAG("render_manager") << "texture glyph size is (" << m_Tex.glyph_size().x << ", " << m_Tex.glyph_size().y << ")";
 
 	// TODO program_loader
 	m_Program = gl::program{
-		gl::vertex_shader{ gl::from_file, "assets/shaders/ascii.vs.glsl" },
-		gl::fragment_shader{ gl::from_file, "assets/shaders/ascii.fs.glsl" }
+		gl::vertex_shader{ gl::from_file, (t_assetPath / "shaders" / "ascii.vs.glsl").string() },
+		gl::fragment_shader{ gl::from_file, (t_assetPath / "shaders" / "ascii.fs.glsl").string() }
 	};
 	
 	m_Screen.initialize();

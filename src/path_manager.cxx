@@ -1,8 +1,11 @@
 #include <cstdlib>
 #include <stdexcept>
 #include <iostream>
+#include <cctype>
+#include <algorithm>
 #include <boost/filesystem/operations.hpp>
 #include <ut/platform.hxx>
+#include <ut/throwf.hxx>
 
 #if defined(LIBUT_IS_POSIX)
 #	include <unistd.h>
@@ -12,6 +15,7 @@
 #endif
 
 #include <path_manager.hxx>
+#include <engine.hxx>
 #include <build_settings.hxx>
 
 // TODO MacOSX support
@@ -63,7 +67,7 @@ auto path_manager::init_user_path()
 		// Use the home directory. We need to make sure that the subdirectory
 		// exists (which is named after the game)
 		auto t_path = home_directory();
-		t_path /= ".roguelike";
+		t_path /= "." + engine::game_information().name();
 		
 		// Check if it exists
 		if(!boost::filesystem::exists(t_path))
@@ -100,9 +104,19 @@ auto path_manager::init_data_path()
 	{
 		m_DataPath = t_localPath;
 	}
-	else // Use PREFIX build-time setting
+	else 
 	{
-		const auto t_prefixPath = build_settings::data_path();
+		// Use PREFIX build-time setting to build data path
+		const auto& t_prefix = engine::game_information().name();
+	
+		// Check for spaces in the game name. This is not allowed
+		if(::std::any_of(t_prefix.cbegin(), t_prefix.cend(), [](char c) -> bool { return ::std::isspace(c); }))
+		{
+			// We cant use the logger here since its not yet initialized
+			throw ::std::runtime_error("path_manager: Given application name cannot be used since it contains spaces");
+		}
+	
+		const auto t_prefixPath = build_settings::data_path_prefix() / t_prefix / "assets";
 		
 		if(boost::filesystem::exists(t_prefixPath)
 			&& boost::filesystem::is_directory(t_prefixPath))
@@ -110,7 +124,7 @@ auto path_manager::init_data_path()
 			m_DataPath = t_prefixPath;
 		}
 		else
-			throw ::std::runtime_error("path_manager: Could not determine data path");
+			ut::throwf<::std::runtime_error>("path_manager: Neither local asset directory nor global path \"%s\" are accessible", t_prefixPath.string());
 	}
 }
 
