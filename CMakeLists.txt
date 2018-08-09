@@ -90,10 +90,10 @@ set(JSON_BuildTests OFF CACHE BOOL "Tests")
 add_subdirectory(json)
 
 # Source files
-file(GLOB SOURCE_FILES src/*.cxx)
+file(GLOB_RECURSE SOURCE_FILES src/*.cxx)
 
 # Headers
-file(GLOB HEADER_FILES include/*.hxx)
+file(GLOB_RECURSE HEADER_FILES include/*.hxx)
 
 # Define target as either executable or shared library, depending on settings
 if(BUILD_SHARED_LIB)
