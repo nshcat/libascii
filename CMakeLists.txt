@@ -83,7 +83,6 @@ add_subdirectory(glxw)
 add_subdirectory(cl)
 add_subdirectory(ut)
 add_subdirectory(log)
-add_subdirectory(nuklear_cmake)
 
 # Disable tests for the json library because they take a long time to build
 set(JSON_BuildTests OFF CACHE BOOL "Tests")
@@ -138,7 +137,6 @@ endif()
 
 # Link dependencies
 target_link_libraries(	${TARGET_NAME} glfw glxw
-						${NUKLEAR_LIBRARIES} ${NUKLEAR_GLFW_OPENGL3_LIBRARIES}
 						${GLFW_LIBRARIES} ${GLXW_LIBRARY} ${OPENGL_LIBRARY}
 						${LIBUT_LIBRARIES} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARY}
 						${LIBCL_LIBRARIES} ${LIBLOG_LIBRARIES} nlohmann_json
