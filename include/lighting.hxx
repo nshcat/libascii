@@ -30,10 +30,12 @@ struct light
 {
 	glm::ivec2 m_Position;
 	float m_Intensity{0.f};
-	gpu_bool m_UseRadius{true};
+	float m_Padding;
 	glm::vec4 m_Color;
 	glm::vec3 m_AttFactors;
 	float m_Radius{1.f};
+	gpu_bool m_UseRadius{true};
+	float m_PaddingEnd[3];
 };
 
 
@@ -47,7 +49,7 @@ class light_manager
 	: public global_system
 {
 	static constexpr ::std::size_t max_lights = 25;
-	static constexpr ::std::size_t light_size = 8 + 4 + 4 + 16 + 12 + 4;
+	static constexpr ::std::size_t light_size = 8 + 4 + 4 + 16 + 12 + 4 + 4 + 12;
 	static constexpr ::std::size_t count_size = 4;
 	static constexpr ::std::size_t state_size = 16 + 16 + 16;
 	static constexpr ::std::size_t buffer_size = state_size + (max_lights * light_size) + count_size;

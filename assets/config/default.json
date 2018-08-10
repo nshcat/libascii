@@ -1,8 +1,0 @@
-{
-	"graphics" : {
-		"tileset" : "default",
-		"palette" : "c64",
-		"height" : "60",
-		"width" : "30"
-	}
-}

@@ -67,6 +67,14 @@ auto configuration::initialize()
 	// are replaced with their defaults.
 	save();
 	
+	// Add all entries to the command line handler in the form of arguments, for which
+	// a mapping was defined
+	populate_cl_arguments();
+}
+
+auto configuration::populate_overrides()
+	-> void
+{
 	// Load values from the command line. These are stored in a separate
 	// tree to avoid writing them out to disk. They are only meant as a temporary
 	// overwrite.
@@ -80,6 +88,82 @@ auto configuration::save() const
 	const auto t_path = global_state<path_manager>().config_path();
 	
 	pt::write_json(t_path.string(), m_DataTree);
+}
+
+auto configuration::populate_cl_arguments()
+	-> void
+{
+	// Check all entries
+	for(const auto& t_entry: scheme())
+	{
+		// The stored value is always of type `config_entry<T>`, where `T` is unknown to
+		// us at this point.
+		::std::visit(
+			[this](auto t_elem) -> void
+			{
+				using elem_type = ::std::decay_t<decltype(t_elem)>;
+				using value_type = typename elem_type::value_type;
+				using argument_type = cl_argument_type_for_t<value_type>;
+				
+				// We are only interested in entries that have a mapping defined for them
+				if(!t_elem.mapping())
+					return;
+				
+				// Build command line argument
+				
+				// The entry has min/max defined
+				if constexpr(::std::is_base_of_v<arithmetic_entry<value_type>, elem_type>)
+				{
+					auto t_arg = (t_elem.mapping()->short_name() ?
+						::std::make_unique<argument_type>(
+							cl::default_value(t_elem.default_value()),
+							cl::min(t_elem.min()),
+							cl::max(t_elem.max()),
+							cl::description(t_elem.description()),
+							cl::long_name(t_elem.mapping()->long_name()),
+							cl::category(t_elem.mapping()->category()),
+							cl::short_name(t_elem.mapping()->short_name().value())
+						)
+						:
+						::std::make_unique<argument_type>(
+							cl::default_value(t_elem.default_value()),
+							cl::min(t_elem.min()),
+							cl::max(t_elem.max()),
+							cl::description(t_elem.description()),
+							cl::long_name(t_elem.mapping()->long_name()),
+							cl::category(t_elem.mapping()->category())
+						));
+						
+					// Insert into handler
+					g_clHandler.add(::std::move(t_arg));
+				}
+				else
+				{
+					auto t_arg = (t_elem.mapping()->short_name() ?
+						::std::make_unique<argument_type>(
+							cl::default_value(t_elem.default_value()),
+							cl::description(t_elem.description()),
+							cl::long_name(t_elem.mapping()->long_name()),
+							cl::category(t_elem.mapping()->category()),
+							cl::short_name(t_elem.mapping()->short_name().value())
+						)
+						:
+						::std::make_unique<argument_type>(
+							cl::default_value(t_elem.default_value()),
+							cl::description(t_elem.description()),
+							cl::long_name(t_elem.mapping()->long_name()),
+							cl::category(t_elem.mapping()->category())
+						));
+						
+					// Insert into handler
+					g_clHandler.add(::std::move(t_arg));
+				}
+				
+				
+			},
+			t_entry
+		);	
+	}
 }
 
 auto configuration::check_bounds()

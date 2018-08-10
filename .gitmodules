@@ -13,9 +13,6 @@
 [submodule "mingw-bundledlls"]
 	path = mingw-bundledlls
 	url = https://github.com/mpreisler/mingw-bundledlls.git
-[submodule "nuklear_cmake"]
-	path = nuklear_cmake
-	url = https://github.com/nshcat/nuklear_cmake
 [submodule "minitrace"]
 	path = minitrace
 	url = https://github.com/nshcat/minitrace
@@ -31,6 +28,3 @@
 [submodule "log"]
 	path = log
 	url = https://github.com/nshcat/log.git
-[submodule "Remotery"]
-	path = Remotery
-	url = https://github.com/nshcat/Remotery.git

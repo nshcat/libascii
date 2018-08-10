@@ -3,6 +3,7 @@
 #pragma once
 
 #include <stdexcept>
+#include <limits>
 #include <vector>
 
 #ifdef ROGUELIKE_FIXED_STL
@@ -45,37 +46,30 @@ namespace application_layer::config
 			const auto t_path = p_j.at("path").get<::std::string>();
 			const auto t_desc = p_j.at("description").get<::std::string>();
 			const auto t_def = p_j.at("default").get<T>();
-			const auto t_min = p_j.at("min").get<T>();	
-			const auto t_max = p_j.at("max").get<T>();	
+			const auto t_min = (p_j.count("min") ? p_j.at("min").get<T>() : ::std::numeric_limits<T>::min());	
+			const auto t_max = (p_j.count("max") ? p_j.at("max").get<T>() : ::std::numeric_limits<T>::max());	
 			
 			if(p_j.count("mapping") && (p_j.at("mapping").count("long_name") || p_j.at("mapping").count("id")))
 			{
 				const auto t_mapping = p_j.at("mapping");
 				
-				if(t_mapping.count("long_name"))
-				{
-					p_entry = config_entry<T>{
+				::std::optional<char> t_short = (t_mapping.count("short_name") ? ::std::optional<char>{ t_mapping.at("short_name").get<::std::string>().at(0) } : ::std::optional<char>{ });
+				
+				mapping t_map{
+					t_mapping.at("category").get<::std::string>(),
+					t_mapping.at("long_name").get<::std::string>(),
+					t_short
+				};
+
+				p_entry = config_entry<T>{
 						t_path,
 						t_name,
 						t_desc,
 						t_def,
 						t_min,
 						t_max,
-						t_mapping.at("long_name").get<::std::string>()
-					};
-				}
-				else if(t_mapping.count("id"))
-				{
-					p_entry = config_entry<T>{
-						t_path,
-						t_name,
-						t_desc,
-						t_def,
-						t_min,
-						t_max,
-						t_mapping.at("id").get<::std::size_t>()
-					};
-				}
+						t_map
+				};
 			}
 			else
 			{
@@ -98,30 +92,26 @@ namespace application_layer::config
 			const auto t_desc = p_j.at("description").get<::std::string>();
 			const auto t_def = p_j.at("default").get<T>();
 			
-			if(p_j.count("mapping") && (p_j.at("mapping").count("long_name") || p_j.at("mapping").count("id")))
+			if(p_j.count("mapping") && p_j.at("mapping").count("long_name"))
 			{
 				const auto t_mapping = p_j.at("mapping");
 				
-				if(t_mapping.count("long_name"))
-				{
-					p_entry = config_entry<T>{
+				::std::optional<char> t_short = (t_mapping.count("short_name") ? ::std::optional<char>{ t_mapping.at("short_name").get<::std::string>().at(0) } : ::std::optional<char>{ });
+				
+				mapping t_map{
+					t_mapping.at("category").get<::std::string>(),
+					t_mapping.at("long_name").get<::std::string>(),
+					t_short
+				};
+
+
+				p_entry = config_entry<T>{
 						t_path,
 						t_name,
 						t_desc,
 						t_def,
-						t_mapping.at("long_name").get<::std::string>()
-					};
-				}
-				else if(t_mapping.count("id"))
-				{
-					p_entry = config_entry<T>{
-						t_path,
-						t_name,
-						t_desc,
-						t_def,
-						t_mapping.at("id").get<::std::size_t>()
-					};
-				}
+						t_map
+				};
 			}
 			else
 			{

@@ -4,6 +4,7 @@
 #include <ut/cast.hxx>
 #include <ut/format.hxx>
 #include <render_context.hxx>
+#include <engine.hxx>
 
 
 auto glfw_error_callback(int p_error, const char* p_description)
@@ -98,11 +99,11 @@ auto render_context::init_glfw()
 	glfwSetErrorCallback(glfw_error_callback);
 
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
 	
-	if(!(m_WindowHandle = glfwCreateWindow(100, 100, "gl_app", 0, 0)))
+	if(!(m_WindowHandle = glfwCreateWindow(100, 100, engine::game_information().window_title().c_str(), 0, 0)))
 	{
 		LOG_F_TAG("render_context") << "failed to create window";
 		glfwTerminate();
@@ -179,10 +180,4 @@ auto render_context::should_close() const
 	-> bool
 {
 	return glfwWindowShouldClose(m_WindowHandle);
-}
-
-auto render_context::pump_events()
-	-> void
-{
-	glfwPollEvents();
 }

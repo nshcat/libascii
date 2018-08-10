@@ -10,8 +10,10 @@ class build_settings
 	using path_type = boost::filesystem::path;
 
 	public:
-		// Path to game data (assets)
-		static auto data_path()
+		// Prefix for data path. On linux, this could be something like "/usr/share".
+		// The engine needs to append the game title to this to create the complete data
+		// path.
+		static auto data_path_prefix()
 			-> path_type;
 			
 		// Whether the game should the users home directory

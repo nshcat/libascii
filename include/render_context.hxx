@@ -36,10 +36,7 @@ class render_context
 			
 		auto should_close() const
 			-> bool;
-			
-		auto pump_events()
-			-> void;
-		
+
 		auto begin_frame()
 			-> void;
 			

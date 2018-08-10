@@ -160,10 +160,14 @@ struct Light
 {
 	ivec2 position;		// ┐	//< Position in the game world TODO if something breaks revert this to "vec2"
 	float intensity;	// │	//< Intensity of the light source
-	bool  use_radius;	// ┘	//< Calculate att. factors based on radius
+	float padding1;		// ┘	
 	vec4  color;		// 		//< Color of the light
 	vec3  att_factors;	// ┐	//< Factors used in attenuation function
 	float radius;		// ┘	//< Radius of illumination
+	bool  use_radius;	// ┐	//< Calculate att. factors based on radius
+	float padding2;     // │
+	float padding3;     // │
+	float padding4;     // ┘
 };
 
 // Struct containg global state of the lighting system
