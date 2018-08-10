@@ -4,12 +4,12 @@ project(ascii)
 
 ## === BUILD OPTIONS ===
 ##
-set(PREFIX 				"/usr" 	CACHE STRING 	"Game install prefix"						)	# This is unused if the game is used in portable (distribute) form.
+set(PREFIX 				"/usr" 	CACHE STRING 	"Game install prefix"								)	# This is unused if the game is used in portable (distribute) form.
 set(USE_HOME_DIR		OFF		CACHE BOOL 		"Use home directory for user data"					)
 set(CLANG_TIDY 			OFF		CACHE BOOL 		"Analyze source with clang-tidy"					)
 set(USE_FIXED_STL 		OFF		CACHE BOOL 		"Use fixed version of libstdcxx <variant> header"	)
 set(USE_LTO		 		OFF		CACHE BOOL 		"Utilize Link-Time-Optimization"					)
-set(BUILD_SHARED_LIB	OFF		CACHE BOOL 		"Build as libascii"									)
+set(BUILD_SHARED_LIB	OFF		CACHE BOOL 		"Build as shared lib."								)
 
 ## =====================
 
@@ -83,7 +83,6 @@ add_subdirectory(glxw)
 add_subdirectory(cl)
 add_subdirectory(ut)
 add_subdirectory(log)
-add_subdirectory(nuklear_cmake)
 
 # Disable tests for the json library because they take a long time to build
 set(JSON_BuildTests OFF CACHE BOOL "Tests")
@@ -95,7 +94,7 @@ file(GLOB_RECURSE SOURCE_FILES src/*.cxx)
 # Headers
 file(GLOB_RECURSE HEADER_FILES include/*.hxx)
 
-# Define target as either executable or shared library, depending on settings
+# Define target as either static or shared library, depending on settings
 if(BUILD_SHARED_LIB)
 	add_library(ascii SHARED ${SOURCE_FILES} ${HEADER_FILES})
 	set_property(TARGET ascii PROPERTY POSITION_INDEPENDENT_CODE ON)
@@ -138,7 +137,6 @@ endif()
 
 # Link dependencies
 target_link_libraries(	${TARGET_NAME} glfw glxw
-						${NUKLEAR_LIBRARIES} ${NUKLEAR_GLFW_OPENGL3_LIBRARIES}
 						${GLFW_LIBRARIES} ${GLXW_LIBRARY} ${OPENGL_LIBRARY}
 						${LIBUT_LIBRARIES} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARY}
 						${LIBCL_LIBRARIES} ${LIBLOG_LIBRARIES} nlohmann_json
@@ -153,7 +151,6 @@ endif()
 
 # PREFIX only sets the install prefix, but ROGUELIKE_DATA_PATH has to directly
 # point to the asset folder.
-# target_compile_definitions(${TARGET_NAME} PUBLIC -DROGUELIKE_DATA_PATH=${PREFIX}/share/${TARGET_NAME}/assets)
 target_compile_definitions(${TARGET_NAME} PUBLIC -DROGUELIKE_DATA_PATH=\"${PREFIX}/share\")
 
 # Require support for at least C++14.
