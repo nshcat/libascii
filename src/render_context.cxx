@@ -3,6 +3,7 @@
 #include <log.hxx>
 #include <ut/cast.hxx>
 #include <ut/format.hxx>
+#include <ut/throwf.hxx>
 #include <render_context.hxx>
 #include <engine.hxx>
 
@@ -13,7 +14,7 @@ auto glfw_error_callback(int p_error, const char* p_description)
 	LOG_F_TAG("render_context") << "GLFW error occured: \"" << p_description << "\"";
 	
 	// Throw exception to be handled in the main function
-	throw ::std::runtime_error("fatal GLFW error");
+	ut::throwf<::std::runtime_error>("fatal GLFW error: %s", p_description);
 }
 
 auto opengl_message_callback(	GLenum p_source, GLenum p_type, GLuint p_id,
@@ -60,11 +61,11 @@ render_context::render_context()
 
 render_context::~render_context()
 {
-	if(m_Initialized)
+	/*if(m_Initialized)
 	{
 		glfwDestroyWindow(m_WindowHandle);
 		glfwTerminate();
-	}
+	}*/
 }
 
 auto render_context::initialize()
