@@ -11,4 +11,6 @@ typedef struct
 extern "C"
 {
 	void engine_initialize(game_info_t* info, int argc, const char** argv);
+	
+	void engine_deinitialize();
 }

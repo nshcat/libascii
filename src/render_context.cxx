@@ -79,6 +79,18 @@ auto render_context::initialize()
 	m_Initialized = true;
 }
 
+auto render_context::deinitialize()
+	-> void
+{
+	LOG_D_TAG("render_context") << "deinitialization started";
+	
+	// Kill the window
+	glfwDestroyWindow(m_WindowHandle);
+	
+	// Shutdown GLFW
+	glfwTerminate();
+}
+
 auto render_context::init_debug()
 	-> void
 {

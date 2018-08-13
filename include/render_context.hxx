@@ -23,6 +23,9 @@ class render_context
 	public:
 		auto initialize()
 			-> void;
+			
+		auto deinitialize()
+			-> void;
 		
 	public:
 		auto handle() const

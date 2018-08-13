@@ -17,4 +17,9 @@ extern "C"
 		
 		engine::initialize(t_info, p_argc, p_argv);
 	}
+	
+	void engine_deinitialize()
+	{
+		global_state<render_context>().deinitialize();
+	}
 }
